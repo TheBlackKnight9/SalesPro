@@ -1,0 +1,720 @@
+// ============================================================
+// SalesPro CRM — schema.prisma
+// SRS v1.0  |  All 19 entities with strict relational mapping
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  AGENT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATION
+  WON
+  LOST
+  ON_HOLD
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  WHATSAPP
+  COLD_CALL
+  SOCIAL_MEDIA
+  WALK_IN
+  OTHER
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum FollowUpType {
+  CALL
+  EMAIL
+  WHATSAPP
+  MEETING
+  SITE_VISIT
+  OTHER
+}
+
+enum FollowUpStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED
+  RESCHEDULED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum WhatsAppMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsAppMessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum DocumentType {
+  QUOTATION_PDF
+  INVOICE_PDF
+  AGREEMENT
+  ID_PROOF
+  OTHER
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  LEAD_UPDATED
+  LEAD_STATUS_CHANGED
+  LEAD_ASSIGNED
+  LEAD_CONVERTED
+  CUSTOMER_CREATED
+  CUSTOMER_UPDATED
+  TASK_CREATED
+  TASK_COMPLETED
+  FOLLOWUP_SCHEDULED
+  FOLLOWUP_COMPLETED
+  QUOTATION_SENT
+  INVOICE_SENT
+  PAYMENT_RECEIVED
+  WHATSAPP_SENT
+  WHATSAPP_RECEIVED
+  NOTE_ADDED
+  DOCUMENT_UPLOADED
+}
+
+enum NotificationType {
+  TASK_DUE
+  FOLLOW_UP_DUE
+  LEAD_ASSIGNED
+  INVOICE_OVERDUE
+  PAYMENT_RECEIVED
+  SYSTEM
+}
+
+// ─────────────────────────────────────────────
+// TABLE 1: Office
+// ─────────────────────────────────────────────
+model Office {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  city        String?
+  state       String?
+  country     String   @default("India")
+  phone       String?
+  email       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  leads       Lead[]
+  customers   Customer[]
+
+  @@map("offices")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 2: User
+// ─────────────────────────────────────────────
+model User {
+  id              String    @id @default(cuid())
+  officeId        String?
+  name            String
+  email           String    @unique
+  phone           String?   @unique
+  passwordHash    String
+  role            UserRole  @default(AGENT)
+  avatarUrl       String?
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  office              Office?        @relation(fields: [officeId], references: [id])
+  managedLeads        Lead[]         @relation("LeadManager")
+  assignedLeads       Lead[]         @relation("LeadAgent")
+  createdLeads        Lead[]         @relation("LeadCreatedBy")
+  tasks               Task[]         @relation("TaskAssignee")
+  createdTasks        Task[]         @relation("TaskCreatedBy")
+  followUps           FollowUp[]     @relation("FollowUpAssignee")
+  createdFollowUps    FollowUp[]     @relation("FollowUpCreatedBy")
+  quotations          Quotation[]
+  invoices            Invoice[]
+  activities          Activity[]
+  notifications       Notification[]
+  sentMessages        WhatsAppMessage[] @relation("MessageSender")
+  leadAssignments     LeadAssignment[]  @relation("AssignedToUser")
+  leadAssignmentsFrom LeadAssignment[]  @relation("AssignedByUser")
+  leadStatusHistory   LeadStatusHistory[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 3: Lead
+// ─────────────────────────────────────────────
+model Lead {
+  id              String      @id @default(cuid())
+  officeId        String
+  managerId       String?
+  agentId         String?
+  createdById     String
+
+  // Contact Info
+  firstName       String
+  lastName        String?
+  email           String?
+  phone           String
+  alternatePhone  String?
+  company         String?
+  designation     String?
+
+  // Lead Meta
+  source          LeadSource  @default(OTHER)
+  status          LeadStatus  @default(NEW)
+  priority        TaskPriority @default(MEDIUM)
+  tags            String[]    @default([])
+  notes           String?
+  budget          Decimal?    @db.Decimal(12, 2)
+  expectedClosing DateTime?
+
+  // Timestamps
+  convertedAt     DateTime?
+  isConverted     Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  office          Office          @relation(fields: [officeId], references: [id])
+  manager         User?           @relation("LeadManager", fields: [managerId], references: [id])
+  agent           User?           @relation("LeadAgent", fields: [agentId], references: [id])
+  createdBy       User            @relation("LeadCreatedBy", fields: [createdById], references: [id])
+  customer        Customer?
+  requirements    Requirement[]
+  tasks           Task[]
+  followUps       FollowUp[]
+  quotations      Quotation[]
+  activities      Activity[]
+  whatsappMessages WhatsAppMessage[]
+  statusHistory   LeadStatusHistory[]
+  assignments     LeadAssignment[]
+  documents       Document[]
+
+  @@index([officeId])
+  @@index([agentId])
+  @@index([status])
+  @@map("leads")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 4: LeadStatusHistory
+// ─────────────────────────────────────────────
+model LeadStatusHistory {
+  id          String     @id @default(cuid())
+  leadId      String
+  changedById String
+  fromStatus  LeadStatus?
+  toStatus    LeadStatus
+  notes       String?
+  createdAt   DateTime   @default(now())
+
+  // Relations
+  lead        Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy   User  @relation(fields: [changedById], references: [id])
+
+  @@map("lead_status_history")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 5: LeadAssignment
+// ─────────────────────────────────────────────
+model LeadAssignment {
+  id           String   @id @default(cuid())
+  leadId       String
+  assignedToId String
+  assignedById String
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  lead         Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignedTo   User  @relation("AssignedToUser", fields: [assignedToId], references: [id])
+  assignedBy   User  @relation("AssignedByUser", fields: [assignedById], references: [id])
+
+  @@map("lead_assignments")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 6: Customer
+// (Created upon Lead conversion)
+// ─────────────────────────────────────────────
+model Customer {
+  id              String   @id @default(cuid())
+  leadId          String   @unique
+  officeId        String
+
+  // Contact Info
+  firstName       String
+  lastName        String?
+  email           String?
+  phone           String
+  alternatePhone  String?
+  company         String?
+  designation     String?
+  address         String?
+  city            String?
+  state           String?
+  pincode         String?
+  gstNumber       String?
+  panNumber       String?
+
+  // CRM Meta
+  totalRevenue    Decimal  @default(0) @db.Decimal(12, 2)
+  notes           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  lead            Lead        @relation(fields: [leadId], references: [id])
+  office          Office      @relation(fields: [officeId], references: [id])
+  requirements    Requirement[]
+  quotations      Quotation[]
+  invoices        Invoice[]
+  activities      Activity[]
+  whatsappMessages WhatsAppMessage[]
+  documents       Document[]
+
+  @@index([officeId])
+  @@map("customers")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 7: Requirement
+// ─────────────────────────────────────────────
+model Requirement {
+  id           String   @id @default(cuid())
+  leadId       String?
+  customerId   String?
+  title        String
+  description  String?
+  budget       Decimal? @db.Decimal(12, 2)
+  timeline     String?
+  isResolved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  lead         Lead?         @relation(fields: [leadId], references: [id])
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  products     RequirementProduct[]
+
+  @@map("requirements")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 8: Product
+// ─────────────────────────────────────────────
+model Product {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  sku          String?  @unique
+  unit         String   @default("unit")
+  basePrice    Decimal  @db.Decimal(12, 2)
+  taxRate      Decimal  @default(18) @db.Decimal(5, 2)  // GST %
+  isActive     Boolean  @default(true)
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  quotationItems      QuotationItem[]
+  invoiceItems        InvoiceItem[]
+  requirementProducts RequirementProduct[]
+
+  @@map("products")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 9: RequirementProduct (Many-to-Many join)
+// ─────────────────────────────────────────────
+model RequirementProduct {
+  id            String   @id @default(cuid())
+  requirementId String
+  productId     String
+  quantity      Int      @default(1)
+  notes         String?
+
+  requirement   Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  product       Product     @relation(fields: [productId], references: [id])
+
+  @@unique([requirementId, productId])
+  @@map("requirement_products")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 10: Task
+// ─────────────────────────────────────────────
+model Task {
+  id           String       @id @default(cuid())
+  leadId       String?
+  assigneeId   String
+  createdById  String
+  title        String
+  description  String?
+  status       TaskStatus   @default(PENDING)
+  priority     TaskPriority @default(MEDIUM)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  reminderAt   DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  lead         Lead?  @relation(fields: [leadId], references: [id])
+  assignee     User   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdBy    User   @relation("TaskCreatedBy", fields: [createdById], references: [id])
+
+  @@index([assigneeId])
+  @@index([status])
+  @@map("tasks")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 11: FollowUp
+// ─────────────────────────────────────────────
+model FollowUp {
+  id              String         @id @default(cuid())
+  leadId          String
+  assigneeId      String
+  createdById     String
+  type            FollowUpType   @default(CALL)
+  status          FollowUpStatus @default(SCHEDULED)
+  scheduledAt     DateTime
+  completedAt     DateTime?
+  notes           String?
+  outcome         String?
+  nextFollowUpAt  DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  lead            Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignee        User  @relation("FollowUpAssignee", fields: [assigneeId], references: [id])
+  createdBy       User  @relation("FollowUpCreatedBy", fields: [createdById], references: [id])
+
+  @@index([leadId])
+  @@index([scheduledAt])
+  @@map("follow_ups")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 12: Quotation
+// ─────────────────────────────────────────────
+model Quotation {
+  id              String          @id @default(cuid())
+  quotationNumber String          @unique
+  leadId          String?
+  customerId      String?
+  createdById     String
+
+  status          QuotationStatus @default(DRAFT)
+  validUntil      DateTime?
+  notes           String?
+  termsConditions String?
+
+  // Pricing
+  subtotal        Decimal         @default(0) @db.Decimal(12, 2)
+  discountAmount  Decimal         @default(0) @db.Decimal(12, 2)
+  taxAmount       Decimal         @default(0) @db.Decimal(12, 2)
+  totalAmount     Decimal         @default(0) @db.Decimal(12, 2)
+
+  sentAt          DateTime?
+  acceptedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  lead            Lead?           @relation(fields: [leadId], references: [id])
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  items           QuotationItem[]
+  invoices        Invoice[]
+  documents       Document[]
+
+  @@index([leadId])
+  @@map("quotations")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 13: QuotationItem
+// ─────────────────────────────────────────────
+model QuotationItem {
+  id            String    @id @default(cuid())
+  quotationId   String
+  productId     String?
+  description   String
+  quantity      Decimal   @db.Decimal(10, 3)
+  unit          String    @default("unit")
+  unitPrice     Decimal   @db.Decimal(12, 2)
+  discountPct   Decimal   @default(0) @db.Decimal(5, 2)
+  taxRate       Decimal   @default(18) @db.Decimal(5, 2)
+  taxAmount     Decimal   @default(0) @db.Decimal(12, 2)
+  totalAmount   Decimal   @db.Decimal(12, 2)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  quotation     Quotation  @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product       Product?   @relation(fields: [productId], references: [id])
+
+  @@map("quotation_items")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 14: Invoice
+// ─────────────────────────────────────────────
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  quotationId     String?
+  customerId      String
+  createdById     String
+
+  status          InvoiceStatus @default(DRAFT)
+  issueDate       DateTime      @default(now())
+  dueDate         DateTime?
+  notes           String?
+  termsConditions String?
+
+  // Pricing
+  subtotal        Decimal       @default(0) @db.Decimal(12, 2)
+  discountAmount  Decimal       @default(0) @db.Decimal(12, 2)
+  taxAmount       Decimal       @default(0) @db.Decimal(12, 2)
+  totalAmount     Decimal       @default(0) @db.Decimal(12, 2)
+  paidAmount      Decimal       @default(0) @db.Decimal(12, 2)
+  balanceAmount   Decimal       @default(0) @db.Decimal(12, 2)
+
+  paidAt          DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  quotation       Quotation?    @relation(fields: [quotationId], references: [id])
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  createdBy       User          @relation(fields: [createdById], references: [id])
+  items           InvoiceItem[]
+  payments        Payment[]
+  documents       Document[]
+
+  @@index([customerId])
+  @@map("invoices")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 15: InvoiceItem
+// ─────────────────────────────────────────────
+model InvoiceItem {
+  id            String    @id @default(cuid())
+  invoiceId     String
+  productId     String?
+  description   String
+  quantity      Decimal   @db.Decimal(10, 3)
+  unit          String    @default("unit")
+  unitPrice     Decimal   @db.Decimal(12, 2)
+  discountPct   Decimal   @default(0) @db.Decimal(5, 2)
+  taxRate       Decimal   @default(18) @db.Decimal(5, 2)
+  taxAmount     Decimal   @default(0) @db.Decimal(12, 2)
+  totalAmount   Decimal   @db.Decimal(12, 2)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product       Product?  @relation(fields: [productId], references: [id])
+
+  @@map("invoice_items")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 16: Payment
+// ─────────────────────────────────────────────
+model Payment {
+  id            String   @id @default(cuid())
+  invoiceId     String
+  amount        Decimal  @db.Decimal(12, 2)
+  method        String   // Cash, UPI, Bank Transfer, Cheque, etc.
+  referenceNo   String?
+  notes         String?
+  paidAt        DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 17: WhatsAppMessage
+// ─────────────────────────────────────────────
+model WhatsAppMessage {
+  id              String                   @id @default(cuid())
+  leadId          String?
+  customerId      String?
+  senderId        String?
+  waMessageId     String?                  @unique   // Meta's message ID
+  direction       WhatsAppMessageDirection
+  status          WhatsAppMessageStatus    @default(QUEUED)
+  fromPhone       String
+  toPhone         String
+  templateName    String?
+  body            String
+  mediaUrl        String?
+  mediaType       String?                  // image, video, document, audio
+  errorCode       String?
+  errorMessage    String?
+  deliveredAt     DateTime?
+  readAt          DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  // Relations
+  lead            Lead?      @relation(fields: [leadId], references: [id])
+  customer        Customer?  @relation(fields: [customerId], references: [id])
+  sender          User?      @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([leadId])
+  @@index([toPhone])
+  @@map("whatsapp_messages")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 18: Activity (Audit / Timeline Log)
+// ─────────────────────────────────────────────
+model Activity {
+  id           String       @id @default(cuid())
+  leadId       String?
+  customerId   String?
+  performedById String
+  type         ActivityType
+  title        String
+  description  String?
+  metadata     Json?        // flexible key-value store for extra context
+  createdAt    DateTime     @default(now())
+
+  // Relations
+  lead         Lead?      @relation(fields: [leadId], references: [id])
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  performedBy  User       @relation(fields: [performedById], references: [id])
+
+  @@index([leadId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 19: Notification
+// ─────────────────────────────────────────────
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  body        String?
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+
+  // Relations
+  user        User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 20 (Bonus): Document
+// ─────────────────────────────────────────────
+model Document {
+  id           String       @id @default(cuid())
+  leadId       String?
+  customerId   String?
+  quotationId  String?
+  invoiceId    String?
+  type         DocumentType @default(OTHER)
+  fileName     String
+  fileUrl      String
+  mimeType     String?
+  sizeBytes    Int?
+  uploadedAt   DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  lead         Lead?      @relation(fields: [leadId], references: [id])
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  quotation    Quotation? @relation(fields: [quotationId], references: [id])
+  invoice      Invoice?   @relation(fields: [invoiceId], references: [id])
+
+  @@map("documents")
+}
