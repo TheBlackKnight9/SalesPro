@@ -1,0 +1,353 @@
+/* =============================================================================
+   SalesPro CRM — Global Stylesheet
+   src/app/globals.css
+   =============================================================================
+   Load order:
+     1. Tailwind base layer  (resets + sensible defaults)
+     2. Tailwind components  (reusable class patterns)
+     3. Tailwind utilities   (atomic utility classes)
+     4. CSS custom properties (design tokens for both themes)
+     5. Base element styles  (html, body, typography)
+     6. Utility / helper classes
+   ============================================================================= */
+
+/* ── 1-3. Tailwind Directives ─────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 4. Design Tokens (CSS Custom Properties) ─────────────────────────────── */
+@layer base {
+  /*
+   * LIGHT MODE tokens
+   * Components reference vars, never raw hex, so swapping themes is
+   * a single-point change.
+   */
+  :root {
+    /* ── Surfaces ─────────────────────────────── */
+    --color-bg-base:       #F9FAFB;
+    --color-bg-raised:     #ffffff;
+    --color-bg-overlay:    #f0f2f6;
+    --color-bg-subtle:     #E5E7EB;
+
+    /* ── Text ─────────────────────────────────── */
+    --color-text-primary:  #111928;
+    --color-text-secondary:#4e5872;
+    --color-text-muted:    #9aa3bb;
+    --color-text-inverse:  #f8f9fb;
+
+    /* ── Borders ──────────────────────────────── */
+    --color-border:        #E5E7EB;
+    --color-border-strong: #c8cfe0;
+
+    /* ── Brand / Interactive ──────────────────── */
+    --color-accent:        #1A56DB;
+    --color-accent-hover:  #1443b3;
+    --color-accent-subtle: #eef3fd;
+
+    --color-brand-blue:    #1A56DB;
+    --color-app-bg:        #F9FAFB;
+    --color-sidebar-border: #E5E7EB;
+
+    --color-success:       #0E9F6E;
+    --color-success-subtle:#e6faf4;
+
+    --color-danger:        #E02424;
+    --color-danger-subtle: #fef2f2;
+
+    --color-warning:       #D97706;
+    --color-warning-subtle:#fffbeb;
+
+    /* ── Sidebar (always dark) ────────────────── */
+    --color-sidebar-bg:    #111928;
+    --color-sidebar-text:  #c8cfe0;
+    --color-sidebar-hover: #162040;
+    --color-sidebar-active:#1A56DB;
+
+    /* ── Focus ring ───────────────────────────── */
+    --ring-color: rgba(26, 86, 219, 0.45);
+
+    /* ── Shadows ──────────────────────────────── */
+    --shadow-card:
+      0 1px 3px 0 rgba(17,25,40,0.08),
+      0 1px 2px -1px rgba(17,25,40,0.06);
+    --shadow-popover:
+      0 10px 38px -10px rgba(17,25,40,0.2),
+      0 10px 20px -15px rgba(17,25,40,0.12);
+
+    /* ── Typography ───────────────────────────── */
+    --font-display: "Sora", system-ui, sans-serif;
+    --font-body:    "DM Sans", system-ui, sans-serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+    /* ── Layout ───────────────────────────────── */
+    --sidebar-w-collapsed: 4.5rem;
+    --sidebar-w-expanded:  16rem;
+    --navbar-h:            3.75rem;
+    --content-max-w:       90rem;
+
+    /* ── Radii ────────────────────────────────── */
+    --radius-sm:  0.375rem;
+    --radius-md:  0.5rem;
+    --radius-lg:  0.75rem;
+    --radius-xl:  1rem;
+    --radius-base: 12px;
+
+    /* ── Transitions ──────────────────────────── */
+    --transition-base: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* DARK MODE — override only what changes */
+  .dark {
+    /* ── Surfaces ─────────────────────────────── */
+    --color-bg-base:       #0d1119;   /* deepest canvas  */
+    --color-bg-raised:     #111928;   /* primary — cards */
+    --color-bg-overlay:    #161c28;   /* sidebar panels  */
+    --color-bg-subtle:     #222838;   /* table stripes   */
+
+    /* ── Text ─────────────────────────────────── */
+    --color-text-primary:  #f0f2f6;
+    --color-text-secondary:#9aa3bb;
+    --color-text-muted:    #6b7694;
+    --color-text-inverse:  #111928;
+
+    /* ── Borders ──────────────────────────────── */
+    --color-border:        #222838;
+    --color-border-strong: #363e55;
+
+    /* ── Brand subtle backgrounds ─────────────── */
+    --color-accent-subtle: #071549;
+    --color-success-subtle:#02311f;
+    --color-danger-subtle: #450a0a;
+    --color-warning-subtle:#451a03;
+
+    /* ── Heavier shadows on dark bg ───────────── */
+    --shadow-card:
+      0 1px 3px 0 rgba(0,0,0,0.5),
+      0 1px 2px -1px rgba(0,0,0,0.4);
+    --shadow-popover:
+      0 10px 38px -10px rgba(0,0,0,0.6),
+      0 10px 20px -15px rgba(0,0,0,0.45);
+  }
+}
+
+/* ── 5. Base Element Styles ───────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px;
+  }
+
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color var(--transition-slow),
+      color var(--transition-base);
+    min-height: 100dvh;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+    letter-spacing: -0.015em;
+  }
+  h1 { font-size: clamp(1.75rem, 3vw, 2.5rem);  }
+  h2 { font-size: clamp(1.375rem, 2.5vw, 2rem); }
+  h3 { font-size: clamp(1.125rem, 2vw, 1.5rem); }
+  h4 { font-size: 1.125rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.875rem; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Links */
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: opacity var(--transition-base);
+  }
+  a:hover { opacity: 0.85; }
+  a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Global focus ring */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Form elements */
+  input, textarea, select {
+    background-color: var(--color-bg-raised);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--color-text-muted);
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--ring-color);
+    outline: none;
+  }
+
+  /* Code */
+  code, pre { font-family: var(--font-mono); font-size: 0.875em; }
+  code {
+    background-color: var(--color-bg-subtle);
+    padding: 0.125em 0.375em;
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+  }
+
+  /* Webkit scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(26, 86, 219, 0.25);
+    color: var(--color-text-primary);
+  }
+
+  /* Dividers */
+  hr { border: 0; border-top: 1px solid var(--color-border); }
+}
+
+/* ── 6. Component Utility Classes ─────────────────────────────────────────── */
+@layer components {
+
+  /* Layout shells */
+  .crm-shell {
+    @apply flex min-h-screen w-full;
+    background-color: var(--color-app-bg);
+  }
+  .crm-main  { @apply flex-1 flex flex-col overflow-hidden; }
+  .crm-page  { @apply flex-1 overflow-y-auto p-6; }
+
+  .lurid-card {
+    @apply rounded-base border border-sidebar-border bg-white shadow-card-shadow;
+  }
+
+  .lurid-surface {
+    background-color: var(--color-app-bg);
+  }
+
+  .lurid-topbar {
+    background-color: var(--color-brand-blue);
+  }
+
+  /* Cards */
+  .card {
+    background-color: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
+    transition: box-shadow var(--transition-base);
+  }
+  .card:hover { box-shadow: var(--shadow-popover); }
+  .stat-card  { @apply card flex flex-col gap-3; }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+           rounded-lg text-sm font-medium transition-all duration-150
+           cursor-pointer select-none
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn text-white;
+    background-color: var(--color-accent);
+  }
+  .btn-primary:hover { background-color: var(--color-accent-hover); }
+
+  .btn-secondary {
+    @apply btn;
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+  .btn-secondary:hover { background-color: var(--color-border); }
+
+  .btn-ghost {
+    @apply btn;
+    color: var(--color-text-secondary);
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-primary);
+  }
+
+  .btn-danger {
+    @apply btn text-white;
+    background-color: var(--color-danger);
+  }
+  .btn-danger:hover { filter: brightness(0.9); }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5
+           text-xs font-medium rounded-full;
+  }
+  .badge-accent   { @apply badge; background-color:var(--color-accent-subtle);  color:var(--color-accent);  }
+  .badge-success  { @apply badge; background-color:var(--color-success-subtle); color:var(--color-success); }
+  .badge-danger   { @apply badge; background-color:var(--color-danger-subtle);  color:var(--color-danger);  }
+  .badge-warning  { @apply badge; background-color:var(--color-warning-subtle); color:var(--color-warning); }
+
+  /* Role chips */
+  .role-chip             { @apply badge font-semibold tracking-widest uppercase; }
+  .role-chip-super-admin { @apply badge-danger;  }
+  .role-chip-manager     { @apply badge-accent;  }
+  .role-chip-agent       { @apply badge-success; }
+
+  /* Form fields */
+  .field        { @apply flex flex-col gap-1.5; }
+  .field-label  { @apply text-sm font-medium; color: var(--color-text-secondary); }
+  .field-input  { @apply w-full px-3 py-2 text-sm; }
+  .field-hint   { @apply text-xs; color: var(--color-text-muted);  }
+  .field-error  { @apply text-xs; color: var(--color-danger);      }
+
+  /* Data table */
+  .data-table { @apply w-full text-sm border-collapse; }
+  .data-table thead tr { border-bottom: 2px solid var(--color-border); }
+  .data-table th { @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider; color: var(--color-text-muted); }
+  .data-table td { @apply px-4 py-3; border-bottom: 1px solid var(--color-border); }
+  .data-table tbody tr { transition: background-color var(--transition-base); }
+  .data-table tbody tr:hover { background-color: var(--color-bg-overlay); }
+
+  /* Skeleton loader */
+  .skeleton { @apply rounded-md animate-pulse; background-color: var(--color-bg-subtle); }
+
+  /* Divider */
+  .divider { @apply flex items-center gap-3 my-4; }
+  .divider::before, .divider::after { content:""; @apply flex-1 h-px; background: var(--color-border); }
+  .divider span { @apply text-xs; color: var(--color-text-muted); }
+
+  /* Empty state */
+  .empty-state { @apply flex flex-col items-center justify-center gap-3 py-16 text-center; color: var(--color-text-muted); }
+  .empty-state-icon { @apply w-12 h-12 opacity-40; }
+}
