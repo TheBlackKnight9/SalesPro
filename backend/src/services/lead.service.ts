@@ -18,33 +18,39 @@ export class LeadService {
     const agentId = createdBy.role === "AGENT" ? createdBy.userId : dto.agentId;
     
     // Office Linkage: Default to creator's office if not specified
-    const officeId = dto.officeId || createdBy.officeId;
+    let officeId = dto.officeId || createdBy.officeId;
+
+    if (!officeId && createdBy.role === "SUPER_ADMIN") {
+      const firstOffice = await prisma.office.findFirst();
+      if (firstOffice) officeId = firstOffice.id;
+    }
+
     if (!officeId) {
       throw new AppError("Office assignment is required for creating a lead.", 400);
     }
 
     const lead = await prisma.lead.create({
       data: {
-        officeId: officeId as string, // Ensure we have an officeId
+        officeId: officeId as string,
         createdById: createdBy.userId,
-        managerId: dto.managerId,
-        agentId: agentId,
+        managerId: dto.managerId || null,
+        agentId: agentId || null,
         firstName: dto.firstName,
-        lastName: dto.lastName,
-        email: dto.email,
+        lastName: dto.lastName || null,
+        email: dto.email || null,
         phone: dto.phone,
-        alternatePhone: dto.alternatePhone,
-        company: dto.company,
-        designation: dto.designation,
-        source: dto.source,
-        status: dto.status ?? "NEW",
-        priority: dto.priority ?? "MEDIUM",
-        tags: dto.tags ?? [],
-        notes: dto.notes,
-        budget: dto.budget,
+        alternatePhone: dto.alternatePhone || null,
+        company: dto.company || null,
+        designation: dto.designation || null,
+        source: dto.source || "OTHER",
+        status: dto.status || "NEW",
+        priority: dto.priority || "MEDIUM",
+        tags: dto.tags || [],
+        notes: dto.notes || null,
+        budget: dto.budget || null,
         expectedClosing: dto.expectedClosing
           ? new Date(dto.expectedClosing)
-          : undefined,
+          : null,
       },
     });
 

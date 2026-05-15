@@ -127,7 +127,7 @@ export default function LeadsPage() {
       setIsModalOpen(false);
       setNewLead({ firstName: "", phone: "", email: "", source: "WEBSITE", company: "" });
       fetchLeads();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create lead:", error);
     } finally {
       setIsSubmitting(false);
