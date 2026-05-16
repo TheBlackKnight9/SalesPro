@@ -15,7 +15,10 @@ import {
   TrendingUp,
   Users,
   UserPlus,
+  UserCircle,
 } from "lucide-react";
+import AddCustomerSlideOver from "@/components/customers/AddCustomerSlideOver";
+import AddLeadModal from "@/components/leads/AddLeadModal";
 import {
   Bar,
   BarChart,
@@ -521,6 +524,8 @@ export default function DashboardPage() {
   const role: UserRole = (user?.role as UserRole) ?? "AGENT";
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<DashboardDataState>(defaultData);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -704,12 +709,23 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+          <Button 
+            size="sm" 
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setIsAddLeadOpen(true)}
+          >
             Add Lead
           </Button>
-          <Button size="sm" variant="secondary" leftIcon={<UserPlus className="h-4 w-4" />}>
-            Add Customer
-          </Button>
+          {(role === "SUPER_ADMIN" || role === "MANAGER") && (
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              leftIcon={<UserPlus className="h-4 w-4" />}
+              onClick={() => setIsAddCustomerOpen(true)}
+            >
+              Add Customer
+            </Button>
+          )}
           <Button size="sm" variant="secondary" leftIcon={<CheckSquare className="h-4 w-4" />}>
             New Task
           </Button>
@@ -722,6 +738,22 @@ export default function DashboardPage() {
       {role === "SUPER_ADMIN" && <AdminDashboard data={data} />}
       {role === "MANAGER" && <ManagerDashboard data={data} />}
       {role === "AGENT" && <AgentDashboard data={data} />}
+
+      <AddCustomerSlideOver 
+        isOpen={isAddCustomerOpen} 
+        onClose={() => setIsAddCustomerOpen(false)} 
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
+      
+      <AddLeadModal
+        isOpen={isAddLeadOpen}
+        onClose={() => setIsAddLeadOpen(false)}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

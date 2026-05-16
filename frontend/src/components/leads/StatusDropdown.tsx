@@ -9,7 +9,6 @@ export const STATUS_OPTIONS = [
   { value: "NEW", label: "New", color: "bg-blue-100 text-blue-800" },
   { value: "CONTACTED", label: "Contacted", color: "bg-yellow-100 text-yellow-800" },
   { value: "QUALIFIED", label: "Qualified", color: "bg-purple-100 text-purple-800" },
-  { value: "WON", label: "Converted", color: "bg-green-100 text-green-800" },
   { value: "LOST", label: "Lost", color: "bg-red-100 text-red-800" },
 ];
 
@@ -26,12 +25,7 @@ export default function StatusDropdown({ leadId, currentStatus, onStatusChange, 
   const handleStatusUpdate = async (newStatus: string) => {
     if (newStatus === currentStatus) return;
     try {
-      if (newStatus === "WON") {
-        if (!window.confirm("Convert this lead to a customer? This will move it to the Customers list.")) return;
-        await apiClient.post(`/leads/${leadId}/convert`);
-      } else {
-        await apiClient.patch(`/leads/${leadId}/status`, { status: newStatus });
-      }
+      await apiClient.patch(`/leads/${leadId}/status`, { status: newStatus });
       onStatusChange?.(newStatus);
     } catch (error) {
       console.error("Failed to update status:", error);

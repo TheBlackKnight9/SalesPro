@@ -233,8 +233,13 @@ api.interceptors.response.use(
 
 export const apiClient = {
   /** GET /endpoint → T */
-  async get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await api.get<ApiResponse<T>>(url, { params });
+  /** GET /endpoint → T */
+  async get<T>(url: string, params?: any): Promise<T> {
+    // Standardise request: if it looks like axios config, use it, else treat as params
+    const config = (params?.params || params?.responseType) ? params : { params };
+    const response = await api.get<ApiResponse<T>>(url, config);
+    
+    if (config.responseType === "blob") return response.data as any;
     return response.data.data as T;
   },
 

@@ -1,4 +1,5 @@
 import prisma from "../config/prisma";
+import { Prisma } from "@prisma/client";
 import { AppError, PaginationMeta } from "../types/shared.types";
 import {
   CreateLeadDto,
@@ -86,29 +87,44 @@ export class LeadService {
   ): Promise<{ data: object[]; meta: PaginationMeta }> {
     const { page = 1, limit = 20, search, sortBy = "createdAt", sortOrder = "desc" } = query;
     const skip = (page - 1) * limit;
+    console.log("Current User (Leads):", currentUser);
 
-    // STRICT RBAC: Agents can ONLY see leads explicitly assigned to them
-    const agentFilter =
-      currentUser.role === "AGENT" ? { agentId: currentUser.userId } : {};
-
-    const where = {
-      ...agentFilter,
-      isConverted: false, // Don't show converted leads in main leads list
-      ...(query.officeId && { officeId: query.officeId }),
-      ...(query.agentId && currentUser.role !== "AGENT" && { agentId: query.agentId }),
-      ...(query.managerId && { managerId: query.managerId }),
-      ...(query.status && { status: query.status }),
-      ...(query.source && { source: query.source }),
-      ...(search && {
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" as const } },
-          { lastName: { contains: search, mode: "insensitive" as const } },
-          { phone: { contains: search, mode: "insensitive" as const } },
-          { email: { contains: search, mode: "insensitive" as const } },
-          { company: { contains: search, mode: "insensitive" as const } },
-        ],
-      }),
+    const where: any = {
+      isConverted: false,
     };
+
+    // STRICT RBAC LOGIC: Super Admin Bypass
+    if (currentUser.role === "SUPER_ADMIN") {
+      console.log("[LeadService] SUPER_ADMIN detected - No RBAC filters applied.");
+    } else if (currentUser.role === "MANAGER") {
+      // Manager: Filter by officeId
+      if (!currentUser.officeId) {
+        console.warn("[LeadService] MANAGER has no officeId assigned - returning empty.");
+        return { data: [], meta: { total: 0, page, limit, totalPages: 0 } };
+      }
+      where.officeId = currentUser.officeId;
+    } else if (currentUser.role === "AGENT") {
+      // Agent: Filter by assigned agentId
+      where.agentId = currentUser.userId;
+    }
+
+    console.log("[LeadService] Final Where Clause:", JSON.stringify(where, null, 2));
+
+    // Apply additional filters from query if they don't violate RBAC
+    if (query.officeId && currentUser.role === "SUPER_ADMIN") {
+      where.officeId = query.officeId;
+    }
+    if (query.status) where.status = query.status;
+    if (query.source) where.source = query.source;
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" as const } },
+        { lastName: { contains: search, mode: "insensitive" as const } },
+        { phone: { contains: search, mode: "insensitive" as const } },
+        { email: { contains: search, mode: "insensitive" as const } },
+        { company: { contains: search, mode: "insensitive" as const } },
+      ];
+    }
 
     const [leads, total] = await Promise.all([
       prisma.lead.findMany({
@@ -208,41 +224,52 @@ export class LeadService {
   async update(id: string, dto: UpdateLeadDto, currentUser: JwtPayload) {
     const lead = await this.findById(id, currentUser);
 
-    const updated = await prisma.lead.update({
-      where: { id: lead.id },
-      data: {
-        ...(dto.firstName && { firstName: dto.firstName }),
-        ...(dto.lastName !== undefined && { lastName: dto.lastName }),
-        ...(dto.email !== undefined && { email: dto.email }),
-        ...(dto.phone && { phone: dto.phone }),
-        ...(dto.alternatePhone !== undefined && { alternatePhone: dto.alternatePhone }),
-        ...(dto.company !== undefined && { company: dto.company }),
-        ...(dto.designation !== undefined && { designation: dto.designation }),
-        ...(dto.source && { source: dto.source }),
-        ...(dto.priority && { priority: dto.priority }),
-        ...(dto.tags && { tags: dto.tags }),
-        ...(dto.notes !== undefined && { notes: dto.notes }),
-        ...(dto.budget !== undefined && { budget: dto.budget }),
-        ...(dto.expectedClosing && {
-          expectedClosing: new Date(dto.expectedClosing),
-        }),
-        ...(dto.managerId !== undefined && { managerId: dto.managerId }),
-        ...(dto.agentId !== undefined && { agentId: dto.agentId }),
-      },
-    });
+    return await prisma.$transaction(async (tx) => {
+      const updated = await tx.lead.update({
+        where: { id: lead.id },
+        data: {
+          ...(dto.firstName && { firstName: dto.firstName }),
+          ...(dto.lastName !== undefined && { lastName: dto.lastName }),
+          ...(dto.email !== undefined && { email: dto.email }),
+          ...(dto.phone && { phone: dto.phone }),
+          ...(dto.alternatePhone !== undefined && { alternatePhone: dto.alternatePhone }),
+          ...(dto.company !== undefined && { company: dto.company }),
+          ...(dto.designation !== undefined && { designation: dto.designation }),
+          ...(dto.source && { source: dto.source }),
+          ...(dto.priority && { priority: dto.priority }),
+          ...(dto.tags && { tags: dto.tags }),
+          ...(dto.notes !== undefined && { notes: dto.notes }),
+          ...(dto.budget !== undefined && { budget: dto.budget }),
+          ...(dto.expectedClosing && {
+            expectedClosing: new Date(dto.expectedClosing),
+          }),
+          ...(dto.managerId !== undefined && { managerId: dto.managerId }),
+          ...(dto.agentId !== undefined && { agentId: dto.agentId }),
+        },
+      });
 
-    await prisma.activity.create({
-      data: {
-        leadId: id,
-        performedById: currentUser.userId,
-        type: ActivityType.LEAD_UPDATED,
-        title: "Lead Updated",
-        description: "Lead details were updated.",
-        metadata: dto as object,
-      },
-    });
+      // Determine activity title and description
+      let title = "Lead Updated";
+      let description = "Lead details were updated.";
 
-    return updated;
+      if (dto.priority && dto.priority !== lead.priority) {
+        title = "Priority Changed";
+        description = `Priority changed to ${dto.priority}`;
+      }
+
+      await tx.activity.create({
+        data: {
+          leadId: id,
+          performedById: currentUser.userId,
+          type: ActivityType.LEAD_UPDATED,
+          title,
+          description,
+          metadata: dto as object,
+        },
+      });
+
+      return updated;
+    });
   }
 
   // ── Change Lead Status ─────────────────────
@@ -390,23 +417,55 @@ export class LeadService {
   }
 
   // ── Convert Lead to Customer ────────────────
-  async convertToCustomer(id: string, currentUser: JwtPayload) {
+  async convertToCustomer(id: string, currentUser: JwtPayload, conversionNote?: string, quotationId?: string) {
     const lead = await this.findById(id, currentUser);
 
     if (lead.isConverted) {
       throw new AppError("Lead is already converted to a customer.", 400);
     }
 
-    const [updatedLead, customer] = await prisma.$transaction([
-      prisma.lead.update({
-        where: { id },
-        data: {
-          isConverted: true,
-          convertedAt: new Date(),
-          status: "WON", // Optional: automatically move to WON status
-        },
-      }),
-      prisma.customer.create({
+    // FLEXIBLE GUARD: Require either quotationId OR conversionNote
+    if (!quotationId && (!conversionNote || conversionNote.trim().length === 0)) {
+      throw new AppError("Provide either a quotation or a conversion note to proceed.", 400);
+    }
+
+    let targetQuotation = null;
+    if (quotationId) {
+      targetQuotation = await prisma.quotation.findUnique({
+        where: { id: quotationId }
+      });
+
+      if (!targetQuotation || targetQuotation.leadId !== id) {
+        throw new AppError("The selected quotation is invalid or does not belong to this lead.", 400);
+      }
+
+      if (targetQuotation.status === "REJECTED") {
+        throw new AppError("Cannot convert lead using a REJECTED quotation.", 400);
+      }
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      // Step 1: Update the Quotation status to ACCEPTED if provided
+      if (quotationId) {
+        await tx.quotation.update({
+          where: { id: quotationId },
+          data: { status: "ACCEPTED", acceptedAt: new Date() }
+        });
+      }
+
+      // Step 2: Calculate Revenue (Sum of all ACCEPTED quotations, including the one we just updated)
+      const allAcceptedQuotes = await tx.quotation.findMany({
+        where: { leadId: id, status: "ACCEPTED" }
+      });
+      
+      const totalRevenue = allAcceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount), 0);
+
+      // Step 3: Determine Conversion Note
+      const finalNote = conversionNote?.trim() || 
+        (targetQuotation ? `Converted via Quotation [${targetQuotation.quotationNumber}]` : "Converted manually.");
+
+      // Step 4: Create Customer
+      const customer = await tx.customer.create({
         data: {
           leadId: lead.id,
           officeId: lead.officeId,
@@ -418,29 +477,50 @@ export class LeadService {
           company: lead.company,
           designation: lead.designation,
           notes: lead.notes,
+          conversionNote: finalNote,
+          totalRevenue: new Prisma.Decimal(totalRevenue),
         },
-      }),
-      prisma.activity.create({
+      });
+
+      // Step 5: Link all ACCEPTED quotations to this new customer
+      await tx.quotation.updateMany({
+        where: { leadId: id, status: "ACCEPTED" },
+        data: { customerId: customer.id }
+      });
+
+      // Step 6: Update Lead
+      await tx.lead.update({
+        where: { id },
+        data: {
+          isConverted: true,
+          convertedAt: new Date(),
+          status: "WON", // Standard schema equivalent to CONVERTED
+        },
+      });
+
+      // Step 7: Activity Logs
+      await tx.activity.create({
         data: {
           leadId: id,
+          customerId: customer.id,
           performedById: currentUser.userId,
           type: ActivityType.LEAD_CONVERTED,
           title: "Lead Converted",
-          description: `Lead converted to customer.`,
+          description: `Lead converted to customer. Note: ${finalNote}`,
         },
-      }),
-      // Log status change to WON
-      prisma.leadStatusHistory.create({
+      });
+
+      await tx.leadStatusHistory.create({
         data: {
           leadId: id,
           changedById: currentUser.userId,
           fromStatus: lead.status,
           toStatus: "WON",
-          notes: "Auto-updated upon conversion to customer",
+          notes: finalNote,
         },
-      }),
-    ]);
+      });
 
-    return { lead: updatedLead, customer };
+      return { lead: id, customer: customer.id };
+    });
   }
 }

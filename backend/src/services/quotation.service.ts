@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+import { Prisma } from "@prisma/client";
 import prisma from "../config/prisma";
 import { AppError, JwtPayload, PaginationMeta } from "../types/shared.types";
 import { CreateQuotationDto, UpdateQuotationDto } from "../types/quotation.types";
@@ -40,24 +41,251 @@ export class QuotationService {
 
     const totalAmount = subtotal + taxAmount;
 
-    return prisma.quotation.create({
-      data: {
-        quotationNumber: qNumber,
-        leadId: dto.leadId,
-        customerId: dto.customerId,
-        createdById: currentUser.userId,
-        validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
-        notes: dto.notes,
-        termsConditions: dto.termsConditions,
-        subtotal,
-        taxAmount,
-        totalAmount,
-        items: {
-          create: itemsData,
+    return prisma.$transaction(async (tx) => {
+      const quotation = await tx.quotation.create({
+        data: {
+          quotationNumber: qNumber,
+          leadId: dto.leadId,
+          customerId: dto.customerId,
+          createdById: currentUser.userId,
+          validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
+          notes: dto.notes,
+          termsConditions: dto.termsConditions,
+          subtotal,
+          taxAmount,
+          totalAmount,
+          items: {
+            create: itemsData,
+          },
         },
-      },
-      include: { items: true },
+        include: { items: true },
+      });
+
+      // Business Logic: If this quotation is linked to a Lead, automatically upgrade that lead to "QUALIFIED"
+      if (dto.leadId) {
+        const lead = await tx.lead.findUnique({
+          where: { id: dto.leadId },
+          select: { status: true, isConverted: true }
+        });
+
+        // We only auto-qualify if the lead isn't already converted or lost
+        if (lead && !lead.isConverted && lead.status !== "WON" && lead.status !== "LOST") {
+          await tx.lead.update({
+            where: { id: dto.leadId },
+            data: { status: "QUALIFIED" }
+          });
+
+          // Add to activity timeline
+          await tx.activity.create({
+            data: {
+              leadId: dto.leadId,
+              performedById: currentUser.userId,
+              type: "LEAD_STATUS_CHANGED",
+              title: "Lead Qualified (Auto)",
+              description: `Lead automatically marked as QUALIFIED due to quotation generation [${qNumber}].`,
+            }
+          });
+        }
+      }
+
+      return quotation;
     });
+  }
+
+  // ── Get All Quotations (RBAC) ──────────────
+  async findAll(
+    query: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      officeId?: string;
+      status?: string;
+    },
+    currentUser: JwtPayload
+  ) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    // RBAC Filtering: Super Admin Bypass
+    if (currentUser.role === "SUPER_ADMIN") {
+      console.log("[QuotationService] SUPER_ADMIN detected - No RBAC filters applied.");
+      if (query.officeId) where.createdBy = { officeId: query.officeId };
+    } else if (currentUser.role === "AGENT") {
+      where.createdById = currentUser.userId;
+    } else if (currentUser.role === "MANAGER") {
+      if (!currentUser.officeId) {
+        console.warn("[QuotationService] MANAGER has no officeId assigned - returning empty.");
+        return { data: [], meta: { total: 0, page, limit, totalPages: 0 } };
+      }
+      where.createdBy = { officeId: currentUser.officeId };
+    }
+
+    if (query.status) where.status = query.status;
+    console.log("[QuotationService] Final Where Clause:", JSON.stringify(where, null, 2));
+    if (query.search) {
+      where.OR = [
+        { quotationNumber: { contains: query.search, mode: "insensitive" } },
+        { lead: { firstName: { contains: query.search, mode: "insensitive" } } },
+        { customer: { firstName: { contains: query.search, mode: "insensitive" } } },
+      ];
+    }
+
+    const [quotations, total] = await Promise.all([
+      prisma.quotation.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          lead: { select: { firstName: true, lastName: true, company: true } },
+          customer: { select: { firstName: true, lastName: true, company: true } },
+          createdBy: { select: { name: true } },
+        },
+      }),
+      prisma.quotation.count({ where }),
+    ]);
+
+    return {
+      data: quotations,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  // ── Update Quotation Status ──────────────────
+  async updateStatus(id: string, status: any, currentUser: JwtPayload) {
+    const quote = await this.findById(id);
+
+    // RBAC: Agents can only update their own quotes
+    if (currentUser.role === "AGENT" && quote.createdById !== currentUser.userId) {
+      throw new AppError("Access denied to this quotation.", 403);
+    }
+
+    try {
+      return await prisma.$transaction(async (tx) => {
+        console.log(`[QuotationService] Step A: Updating Quote ${id} to ${status}`);
+        // Step A: Update the Quotation status to ACCEPTED
+        const updated = await tx.quotation.update({
+          where: { id },
+          data: { 
+            status,
+            acceptedAt: status === "ACCEPTED" ? new Date() : undefined,
+          },
+        });
+
+        // Business Logic: If status changed to ACCEPTED, automatically trigger lead-to-customer conversion
+        // Only run this logic if the status is actually changing TO ACCEPTED
+        if (status === "ACCEPTED" && quote.status !== "ACCEPTED") {
+          console.log(`[QuotationService] Status changing to ACCEPTED for Quote ${id}`);
+          
+          if (quote.leadId) {
+            console.log(`[QuotationService] Processing Lead ${quote.leadId} for conversion`);
+            // Fetch associated Lead and check for existing customer
+            const lead = await tx.lead.findUnique({ 
+              where: { id: quote.leadId },
+              include: { customer: true }
+            });
+
+            if (lead) {
+              let customerId = lead.customer?.id;
+
+              if (!lead.customer) {
+                console.log(`[QuotationService] Creating new Customer for Lead ${lead.id}`);
+                
+                // Revenue Aggregation: Calculate total revenue from all ACCEPTED quotes for this lead
+                // Note: updated quote is already ACCEPTED in the DB at this point (Step A)
+                const acceptedQuotes = await tx.quotation.findMany({
+                  where: { leadId: lead.id, status: "ACCEPTED" }
+                });
+                const totalRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount), 0);
+
+                const customer = await tx.customer.create({
+                  data: {
+                    leadId: lead.id,
+                    officeId: lead.officeId,
+                    firstName: lead.firstName,
+                    lastName: lead.lastName,
+                    email: lead.email,
+                    phone: lead.phone,
+                    company: lead.company,
+                    designation: lead.designation,
+                    notes: lead.notes ? `${lead.notes}\n\n[Auto-Converted]: Quotation [${quote.quotationNumber}] accepted.` : `[Auto-Converted]: Quotation [${quote.quotationNumber}] accepted.`,
+                    totalRevenue: new Prisma.Decimal(totalRevenue),
+                  },
+                });
+                customerId = customer.id;
+
+                // Link all ACCEPTED quotations for this lead to the new Customer
+                await tx.quotation.updateMany({
+                  where: { leadId: lead.id, status: "ACCEPTED" },
+                  data: { customerId: customer.id }
+                });
+
+                // Set Lead status to WON and mark as converted
+                await tx.lead.update({
+                  where: { id: lead.id },
+                  data: { isConverted: true, convertedAt: new Date(), status: "WON" },
+                });
+
+                // Log activity
+                await tx.activity.create({
+                  data: {
+                    leadId: lead.id,
+                    customerId: customer.id,
+                    performedById: currentUser.userId,
+                    type: "LEAD_CONVERTED",
+                    title: "Lead Converted (Auto)",
+                    description: `Converted automatically via Quotation [${quote.quotationNumber}] acceptance.`,
+                  },
+                });
+              } else {
+                console.log(`[QuotationService] Customer already exists for Lead ${lead.id}. Updating revenue.`);
+                // Update existing customer revenue and link this quote
+                await tx.customer.update({
+                  where: { id: lead.customer.id },
+                  data: { 
+                    totalRevenue: { increment: Number(quote.totalAmount) }
+                  }
+                });
+                
+                await tx.quotation.update({
+                  where: { id },
+                  data: { customerId: lead.customer.id }
+                });
+              }
+            }
+          } else if (quote.customerId) {
+            console.log(`[QuotationService] Updating revenue for existing Customer ${quote.customerId}`);
+            await tx.customer.update({
+              where: { id: quote.customerId },
+              data: { 
+                totalRevenue: { increment: Number(quote.totalAmount) }
+              }
+            });
+          }
+        }
+
+        return updated;
+      });
+    } catch (err: any) {
+      console.error("[QuotationService] Status Update Error:", err);
+      // Log to a scratch file for debugging
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const logPath = path.join('c:\\Internship\\setu CRM\\backend\\scratch', 'error_log.txt');
+        const timestamp = new Date().toISOString();
+        const logMessage = `[${timestamp}] Quotation ${id} Update Error: ${err.message}\nStack: ${err.stack}\n\n`;
+        fs.appendFileSync(logPath, logMessage);
+      } catch (logErr) {
+        console.error("Failed to log to scratch file", logErr);
+      }
+      
+      if (err instanceof AppError) throw err;
+      throw new AppError(err.message || "An error occurred during status update.", 500);
+    }
   }
 
   // ── Get Single Quotation ────────────────────
@@ -66,7 +294,20 @@ export class QuotationService {
       where: { id },
       include: {
         items: { orderBy: { sortOrder: "asc" } },
-        lead: { select: { firstName: true, lastName: true, company: true, email: true, phone: true } },
+        lead: { 
+          select: { 
+            id: true,
+            officeId: true,
+            firstName: true, 
+            lastName: true, 
+            company: true, 
+            email: true, 
+            phone: true,
+            designation: true,
+            notes: true,
+            alternatePhone: true
+          } 
+        },
         customer: { select: { firstName: true, lastName: true, company: true, email: true, phone: true } },
         createdBy: { select: { name: true, email: true } },
       },

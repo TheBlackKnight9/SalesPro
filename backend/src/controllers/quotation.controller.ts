@@ -15,6 +15,24 @@ export class QuotationController {
     } catch (err) { next(err); }
   }
 
+  // GET /api/quotations
+  async findAll(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) throw new AppError("Not authenticated.", 401);
+
+      const query = {
+        page: parseInt(String(req.query.page)) || 1,
+        limit: parseInt(String(req.query.limit)) || 20,
+        search: req.query.search ? String(req.query.search) : undefined,
+        officeId: req.query.officeId ? String(req.query.officeId) : undefined,
+        status: req.query.status ? String(req.query.status) : undefined,
+      };
+
+      const result = await quotationService.findAll(query, req.user);
+      res.status(200).json({ success: true, message: "Quotations fetched.", ...result });
+    } catch (err) { next(err); }
+  }
+
   // GET /api/quotations/:id
   async findById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -23,6 +41,20 @@ export class QuotationController {
       const id = String(req.params.id);
       const quote = await quotationService.findById(id);
       res.status(200).json({ success: true, message: "Quotation fetched.", data: quote });
+    } catch (err) { next(err); }
+  }
+
+  // PATCH /api/quotations/:id/status
+  async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) throw new AppError("Not authenticated.", 401);
+      
+      const id = String(req.params.id);
+      const { status } = req.body;
+      if (!status) throw new AppError("Status is required.", 400);
+
+      const quote = await quotationService.updateStatus(id, status, req.user);
+      res.status(200).json({ success: true, message: "Quotation status updated.", data: quote });
     } catch (err) { next(err); }
   }
 

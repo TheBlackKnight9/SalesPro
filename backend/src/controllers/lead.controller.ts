@@ -23,6 +23,7 @@ export class LeadController {
   // GET /api/leads
   async findAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      console.log("Current User (Leads Controller):", req.user);
       if (!req.user) throw new AppError("Not authenticated.", 401);
 
       const query = {
@@ -124,7 +125,8 @@ export class LeadController {
     try {
       if (!req.user) throw new AppError("Not authenticated.", 401);
       const id = String(req.params.id);
-      const result = await leadService.convertToCustomer(id, req.user);
+      const { conversionNote, quotationId } = req.body;
+      const result = await leadService.convertToCustomer(id, req.user, conversionNote, quotationId);
       res.status(200).json({ success: true, message: "Lead converted to customer.", data: result });
     } catch (err) { next(err); }
   }

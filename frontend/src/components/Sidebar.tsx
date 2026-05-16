@@ -39,11 +39,11 @@ export default function Sidebar() {
   );
 
   return (
-    <aside className="flex h-screen w-[156px] flex-col border-r border-sidebar-border bg-white text-sm text-gray-600">
-      <div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-6">
+    <aside className="flex h-screen w-[156px] flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 transition-colors duration-300">
+      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-slate-800 px-6">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-400">SalesPro</p>
-          <p className="text-base font-semibold leading-tight text-gray-900">CRM</p>
+          <p className="text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">CRM</p>
         </div>
       </div>
 
@@ -58,12 +58,12 @@ export default function Sidebar() {
                 className={`group flex items-center rounded-base px-3 py-2 text-sm font-medium leading-tight transition-colors ${
                   isActive
                     ? "bg-brand-blue/10 text-brand-blue"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    : "text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
                 }`}
               >
                 <item.icon
                   className={`mr-2.5 h-4 w-4 flex-shrink-0 ${
-                    isActive ? "text-brand-blue" : "text-gray-400 group-hover:text-gray-600"
+                    isActive ? "text-brand-blue" : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-slate-300"
                   }`}
                   aria-hidden="true"
                 />
@@ -75,19 +75,19 @@ export default function Sidebar() {
       </div>
 
       {canViewAdminModules && (
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-gray-200 dark:border-slate-800 p-4">
           <Link
             href="/dashboard/settings"
             className={`group flex w-full items-center rounded-base px-3 py-2 text-sm font-medium leading-tight transition-colors ${
               pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
                 ? "bg-brand-blue/10 text-brand-blue"
-                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                : "text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
             }`}
           >
             <Settings className={`mr-2.5 h-4 w-4 ${
               pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
                 ? "text-brand-blue"
-                : "text-gray-400 group-hover:text-gray-600"
+                : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-slate-300"
             }`} />
             Settings
           </Link>

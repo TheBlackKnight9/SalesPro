@@ -8,6 +8,7 @@ import { apiClient } from "@/lib/api";
 import { useUser, useUserRole } from "@/store/useAuthStore";
 import { useDebounce } from "@/hooks/useDebounce";
 import StatusDropdown from "@/components/leads/StatusDropdown";
+import ConvertLeadModal from "@/components/leads/ConvertLeadModal";
 
 interface Lead {
   id: string;
@@ -49,6 +50,8 @@ export default function LeadsPage() {
   // Modal & Sidebar states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [selectedLeadForConversion, setSelectedLeadForConversion] = useState<Lead | null>(null);
   const [newLead, setNewLead] = useState({ firstName: "", phone: "", email: "", source: "WEBSITE", company: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -171,7 +174,7 @@ export default function LeadsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input 
@@ -179,7 +182,7 @@ export default function LeadsPage() {
             placeholder="Search by name, phone, or email..." 
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-brand-blue focus:border-brand-blue transition-all"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white rounded-xl text-sm focus:ring-brand-blue focus:border-brand-blue transition-all"
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -206,22 +209,22 @@ export default function LeadsPage() {
 
       {/* Main Content View */}
       {view === "list" ? (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-50/50 border-b border-gray-200">
+              <thead className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Lead Information</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Lead Information</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Status</th>
                   {(role === "SUPER_ADMIN" || role === "MANAGER") && (
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned Agent</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Assigned Agent</th>
                   )}
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Created On</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Source</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Created On</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="text-center py-24">
@@ -245,11 +248,11 @@ export default function LeadsPage() {
                   </tr>
                 ) : (
                   leads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-gray-50/50 transition-colors group">
+                    <tr key={lead.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-gray-900">{lead.firstName} {lead.lastName || ''}</span>
-                          <div className="flex flex-col mt-0.5 text-xs text-gray-500">
+                          <span className="font-bold text-gray-900 dark:text-white">{lead.firstName} {lead.lastName || ''}</span>
+                          <div className="flex flex-col mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                             <span>{lead.phone}</span>
                             {lead.email && <span className="truncate max-w-[180px]">{lead.email}</span>}
                           </div>
@@ -273,7 +276,7 @@ export default function LeadsPage() {
                                   <User className="h-4 w-4" />
                                 )}
                               </div>
-                              <span className="text-sm font-semibold text-gray-700">{lead.agent.name}</span>
+                              <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">{lead.agent.name}</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2 text-gray-300">
@@ -291,19 +294,31 @@ export default function LeadsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-slate-400">
                           <Calendar className="h-3.5 w-3.5 opacity-50" />
                           <span>{new Date(lead.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-brand-blue hover:bg-brand-blue/5 border border-transparent hover:border-brand-blue/20 transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          Details
-                          <ExternalLink className="h-3 w-3" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => {
+                              setSelectedLeadForConversion(lead);
+                              setIsConvertModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-600 hover:text-white hover:bg-emerald-600 border border-emerald-100 dark:border-emerald-900/30 transition-all"
+                          >
+                            Convert
+                            <Check className="h-3 w-3" />
+                          </button>
+                          <button 
+                            onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-brand-blue hover:bg-brand-blue/5 border border-transparent hover:border-brand-blue/20 transition-all"
+                          >
+                            Details
+                            <ExternalLink className="h-3 w-3" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -499,6 +514,16 @@ export default function LeadsPage() {
           </div>
         </div>
       )}
+      <ConvertLeadModal 
+        isOpen={isConvertModalOpen}
+        onClose={() => setIsConvertModalOpen(false)}
+        leadId={selectedLeadForConversion?.id || ""}
+        leadName={selectedLeadForConversion ? `${selectedLeadForConversion.firstName} ${selectedLeadForConversion.lastName || ""}` : ""}
+        onSuccess={() => {
+          setIsConvertModalOpen(false);
+          fetchLeads();
+        }}
+      />
     </div>
   );
 }

@@ -26,6 +26,6 @@ router.post("/:id/tasks", taskCtrl.createTask.bind(taskCtrl));
 // Pipeline operations
 router.patch("/:id/status", ctrl.updateStatus.bind(ctrl));
 router.patch("/:id/assign", authorize("SUPER_ADMIN", "MANAGER"), ctrl.assign.bind(ctrl));
-router.post("/:id/convert", authorize("SUPER_ADMIN", "MANAGER"), ctrl.convert.bind(ctrl));
+router.post("/:id/convert", authorize("SUPER_ADMIN", "MANAGER", "AGENT"), ctrl.convert.bind(ctrl));
 
 export default router;

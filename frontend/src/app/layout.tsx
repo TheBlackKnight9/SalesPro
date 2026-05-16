@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: "SalesPro CRM with a unified LURID design system",
 };
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/components/ui/Toast";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,9 +30,19 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-app-bg text-sm leading-snug text-gray-600 antialiased">
-        <AppShell>{children}</AppShell>
+      <body className="min-h-full bg-gray-50 text-gray-900 antialiased dark:bg-slate-950 dark:text-gray-100">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ToastProvider>
+            <AppShell>{children}</AppShell>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

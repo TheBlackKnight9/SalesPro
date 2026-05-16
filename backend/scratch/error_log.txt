@@ -1,0 +1,95 @@
+[2026-05-16T06:17:14.344Z] Quotation cmp7y4qtl00002cvqghswzcpw Update Error: 
+Invalid `tx.customer.create()` invocation in
+C:\Internship\setu CRM\backend\src\services\quotation.service.ts:173:52
+
+  170 });
+  171 const totalRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount), 0);
+  172 
+→ 173 const customer = await tx.customer.create({
+        data: {
+          leadId: "cmp7xsc9j000h88vqn0c722sf",
+          officeId: "default-hq",
+          firstName: "V Kohli",
+          lastName: null,
+          email: "vk@rcb.in",
+          phone: "9959551623",
+          company: "rCB",
+          designation: null,
+          notes: null,
+          totalRevenue: new Prisma.Decimal("590"),
+          conversionNote: "Converted automatically via Quotation [QT-20260516-0011] acceptance.",
+          ~~~~~~~~~~~~~~
+      ?   id?: String,
+      ?   alternatePhone?: String | Null,
+      ?   address?: String | Null,
+      ?   city?: String | Null,
+      ?   state?: String | Null,
+      ?   pincode?: String | Null,
+      ?   gstNumber?: String | Null,
+      ?   panNumber?: String | Null,
+      ?   isActive?: Boolean,
+      ?   createdAt?: DateTime,
+      ?   updatedAt?: DateTime,
+      ?   requirements?: RequirementUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   quotations?: QuotationUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   activities?: ActivityUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   whatsappMessages?: WhatsAppMessageUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   documents?: DocumentUncheckedCreateNestedManyWithoutCustomerInput
+        }
+      })
+
+Unknown argument `conversionNote`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `tx.customer.create()` invocation in
+C:\Internship\setu CRM\backend\src\services\quotation.service.ts:173:52
+
+  170 });
+  171 const totalRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount), 0);
+  172 
+→ 173 const customer = await tx.customer.create({
+        data: {
+          leadId: "cmp7xsc9j000h88vqn0c722sf",
+          officeId: "default-hq",
+          firstName: "V Kohli",
+          lastName: null,
+          email: "vk@rcb.in",
+          phone: "9959551623",
+          company: "rCB",
+          designation: null,
+          notes: null,
+          totalRevenue: new Prisma.Decimal("590"),
+          conversionNote: "Converted automatically via Quotation [QT-20260516-0011] acceptance.",
+          ~~~~~~~~~~~~~~
+      ?   id?: String,
+      ?   alternatePhone?: String | Null,
+      ?   address?: String | Null,
+      ?   city?: String | Null,
+      ?   state?: String | Null,
+      ?   pincode?: String | Null,
+      ?   gstNumber?: String | Null,
+      ?   panNumber?: String | Null,
+      ?   isActive?: Boolean,
+      ?   createdAt?: DateTime,
+      ?   updatedAt?: DateTime,
+      ?   requirements?: RequirementUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   quotations?: QuotationUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   activities?: ActivityUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   whatsappMessages?: WhatsAppMessageUncheckedCreateNestedManyWithoutCustomerInput,
+      ?   documents?: DocumentUncheckedCreateNestedManyWithoutCustomerInput
+        }
+      })
+
+Unknown argument `conversionNote`. Available options are marked with ?.
+    at throwValidationException (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\core\errorRendering\throwValidationException.ts:46:9)
+    at zr.handleRequestError (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:211:7)
+    at zr.handleAndLogRequestError (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:183:12)
+    at zr.request (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:152:12)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:963:24)
+    at async C:\Internship\setu CRM\backend\src\services\quotation.service.ts:173:34
+    at async Proxy._transactionWithCallback (C:\Internship\setu CRM\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:810:18)
+    at async QuotationService.updateStatus (C:\Internship\setu CRM\backend\src\services\quotation.service.ts:136:14)
+    at async QuotationController.updateStatus (C:\Internship\setu CRM\backend\src\controllers\quotation.controller.ts:56:21)
+

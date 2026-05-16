@@ -324,6 +324,7 @@ model Customer {
   // CRM Meta
   totalRevenue    Decimal  @default(0) @db.Decimal(12, 2)
   notes           String?
+  conversionNote  String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

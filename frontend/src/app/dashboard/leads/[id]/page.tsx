@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "@/lib/api";
 import StatusDropdown from "@/components/leads/StatusDropdown";
+import CreateQuotationModal from "@/components/quotations/CreateQuotationModal";
 
 interface Activity {
   id: string;
@@ -62,6 +63,9 @@ export default function LeadDetailPage() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", dueDate: "" });
   const [isTaskSubmitting, setIsTaskSubmitting] = useState(false);
+
+  // Quotation Modal state
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
   const fetchLeadDetails = async () => {
     try {
@@ -116,6 +120,24 @@ export default function LeadDetailPage() {
     }
   };
 
+  const handlePriorityChange = async (newPriority: string) => {
+    if (!lead) return;
+    
+    // Optimistic update
+    const oldPriority = lead.priority;
+    setLead({ ...lead, priority: newPriority });
+
+    try {
+      await apiClient.put(`/leads/${id}`, { priority: newPriority });
+      // Silent update - refresh timeline to show the change
+      fetchLeadDetails();
+    } catch (error) {
+      console.error("Failed to update priority:", error);
+      // Revert on error
+      setLead({ ...lead, priority: oldPriority });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -165,7 +187,12 @@ export default function LeadDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <button className="btn btn-secondary shadow-sm">Edit Profile</button>
-          <button className="btn btn-primary shadow-lg shadow-brand-blue/20">Generate Quotation</button>
+          <button 
+            onClick={() => setIsQuoteModalOpen(true)}
+            className="btn btn-primary shadow-lg shadow-brand-blue/20"
+          >
+            Generate Quotation
+          </button>
         </div>
       </div>
 
@@ -213,11 +240,28 @@ export default function LeadDetailPage() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] text-gray-400 font-bold uppercase">Priority</span>
-                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                      lead.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {lead.priority}
-                    </span>
+                    <div className="relative group">
+                      <select
+                        value={lead.priority}
+                        onChange={(e) => handlePriorityChange(e.target.value)}
+                        className={`block w-full px-2 py-1 rounded text-[10px] font-extrabold border-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all ${
+                          lead.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 
+                          lead.priority === 'URGENT' ? 'bg-rose-600 text-white' :
+                          lead.priority === 'MEDIUM' ? 'bg-blue-50 text-blue-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="URGENT">URGENT</option>
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] text-gray-400 font-bold uppercase">Company</span>
@@ -466,6 +510,19 @@ export default function LeadDetailPage() {
             </form>
           </motion.div>
         </div>
+      )}
+
+      {/* Quotation Modal */}
+      {isQuoteModalOpen && (
+        <CreateQuotationModal 
+          isOpen={isQuoteModalOpen} 
+          onClose={() => setIsQuoteModalOpen(false)} 
+          onSuccess={() => {
+            setIsQuoteModalOpen(false);
+            fetchLeadDetails(); // Refresh timeline to show new quotation activity
+          }}
+          preselectedLeadId={lead.id}
+        />
       )}
     </div>
   );

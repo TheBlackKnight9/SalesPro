@@ -7,6 +7,7 @@ import leadRoutes from "./lead.routes";
 import whatsappRoutes from "./whatsapp.routes";
 import quotationRoutes from "./quotation.routes";
 import customerRoutes from "./customer.routes";
+import debugRoutes from "./debug.routes";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/leads", leadRoutes);
 router.use("/whatsapp", whatsappRoutes);
 router.use("/quotations", quotationRoutes);
 router.use("/customers", customerRoutes);
+router.use("/debug", debugRoutes);
 
 export default router;

@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, Bell, Search, User, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function TopNav() {
   const { user, logout } = useAuthStore();
@@ -15,7 +16,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-brand-blue/20 bg-brand-blue px-5 text-white shadow-[0_8px_24px_rgba(26,86,219,0.18)]">
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-brand-blue/20 bg-brand-blue dark:bg-slate-900 dark:border-slate-800 px-5 text-white transition-colors duration-300">
       <div className="flex items-center gap-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-semibold text-white">
           SP
@@ -38,6 +39,7 @@ export default function TopNav() {
       </div>
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         <button className="rounded-full border border-white/15 bg-white/10 p-1.5 text-white/85 transition hover:bg-white/15 hover:text-white" title="Notifications">
           <Bell className="h-4 w-4" />
         </button>
