@@ -223,7 +223,7 @@ export class LeadService {
   // ── Update Lead ────────────────────────────
   async update(id: string, dto: UpdateLeadDto, currentUser: JwtPayload) {
     const lead = await this.findById(id, currentUser);
-
+ 
     return await prisma.$transaction(async (tx) => {
       const updated = await tx.lead.update({
         where: { id: lead.id },
@@ -245,29 +245,52 @@ export class LeadService {
           }),
           ...(dto.managerId !== undefined && { managerId: dto.managerId }),
           ...(dto.agentId !== undefined && { agentId: dto.agentId }),
+          ...(dto.assignedToId !== undefined && { agentId: dto.assignedToId }),
         },
       });
-
+ 
       // Determine activity title and description
       let title = "Lead Updated";
       let description = "Lead details were updated.";
-
+      let activityType: ActivityType = ActivityType.LEAD_UPDATED;
+ 
       if (dto.priority && dto.priority !== lead.priority) {
         title = "Priority Changed";
         description = `Priority changed to ${dto.priority}`;
+      } else if (dto.assignedToId !== undefined) {
+        const oldAgentId = lead.agentId;
+        const newAgentId = dto.assignedToId;
+ 
+        if (oldAgentId !== newAgentId) {
+          activityType = ActivityType.LEAD_ASSIGNED;
+          
+          const oldAgent = oldAgentId ? await tx.user.findUnique({ where: { id: oldAgentId } }) : null;
+          const newAgent = newAgentId ? await tx.user.findUnique({ where: { id: newAgentId } }) : null;
+ 
+          if (!oldAgentId && newAgent) {
+            title = "Lead Assigned";
+            description = `Lead assigned to ${newAgent.name}.`;
+          } else if (oldAgent && newAgent) {
+            title = "Lead Reassigned";
+            description = `Lead reassigned from ${oldAgent.name} to ${newAgent.name}.`;
+          } else if (oldAgent && !newAgentId) {
+            title = "Lead Unassigned";
+            description = `Lead unassigned from ${oldAgent.name}.`;
+          }
+        }
       }
-
+ 
       await tx.activity.create({
         data: {
           leadId: id,
           performedById: currentUser.userId,
-          type: ActivityType.LEAD_UPDATED,
+          type: activityType,
           title,
           description,
           metadata: dto as object,
         },
       });
-
+ 
       return updated;
     });
   }

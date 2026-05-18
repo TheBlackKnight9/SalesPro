@@ -27,6 +27,7 @@ export interface CreateLeadDto {
 export interface UpdateLeadDto {
   managerId?: string;
   agentId?: string;
+  assignedToId?: string | null;
   firstName?: string;
   lastName?: string;
   email?: string;

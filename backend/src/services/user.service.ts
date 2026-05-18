@@ -39,17 +39,22 @@ export class UserService {
 
   // ── Get All Users (paginated + filtered) ──
   async findAll(
+    currentUser: { userId: string; role: UserRole; officeId?: string | null },
     page = 1,
     limit = 10,
     search?: string,
     officeId?: string,
     role?: UserRole
-  ): Promise<{ data: object[]; meta: PaginationMeta }> {
+  ): Promise<{ data: any[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
+    // RBAC Filter for Managers
+    const effectiveOfficeId = currentUser.role === UserRole.MANAGER ? currentUser.officeId : officeId;
+    const effectiveRole = currentUser.role === UserRole.MANAGER ? UserRole.AGENT : role;
+
     const where = {
-      ...(officeId && { officeId }),
-      ...(role && { role }),
+      ...(effectiveOfficeId && { officeId: effectiveOfficeId }),
+      ...(effectiveRole && { role: effectiveRole }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: "insensitive" as const } },
@@ -162,6 +167,21 @@ export class UserService {
   async findByOffice(officeId: string) {
     return prisma.user.findMany({
       where: { officeId, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  // ── Get Users by Office and Role ────────────
+  async findByOfficeAndRole(officeId: string, role: UserRole) {
+    return prisma.user.findMany({
+      where: { officeId, role, isActive: true },
       select: {
         id: true,
         name: true,

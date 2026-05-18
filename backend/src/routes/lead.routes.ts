@@ -17,11 +17,10 @@ router.get("/", ctrl.findAll.bind(ctrl));
 router.post("/", ctrl.create.bind(ctrl));
 router.get("/:id", ctrl.findById.bind(ctrl));
 router.put("/:id", ctrl.update.bind(ctrl));
+router.patch("/:id", ctrl.update.bind(ctrl));
 router.delete("/:id", authorize("SUPER_ADMIN", "MANAGER"), ctrl.delete.bind(ctrl));
 
-// Task Sub-resources
-router.get("/:id/tasks", taskCtrl.getLeadTasks.bind(taskCtrl));
-router.post("/:id/tasks", taskCtrl.createTask.bind(taskCtrl));
+// Lead tasks are handled via the main /tasks router with linkedLeadId
 
 // Pipeline operations
 router.patch("/:id/status", ctrl.updateStatus.bind(ctrl));

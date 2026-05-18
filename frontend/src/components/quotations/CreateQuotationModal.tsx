@@ -1,17 +1,18 @@
 "use client";
-
+ 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, Calculator, Calendar, User } from "lucide-react";
 import { apiClient } from "@/lib/api";
-
+import { useToast } from "@/components/ui/Toast";
+ 
 interface CreateQuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   preselectedLeadId?: string;
 }
-
+ 
 interface Lead {
   id: string;
   firstName: string;
@@ -19,31 +20,55 @@ interface Lead {
   company?: string;
 }
 
+interface Customer {
+  id: string;
+  firstName: string;
+  lastName?: string;
+  company?: string;
+}
+ 
 export default function CreateQuotationModal({ isOpen, onClose, onSuccess, preselectedLeadId }: CreateQuotationModalProps) {
+  const { showToast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [entityType, setEntityType] = useState<'LEAD' | 'CUSTOMER'>('LEAD');
+  const [selectedEntityId, setSelectedEntityId] = useState(preselectedLeadId || "");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const [formData, setFormData] = useState({
-    leadId: preselectedLeadId || "",
     validUntil: "",
     notes: "",
     items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 18 }]
   });
-
+ 
   useEffect(() => {
     if (isOpen) {
       fetchLeads();
+      fetchCustomers();
       if (preselectedLeadId) {
-        setFormData(prev => ({ ...prev, leadId: preselectedLeadId }));
+        setEntityType('LEAD');
+        setSelectedEntityId(preselectedLeadId);
       }
     }
   }, [isOpen, preselectedLeadId]);
-
+ 
   const fetchLeads = async () => {
     try {
       const data = await apiClient.get<Lead[]>("/leads?limit=100");
       setLeads(data || []);
     } catch (error) {
       console.error("Failed to fetch leads:", error);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const data = await apiClient.get<Customer[]>("/customers?limit=100");
+      setCustomers(data || []);
+    } catch (error) {
+      console.error("Failed to fetch customers:", error);
     }
   };
 
@@ -82,19 +107,42 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.leadId) return alert("Please select a lead.");
+    if (!selectedEntityId) {
+      showToast(entityType === 'LEAD' ? "Please select a lead." : "Please select a customer.", "error");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
-      await apiClient.post("/quotations", formData);
+      const payload = {
+        validUntil: formData.validUntil,
+        notes: formData.notes,
+        items: formData.items,
+        leadId: entityType === 'LEAD' ? selectedEntityId : undefined,
+        customerId: entityType === 'CUSTOMER' ? selectedEntityId : undefined,
+      };
+      await apiClient.post("/quotations", payload);
+      showToast("Quotation created successfully.", "success");
       onSuccess();
     } catch (error) {
       console.error("Failed to create quotation:", error);
-      alert("Error creating quotation. Please check your inputs.");
+      showToast("Error creating quotation. Please check your inputs.", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const activeData = entityType === 'LEAD' ? leads : customers;
+  const filteredEntities = activeData.filter((entity) => {
+    const fullName = `${entity.firstName} ${entity.lastName || ''}`.toLowerCase();
+    const companyName = (entity.company || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fullName.includes(query) || companyName.includes(query);
+  });
+
+  const selectedEntity = entityType === 'LEAD'
+    ? leads.find((l) => l.id === selectedEntityId)
+    : customers.find((c) => c.id === selectedEntityId);
 
   return (
     <AnimatePresence>
@@ -122,24 +170,121 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Lead Selection */}
-                <div className="space-y-2">
+                {/* Lead / Customer Selection */}
+                <div className="space-y-2 relative">
                   <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <User className="h-3 w-3" /> Select Lead
+                    <User className="h-3 w-3" /> Target Recipient
                   </label>
-                  <select
-                    required
-                    value={formData.leadId}
-                    onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                    className="w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium appearance-none"
-                  >
-                    <option value="">Choose a lead...</option>
-                    {leads.map((lead) => (
-                      <option key={lead.id} value={lead.id}>
-                        {lead.firstName} {lead.lastName || ""} {lead.company ? `(${lead.company})` : ""}
-                      </option>
-                    ))}
-                  </select>
+
+                  {/* Segmented Toggle */}
+                  <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl flex w-full">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEntityType('LEAD');
+                        setSelectedEntityId("");
+                        setSearchQuery("");
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition-all ${
+                        entityType === 'LEAD'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                          : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      Lead
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEntityType('CUSTOMER');
+                        setSelectedEntityId("");
+                        setSearchQuery("");
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition-all ${
+                        entityType === 'CUSTOMER'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                          : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      Customer
+                    </button>
+                  </div>
+
+                  {/* Search / Selection input */}
+                  {selectedEntityId && selectedEntity ? (
+                    <div className="flex items-center justify-between bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/20 rounded-2xl py-3 px-4 transition-all">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {selectedEntity.firstName} {selectedEntity.lastName || ""}
+                        </span>
+                        {selectedEntity.company && (
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">
+                            {selectedEntity.company}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedEntityId("");
+                          setSearchQuery("");
+                        }}
+                        className="p-1 rounded-lg hover:bg-brand-blue/10 text-gray-400 dark:text-slate-500 hover:text-rose-500 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setIsDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsDropdownOpen(true)}
+                        placeholder={entityType === 'LEAD' ? "Search leads..." : "Search customers..."}
+                        className="w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium"
+                      />
+                      {/* Floating Dropdown List */}
+                      {isDropdownOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setIsDropdownOpen(false)} 
+                          />
+                          <div className="absolute left-0 right-0 mt-2 z-20 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 rounded-2xl shadow-xl divide-y divide-gray-50 dark:divide-slate-700/50 custom-scrollbar">
+                            {filteredEntities.length === 0 ? (
+                              <div className="p-4 text-xs font-semibold text-gray-500 dark:text-slate-400 text-center">
+                                No {entityType.toLowerCase()}s found.
+                              </div>
+                            ) : (
+                              filteredEntities.map((entity) => (
+                                <button
+                                  key={entity.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedEntityId(entity.id);
+                                    setSearchQuery("");
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left py-2.5 px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex flex-col transition-colors"
+                                >
+                                  <span>{entity.firstName} {entity.lastName || ""}</span>
+                                  {entity.company && (
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">{entity.company}</span>
+                                  )}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Expiry Date */}
