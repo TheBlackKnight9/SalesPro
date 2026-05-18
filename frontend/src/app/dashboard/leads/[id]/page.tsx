@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "@/lib/api";
 import StatusDropdown from "@/components/leads/StatusDropdown";
 import CreateQuotationModal from "@/components/quotations/CreateQuotationModal";
+import { useToast } from "@/components/ui/Toast";
+import { useUser, useUserRole } from "@/store/useAuthStore";
 
 interface Activity {
   id: string;
@@ -54,19 +56,30 @@ interface LeadDetail {
 export default function LeadDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
+  const currentUser = useUser();
+  const role = useUserRole();
+
+  interface Agent {
+    id: string;
+    name: string;
+    role: string;
+  }
+
   const [lead, setLead] = useState<LeadDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "notes" | "tasks">("timeline");
   const [noteContent, setNoteContent] = useState("");
+  const [agents, setAgents] = useState<Agent[]>([]);
   
   // Task Modal state
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: "", description: "", dueDate: "" });
   const [isTaskSubmitting, setIsTaskSubmitting] = useState(false);
-
+ 
   // Quotation Modal state
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-
+ 
   const fetchLeadDetails = async () => {
     try {
       setIsLoading(true);
@@ -80,9 +93,48 @@ export default function LeadDetailPage() {
     }
   };
 
+  const fetchAgents = async () => {
+    try {
+      const data = await apiClient.get<Agent[]>("/users?role=AGENT&limit=100");
+      setAgents(data || []);
+    } catch (error) {
+      console.error("Failed to fetch agents:", error);
+    }
+  };
+ 
   useEffect(() => {
     if (id) fetchLeadDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (role === "SUPER_ADMIN" || role === "MANAGER") {
+      fetchAgents();
+    }
+  }, [role]);
+
+  const handleAssignAgent = async (selectedAgentId: string) => {
+    if (!lead) return;
+    
+    const oldAgent = lead.agent;
+    const chosenAgentObj = selectedAgentId 
+      ? agents.find(a => a.id === selectedAgentId) 
+      : undefined;
+
+    setLead({
+      ...lead,
+      agent: chosenAgentObj ? { id: chosenAgentObj.id, name: chosenAgentObj.name } : undefined
+    });
+
+    try {
+      await apiClient.patch(`/leads/${lead.id}`, { assignedToId: selectedAgentId || null });
+      showToast("Agent assigned successfully.", "success");
+      fetchLeadDetails(); // Silent timeline refresh
+    } catch (error) {
+      console.error("Failed to assign agent:", error);
+      showToast("Failed to assign agent.", "error");
+      setLead({ ...lead, agent: oldAgent });
+    }
+  };
 
   const handleStatusChange = (newStatus: string) => {
     if (lead) {
@@ -269,7 +321,29 @@ export default function LeadDetailPage() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] text-gray-400 font-bold uppercase">Assigned Agent</span>
-                    <p className="text-sm font-bold text-gray-700">{lead.agent?.name || 'Unassigned'}</p>
+                    {role === "SUPER_ADMIN" || role === "MANAGER" ? (
+                      <div className="relative group">
+                        <select
+                          value={lead.agent?.id || ""}
+                          onChange={(e) => handleAssignAgent(e.target.value)}
+                          className="block w-full px-2 py-1 rounded text-[10px] font-extrabold border-none bg-gray-100 text-gray-700 focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all"
+                        >
+                          <option value="">Unassigned</option>
+                          {agents.map((agent) => (
+                            <option key={agent.id} value={agent.id}>
+                              {agent.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+                          <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-bold text-gray-700">{lead.agent?.name || 'Unassigned'}</p>
+                    )}
                   </div>
                 </div>
               </div>

@@ -55,7 +55,7 @@ const PROTECTED_ROUTES: RouteRoleConfig[] = [
   },
   {
     pattern:      /^\/dashboard\/users(\/|$)/,
-    allowedRoles: ["SUPER_ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "MANAGER"],
   },
 
   // ── Manager + Super-admin ────────────────────────────────────────────────

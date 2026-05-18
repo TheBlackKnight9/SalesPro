@@ -97,15 +97,7 @@ export default function CustomersPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Customers</h1>
           <p className="mt-1 text-sm text-gray-500 leading-snug">View and manage your converted clients.</p>
         </div>
-        {(role === "SUPER_ADMIN" || role === "MANAGER") && (
-          <Button 
-            onClick={() => setIsAddCustomerOpen(true)}
-            leftIcon={<UserPlus className="h-4 w-4" />}
-            className="shadow-lg shadow-brand-blue/10"
-          >
-            Add Customer
-          </Button>
-        )}
+        {/* Add Customer button removed */}
       </div>
 
       <AddCustomerSlideOver 

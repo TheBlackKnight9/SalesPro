@@ -716,16 +716,6 @@ export default function DashboardPage() {
           >
             Add Lead
           </Button>
-          {(role === "SUPER_ADMIN" || role === "MANAGER") && (
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              leftIcon={<UserPlus className="h-4 w-4" />}
-              onClick={() => setIsAddCustomerOpen(true)}
-            >
-              Add Customer
-            </Button>
-          )}
           <Button size="sm" variant="secondary" leftIcon={<CheckSquare className="h-4 w-4" />}>
             New Task
           </Button>

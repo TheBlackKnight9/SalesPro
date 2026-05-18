@@ -24,6 +24,23 @@ export default function QuotationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewingQuote, setViewingQuote] = useState<Quotation | null>(null);
+  const [viewingQuoteDetails, setViewingQuoteDetails] = useState<any | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+  const handleOpenQuickView = async (quote: Quotation) => {
+    setViewingQuote(quote);
+    setIsLoadingDetails(true);
+    try {
+      const details = await apiClient.get<any>(`/quotations/${quote.id}`);
+      setViewingQuoteDetails(details);
+    } catch (error) {
+      console.error("Failed to fetch quotation details:", error);
+      showToast("Failed to load quotation details.", "error");
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
 
   const fetchQuotations = async () => {
     try {
@@ -181,7 +198,9 @@ export default function QuotationsPage() {
                                   <div className="ml-3 flex-1">
                                     <p className="text-[15px] font-bold text-[#14532d]">
                                       {newStatus === "ACCEPTED" 
-                                        ? "Quotation Accepted! Lead converted to Customer."
+                                        ? q.customer
+                                          ? "Quotation Accepted! Deal closed successfully."
+                                          : "Quotation Accepted! Lead converted to Customer."
                                         : `Status updated to ${newStatus}.`}
                                     </p>
                                   </div>
@@ -220,7 +239,11 @@ export default function QuotationsPage() {
                           >
                             <Download className="h-3.5 w-3.5" />
                           </button>
-                          <button className="p-1.5 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-all">
+                          <button 
+                            onClick={() => handleOpenQuickView(q)}
+                            className="p-1.5 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-all"
+                            title="Quick View"
+                          >
                             <Eye className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -243,6 +266,139 @@ export default function QuotationsPage() {
             fetchQuotations();
           }}
         />
+      )}
+
+      {viewingQuote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[2rem] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#07111f] p-6 text-gray-900 dark:text-white shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-200/70 font-bold">QUOTATION DETAILS</p>
+                <div className="mt-1 flex items-center gap-3">
+                  <h2 className="text-2xl font-semibold">{viewingQuote.quotationNumber}</h2>
+                  {getStatusBadge(viewingQuote.status)}
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setViewingQuote(null);
+                  setViewingQuoteDetails(null);
+                }} 
+                className="text-sm text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-6">
+              {isLoadingDetails ? (
+                <div className="py-12 flex flex-col items-center justify-center text-gray-500 dark:text-slate-400">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent mb-3" />
+                  <p className="text-sm font-medium">Fetching line items...</p>
+                </div>
+              ) : viewingQuoteDetails ? (
+                <>
+                  {/* Client Info Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5">
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client Name</p>
+                      <p className="text-sm font-bold mt-0.5 text-gray-900 dark:text-slate-200">
+                        {viewingQuoteDetails.customer 
+                          ? `${viewingQuoteDetails.customer.firstName} ${viewingQuoteDetails.customer.lastName || ''}` 
+                          : viewingQuoteDetails.lead 
+                            ? `${viewingQuoteDetails.lead.firstName} ${viewingQuoteDetails.lead.lastName || ''}` 
+                            : "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Company / Org</p>
+                      <p className="text-sm font-bold mt-0.5 text-gray-900 dark:text-slate-200">
+                        {viewingQuoteDetails.customer?.company || viewingQuoteDetails.lead?.company || 'Personal'}
+                      </p>
+                    </div>
+                    {viewingQuoteDetails.validUntil && (
+                      <div className="md:col-span-2 border-t border-gray-150 dark:border-white/5 pt-2 mt-1">
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quotation Validity</p>
+                        <p className="text-xs font-semibold text-gray-600 dark:text-slate-400 mt-0.5">
+                          Valid until {new Date(viewingQuoteDetails.validUntil).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Line Items Table */}
+                  <div className="border border-gray-150 dark:border-white/5 rounded-2xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-50 dark:bg-white/5">
+                          <tr>
+                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Item Description</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Qty</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Price</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                          {viewingQuoteDetails.items?.map((item: any) => (
+                            <tr key={item.id} className="text-sm">
+                              <td className="px-4 py-3 font-semibold text-gray-800 dark:text-slate-300">{item.description}</td>
+                              <td className="px-4 py-3 text-center text-gray-600 dark:text-slate-400">{Number(item.quantity)}</td>
+                              <td className="px-4 py-3 text-right text-gray-600 dark:text-slate-400">${Number(item.unitPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                              <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">${Number(item.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Notes Section */}
+                  {viewingQuoteDetails.notes && (
+                    <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10">
+                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Notes & Special Instructions</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 mt-1 whitespace-pre-wrap">{viewingQuoteDetails.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Summary Block */}
+                  <div className="border-t border-gray-150 dark:border-white/5 pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 dark:text-slate-400 font-medium">Subtotal</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">${Number(viewingQuoteDetails.subtotal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 dark:text-slate-400 font-medium">Tax Amount</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">${Number(viewingQuoteDetails.taxAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-gray-150 dark:border-white/10 pt-2 text-base font-bold">
+                      <span className="text-gray-900 dark:text-white">Grand Total</span>
+                      <span className="text-cyan-600 dark:text-cyan-400">${Number(viewingQuoteDetails.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="py-12 text-center text-rose-500">Failed to load details.</div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setViewingQuote(null);
+                  setViewingQuoteDetails(null);
+                }}
+                className="btn btn-secondary px-6 py-2.5 rounded-xl border border-gray-200 dark:border-slate-800 dark:bg-slate-800 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700 transition-all font-bold text-sm"
+              >
+                Close View
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

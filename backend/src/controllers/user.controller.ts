@@ -10,9 +10,20 @@ export class UserController {
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { name, email, password, officeId, role, phone } = req.body;
+      const currentUser = req.user!;
 
       if (!name || !email || !password || !officeId) {
         throw new AppError("name, email, password, officeId are required.", 400);
+      }
+
+      // Managers can only onboard Agents in their own office
+      if (currentUser.role === UserRole.MANAGER) {
+        if (officeId !== currentUser.officeId) {
+          throw new AppError("You can only onboard users for your own office.", 403);
+        }
+        if (role !== UserRole.AGENT) {
+          throw new AppError("Managers can only onboard Agent accounts.", 403);
+        }
       }
 
       const user = await userService.create(req.body);
@@ -29,7 +40,7 @@ export class UserController {
       const officeId = req.query.officeId ? String(req.query.officeId) : undefined;
       const role = req.query.role ? (String(req.query.role) as UserRole) : undefined;
 
-      const result = await userService.findAll(page, limit, search, officeId, role);
+      const result = await userService.findAll(req.user!, page, limit, search, officeId, role);
       res.status(200).json({ success: true, message: "Users fetched.", ...result });
     } catch (err) { next(err); }
   }
@@ -47,6 +58,19 @@ export class UserController {
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
+      const currentUser = req.user!;
+
+      // RBAC Check for Managers
+      if (currentUser.role === UserRole.MANAGER) {
+        const targetUser = await userService.findById(id);
+        if (targetUser.office?.id !== currentUser.officeId) {
+          throw new AppError("You can only manage users in your own office.", 403);
+        }
+        if (targetUser.role !== UserRole.AGENT) {
+          throw new AppError("Managers can only update Agent accounts.", 403);
+        }
+      }
+
       const user = await userService.update(id, req.body);
       res.status(200).json({ success: true, message: "User updated.", data: user });
     } catch (err) { next(err); }
@@ -56,9 +80,23 @@ export class UserController {
   async deactivate(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
-      if (req.user?.userId === id) {
+      const currentUser = req.user!;
+
+      if (currentUser.userId === id) {
         throw new AppError("You cannot deactivate your own account.", 400);
       }
+
+      // RBAC Check for Managers
+      if (currentUser.role === UserRole.MANAGER) {
+        const targetUser = await userService.findById(id);
+        if (targetUser.office?.id !== currentUser.officeId) {
+          throw new AppError("You can only manage users in your own office.", 403);
+        }
+        if (targetUser.role !== UserRole.AGENT) {
+          throw new AppError("Managers can only deactivate Agent accounts.", 403);
+        }
+      }
+
       await userService.deactivate(id);
       res.status(200).json({ success: true, message: "User deactivated." });
     } catch (err) { next(err); }
@@ -68,7 +106,18 @@ export class UserController {
   async findByOffice(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const officeId = String(req.params.officeId);
-      const users = await userService.findByOffice(officeId);
+      const currentUser = req.user!;
+
+      let users;
+      if (currentUser.role === UserRole.MANAGER) {
+        if (officeId !== currentUser.officeId) {
+          throw new AppError("You can only query users in your own office.", 403);
+        }
+        users = await userService.findByOfficeAndRole(officeId, UserRole.AGENT);
+      } else {
+        users = await userService.findByOffice(officeId);
+      }
+
       res.status(200).json({ success: true, message: "Office users fetched.", data: users });
     } catch (err) { next(err); }
   }
