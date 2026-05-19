@@ -70,7 +70,7 @@ export class TaskService {
         { dueDate: "asc" }
       ],
       include: {
-        assignedTo: { select: { id: true, name: true, avatarUrl: true } },
+        assignedTo: { select: { id: true, name: true, avatarUrl: true, role: true } },
         linkedLead: { select: { id: true, firstName: true, lastName: true } },
         linkedCustomer: { select: { id: true, firstName: true, lastName: true } },
       }
@@ -95,4 +95,29 @@ export class TaskService {
       }
     });
   }
+
+  // ── Delete Task ─────────────────────────────
+  async delete(id: string, currentUser: JwtPayload) {
+    const task = await prisma.task.findUnique({ where: { id } });
+    if (!task) throw new AppError("Task not found.", 404);
+
+    // Permission Check: Agents can only delete their own tasks
+    if (currentUser.role === "AGENT" && task.assignedToId !== currentUser.userId) {
+      throw new AppError("Permission denied: You can only delete tasks assigned to you.", 403);
+    }
+
+    // Permission Check: Managers can only delete tasks assigned to users in their office
+    if (currentUser.role === "MANAGER" && task.assignedToId) {
+      const assignee = await prisma.user.findUnique({
+        where: { id: task.assignedToId },
+        select: { officeId: true }
+      });
+      if (assignee?.officeId !== currentUser.officeId) {
+        throw new AppError("Permission denied: You can only delete tasks for users in your office.", 403);
+      }
+    }
+
+    return prisma.task.delete({ where: { id } });
+  }
 }
+

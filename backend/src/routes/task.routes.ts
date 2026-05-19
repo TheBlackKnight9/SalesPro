@@ -17,4 +17,7 @@ router.post("/", taskController.create);
 // PATCH /api/tasks/:id/status - Update task status
 router.patch("/:id/status", taskController.updateStatus);
 
+// DELETE /api/tasks/:id - Delete a task
+router.delete("/:id", taskController.delete);
+
 export default router;

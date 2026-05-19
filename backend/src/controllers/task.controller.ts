@@ -35,4 +35,14 @@ export class TaskController {
       res.status(200).json({ success: true, message: "Task status updated.", data: task });
     } catch (err) { next(err); }
   }
+
+  // DELETE /api/tasks/:id
+  async delete(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) throw new AppError("Not authenticated.", 401);
+      const id = String(req.params.id);
+      await taskService.delete(id, req.user);
+      res.status(200).json({ success: true, message: "Task deleted successfully." });
+    } catch (err) { next(err); }
+  }
 }
