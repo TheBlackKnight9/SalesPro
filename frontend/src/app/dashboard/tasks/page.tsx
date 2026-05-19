@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   X,
   AlertCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "react-hot-toast";
@@ -29,6 +30,7 @@ interface Task {
     id: string;
     name: string;
     avatarUrl?: string | null;
+    role?: "SUPER_ADMIN" | "MANAGER" | "AGENT";
   };
   linkedLead?: {
     id: string;
@@ -48,6 +50,11 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PEND' | 'PROG' | 'DONE'>('ALL');
+  const [assignmentFilter, setAssignmentFilter] = useState<'ALL' | 'SELF' | 'AGENT' | 'MANAGER'>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'URGENT'>('ALL');
 
   // ── Data Fetching ───────────────────────────
   const fetchTasks = async () => {
@@ -112,6 +119,20 @@ export default function TasksPage() {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await apiClient.delete(`/tasks/${taskId}`);
+      
+      // Optimistic State Update: remove deleted task immediately from state
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      toast.error("Failed to delete task");
+    }
+  };
+
   // ── Helpers ──────────────────────────────────
   const isOverdue = (date: string | null, status: string) => {
     if (!date || status === "COMPLETED") return false;
@@ -132,131 +153,164 @@ export default function TasksPage() {
     }
   };
 
-  const personalTasks = tasks.filter(t => t.assignedToId === user?.id);
-  const teamTasks = tasks.filter(t => t.assignedToId !== user?.id);
+  const filteredTasks = tasks.filter(task => {
+    // 1. Status Filter
+    let matchesStatus = false;
+    if (statusFilter === 'ALL') {
+      matchesStatus = true;
+    } else if (statusFilter === 'PEND' && task.status === 'PENDING') {
+      matchesStatus = true;
+    } else if (statusFilter === 'PROG' && task.status === 'IN_PROGRESS') {
+      matchesStatus = true;
+    } else if (statusFilter === 'DONE' && task.status === 'COMPLETED') {
+      matchesStatus = true;
+    }
 
-  const renderTaskTable = (taskList: Task[], isReadOnly: boolean = false, showAssignee: boolean = false) => (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    // 2. Priority Filter
+    const matchesPriority = priorityFilter === 'ALL' || task.priority === priorityFilter;
+
+    // 3. Assignment Filter (For Admin/Manager)
+    let matchesAssignment = true;
+    if (role === 'MANAGER' || role === 'SUPER_ADMIN') {
+      if (assignmentFilter === 'SELF') {
+        matchesAssignment = task.assignedToId === user?.id;
+      } else if (assignmentFilter === 'AGENT') {
+        matchesAssignment = task.assignedTo?.role === 'AGENT';
+      } else if (assignmentFilter === 'MANAGER') {
+        matchesAssignment = task.assignedTo?.role === 'MANAGER';
+      }
+    }
+
+    return matchesStatus && matchesPriority && matchesAssignment;
+  });
+
+  const renderTaskTable = (taskList: Task[]) => (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden w-full">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse table-fixed">
           <thead className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
             <tr>
-              <th className="w-[45%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Details</th>
-              <th className="w-[20%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Relates</th>
-              <th className="w-[15%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Due</th>
-              <th className="w-[20%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider text-right">Status</th>
+              <th className={`${(role === 'MANAGER' || role === 'SUPER_ADMIN') ? 'w-[25%]' : 'w-[40%]'} px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider`}>Details</th>
+              <th className="w-[15%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Priority</th>
+              <th className="w-[20%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Related To</th>
+              <th className="w-[10%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Due</th>
+              {(role === "MANAGER" || role === "SUPER_ADMIN") && (
+                <th className="w-[15%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Assigned To</th>
+              )}
+              <th className="w-[15%] px-3 py-2 text-[12px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
             {taskList.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-8">
-                  <p className="text-xs text-gray-500 italic font-medium">No records.</p>
+                <td colSpan={(role === "MANAGER" || role === "SUPER_ADMIN") ? 6 : 5} className="py-8">
+                  <div className="text-center py-8 text-slate-400 text-sm">No tasks found matching the criteria.</div>
                 </td>
               </tr>
             ) : (
-              taskList.map((task) => (
-                <tr key={task.id} className={`${isReadOnly ? "bg-gray-50/30" : "hover:bg-gray-50/50"} transition-colors group`}>
-                  <td className="px-3 py-2.5 relative group cursor-pointer">
-                    <div className="flex flex-col overflow-hidden">
-                      <span className={`font-bold text-sm truncate ${isReadOnly ? "line-through text-slate-500" : "text-gray-900 dark:text-white"}`}>
-                        {task.title}
-                      </span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${isReadOnly ? "bg-gray-100 text-gray-400 border-gray-200" : getPriorityStyles(task.priority)}`}>
-                          {task.priority}
+              taskList.map((task) => {
+                const isReadOnly = task.status === "COMPLETED";
+                return (
+                  <tr key={task.id} className={`${isReadOnly ? "bg-gray-50/30" : "hover:bg-gray-50/50"} transition-colors group`}>
+                    {/* DETAILS */}
+                    <td className="px-3 py-2.5 relative group cursor-pointer">
+                      <div className="flex flex-col overflow-hidden">
+                        <span className={`font-bold text-sm truncate ${isReadOnly ? "line-through text-slate-500" : "text-gray-900 dark:text-white"}`}>
+                          {task.title}
                         </span>
-                        {showAssignee && task.assignedTo && (
-                          <span className="text-[10px] font-bold text-brand-blue bg-brand-blue/5 px-2 py-0.5 rounded flex items-center gap-1 truncate max-w-[80px]">
-                            <User className="h-2.5 w-2.5 flex-shrink-0" />
-                            <span className="truncate">{task.assignedTo.name}</span>
-                          </span>
+                      </div>
+
+                      {/* Smooth White Floating Window (Tooltip) */}
+                      <div className="absolute z-50 left-0 top-full mt-2 w-52 bg-white border border-slate-200 text-slate-900 rounded-2xl shadow-2xl p-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 ease-out">
+                        <p className="font-semibold text-sm mb-1">{task.title}</p>
+                        {task.description ? (
+                          <p className="text-xs text-slate-600 leading-relaxed">{task.description}</p>
+                        ) : (
+                          <span className="italic text-[10px] text-slate-400">No description provided.</span>
                         )}
                       </div>
-                    </div>
+                    </td>
 
-                    {/* Smooth White Floating Window (Tooltip) */}
-                    <div className="absolute z-50 left-0 top-full mt-2 w-52 bg-white border border-slate-200 text-slate-900 rounded-2xl shadow-2xl p-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 ease-out">
-                      <p className="font-semibold text-sm mb-1">{task.title}</p>
-                      {task.description ? (
-                        <p className="text-xs text-slate-600 leading-relaxed">{task.description}</p>
+                    {/* PRIORITY */}
+                    <td className="px-3 py-2.5">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${isReadOnly ? "bg-gray-100 text-gray-400 border-gray-200" : getPriorityStyles(task.priority)}`}>
+                        {task.priority}
+                      </span>
+                    </td>
+
+                    {/* RELATED TO */}
+                    <td className="px-3 py-2.5">
+                      {task.linkedLead ? (
+                        <div className="flex flex-col opacity-80 overflow-hidden">
+                          <span className="text-[13px] font-bold text-gray-700 truncate">{task.linkedLead.firstName}</span>
+                          <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-tighter">Lead</span>
+                        </div>
+                      ) : task.linkedCustomer ? (
+                        <div className="flex flex-col opacity-80 overflow-hidden">
+                          <span className="text-[13px] font-bold text-gray-700 truncate">{task.linkedCustomer.firstName}</span>
+                          <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter">Client</span>
+                        </div>
                       ) : (
-                        <span className="italic text-[10px] text-slate-400">No description provided.</span>
+                        <span className="text-[12px] text-gray-400 italic">None</span>
                       )}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    {task.linkedLead ? (
-                      <div className="flex flex-col opacity-80 overflow-hidden">
-                        <span className="text-[13px] font-bold text-gray-700 truncate">{task.linkedLead.firstName}</span>
-                        <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-tighter">Lead</span>
-                      </div>
-                    ) : task.linkedCustomer ? (
-                      <div className="flex flex-col opacity-80 overflow-hidden">
-                        <span className="text-[13px] font-bold text-gray-700 truncate">{task.linkedCustomer.firstName}</span>
-                        <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter">Client</span>
-                      </div>
-                    ) : (
-                      <span className="text-[12px] text-gray-400 italic">None</span>
+                    </td>
+
+                    {/* DUE */}
+                    <td className="px-3 py-2.5">
+                      <span className={`text-[13px] font-bold ${isOverdue(task.dueDate, task.status) ? "text-rose-600" : "text-gray-500"}`}>
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
+                      </span>
+                    </td>
+
+                    {/* ASSIGNED TO */}
+                    {(role === "MANAGER" || role === "SUPER_ADMIN") && (
+                      <td className="px-3 py-2.5">
+                        {task.assignedToId === user?.id ? (
+                          <span className="font-medium text-slate-700">Self</span>
+                        ) : (
+                          <div className="flex flex-col">
+                            <span className="text-sm">{task.assignedTo?.name || "Unassigned"}</span>
+                            <span className="text-[10px] text-slate-400 capitalize">{task.assignedTo?.role?.toLowerCase() || 'Agent'}</span>
+                          </div>
+                        )}
+                      </td>
                     )}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <span className={`text-[13px] font-bold ${isOverdue(task.dueDate, task.status) ? "text-rose-600" : "text-gray-500"}`}>
-                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
-                    {isReadOnly ? (
-                      <div className="text-emerald-600 font-bold text-[11px] uppercase tracking-tighter flex items-center justify-end gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Done
-                      </div>
-                    ) : (
-                      <select 
-                        value={task.status}
-                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                        className="bg-transparent border-none p-0 text-xs font-bold text-gray-700 focus:ring-0 cursor-pointer hover:text-brand-blue transition-colors uppercase tracking-tight"
+
+                    {/* STATUS */}
+                    <td className="px-3 py-2.5 flex items-center justify-start gap-4">
+                      {isReadOnly ? (
+                        <div className="text-emerald-600 font-bold text-[11px] uppercase tracking-tighter flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Done
+                        </div>
+                      ) : (
+                        <select 
+                          value={task.status}
+                          onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                          className="bg-transparent border-none p-0 text-xs font-bold text-gray-700 focus:ring-0 cursor-pointer hover:text-brand-blue transition-colors uppercase tracking-tight"
+                        >
+                          <option value="PENDING">PEND</option>
+                          <option value="IN_PROGRESS">PROG</option>
+                          <option value="COMPLETED">DONE</option>
+                        </select>
+                      )}
+                      <button
+                        onClick={() => setTaskToDelete(task.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0"
+                        title="Delete Task"
                       >
-                        <option value="PENDING">PEND</option>
-                        <option value="IN_PROGRESS">PROG</option>
-                        <option value="COMPLETED">DONE</option>
-                      </select>
-                    )}
-                  </td>
-                </tr>
-              ))
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
     </div>
   );
-
-  const renderSection = (title: string, taskList: Task[], glowColor: string) => {
-    const active = taskList.filter(t => t.status !== "COMPLETED");
-    const completed = taskList.filter(t => t.status === "COMPLETED");
-
-    return (
-      <div className="space-y-6 max-w-4xl">
-        <div className="flex items-center gap-2 px-2">
-          <div className={`h-2 w-2 rounded-full ${glowColor} shadow-[0_0_8px_rgba(37,99,235,0.6)]`} />
-          <h2 className="text-xs font-bold text-gray-900 uppercase tracking-widest">{title}</h2>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-tight px-2">Pending / In-Progress</h3>
-            {renderTaskTable(active, false, title.includes("Team"))}
-          </div>
-          
-          <div className="space-y-2 opacity-60 hover:opacity-100 transition-opacity">
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-tight px-2">Completed</h3>
-            {renderTaskTable(completed, true, title.includes("Team"))}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-8 pb-12 max-w-[1400px]">
@@ -281,14 +335,88 @@ export default function TasksPage() {
           <span className="text-sm font-medium text-gray-500 animate-pulse font-bold tracking-widest uppercase">Syncing Agenda...</span>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 ${role !== "AGENT" ? "lg:grid-cols-2" : ""} gap-10`}>
-          {/* Left Column: Personal Tasks */}
-          {renderSection("My Personal Tasks", personalTasks, "bg-brand-blue")}
+        <div className="space-y-6 w-full max-w-7xl">
+          {/* Top Filter Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm w-full">
+            {/* Left Side (Status Tabs & Priority Select) */}
+            <div className="flex items-center">
+              <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1">
+                <button
+                  onClick={() => setStatusFilter('ALL')}
+                  className={`${statusFilter === 'ALL' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setStatusFilter('PEND')}
+                  className={`${statusFilter === 'PEND' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  Pending
+                </button>
+                <button
+                  onClick={() => setStatusFilter('PROG')}
+                  className={`${statusFilter === 'PROG' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  In Progress
+                </button>
+                <button
+                  onClick={() => setStatusFilter('DONE')}
+                  className={`${statusFilter === 'DONE' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  Completed
+                </button>
+              </div>
+              <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1 ml-3">
+                <button
+                  onClick={() => setPriorityFilter('ALL')}
+                  className={`${priorityFilter === 'ALL' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  All Priorities
+                </button>
+                <button
+                  onClick={() => setPriorityFilter('URGENT')}
+                  className={`${priorityFilter === 'URGENT' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  Urgent
+                </button>
+                <button
+                  onClick={() => setPriorityFilter('HIGH')}
+                  className={`${priorityFilter === 'HIGH' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  High
+                </button>
+                <button
+                  onClick={() => setPriorityFilter('MEDIUM')}
+                  className={`${priorityFilter === 'MEDIUM' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  Medium
+                </button>
+                <button
+                  onClick={() => setPriorityFilter('LOW')}
+                  className={`${priorityFilter === 'LOW' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm rounded-lg' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} text-xs font-medium px-3 py-1.5 transition-all`}
+                >
+                  Low
+                </button>
+              </div>
+            </div>
 
-          {/* Right Column: Team Tasks (Managers/Admins only) */}
-          {(role === "MANAGER" || role === "SUPER_ADMIN") && (
-            renderSection("Team Overview & Pipeline", teamTasks, "bg-indigo-500")
-          )}
+            {/* Right Side (Conditional Assignment Dropdown) */}
+            {(role === 'MANAGER' || role === 'SUPER_ADMIN') && (
+              <select
+                value={assignmentFilter}
+                onChange={(e) => setAssignmentFilter(e.target.value as any)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-xl px-3 py-1.5 outline-none shadow-sm font-medium focus:ring-1 focus:ring-brand-blue/20 cursor-pointer"
+              >
+                <option value="ALL">All Tasks</option>
+                <option value="SELF">Assigned to Self</option>
+                <option value="AGENT">Assigned to Agents</option>
+                {role === 'SUPER_ADMIN' && <option value="MANAGER">Assigned to Managers</option>}
+              </select>
+            )}
+          </div>
+
+          {/* Unified Table */}
+          {renderTaskTable(filteredTasks)}
         </div>
       )}
 
@@ -297,6 +425,32 @@ export default function TasksPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchTasks}
       />
+
+      {taskToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Delete Task</h3>
+            <p className="text-slate-600 text-sm mb-6">Are you sure you want to delete this task? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setTaskToDelete(null)} 
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  handleDeleteTask(taskToDelete); // Your existing API call + Optimistic UI update here
+                  setTaskToDelete(null);
+                }} 
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

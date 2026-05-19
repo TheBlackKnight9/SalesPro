@@ -16,9 +16,14 @@ import {
   Users,
   UserPlus,
   UserCircle,
+  X,
+  Calendar,
+  Flag,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import AddCustomerSlideOver from "@/components/customers/AddCustomerSlideOver";
 import AddLeadModal from "@/components/leads/AddLeadModal";
+import CreateTaskModal from "@/components/tasks/CreateTaskModal";
 import {
   Bar,
   BarChart,
@@ -522,10 +527,13 @@ function AgentDashboard({ data }: { data: DashboardDataState }) {
 export default function DashboardPage() {
   const user = useUser();
   const role: UserRole = (user?.role as UserRole) ?? "AGENT";
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<DashboardDataState>(defaultData);
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -693,7 +701,7 @@ export default function DashboardPage() {
     return () => {
       mounted = false;
     };
-  }, [role, user?.officeId]);
+  }, [role, user?.officeId, refreshTrigger]);
 
   const headerSubtitle = useMemo(() => {
     if (isLoading) return "Loading role-based dashboard data...";
@@ -716,11 +724,13 @@ export default function DashboardPage() {
           >
             Add Lead
           </Button>
-          <Button size="sm" variant="secondary" leftIcon={<CheckSquare className="h-4 w-4" />}>
+          <Button 
+            size="sm" 
+            variant="secondary" 
+            leftIcon={<CheckSquare className="h-4 w-4" />}
+            onClick={() => setIsTaskModalOpen(true)}
+          >
             New Task
-          </Button>
-          <Button size="sm" variant="secondary" leftIcon={<FileText className="h-4 w-4" />}>
-            New Quote
           </Button>
         </div>
       </div>
@@ -742,6 +752,16 @@ export default function DashboardPage() {
         onClose={() => setIsAddLeadOpen(false)}
         onSuccess={() => {
           window.location.reload();
+        }}
+      />
+
+      <CreateTaskModal 
+        isOpen={isTaskModalOpen} 
+        onClose={() => setIsTaskModalOpen(false)} 
+        onSuccess={() => {
+          setIsTaskModalOpen(false);
+          setRefreshTrigger(prev => prev + 1);
+          router.refresh();
         }}
       />
     </div>

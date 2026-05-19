@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   ArrowLeft, 
   Building2, 
@@ -14,11 +14,14 @@ import {
   ExternalLink,
   Save,
   MessageSquare,
-  BadgeDollarSign
+  BadgeDollarSign,
+  Plus,
+  StickyNote
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
+import { useUser } from "@/store/useAuthStore";
 
 interface CustomerDetail {
   id: string;
@@ -52,10 +55,12 @@ export default function CustomerDetailsPage() {
   const params = useParams();
   const id = params.id as string;
 
+  const currentUser = useUser();
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"history" | "notes">("history");
-  const [notes, setNotes] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteText, setNewNoteText] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   useEffect(() => {
@@ -64,7 +69,6 @@ export default function CustomerDetailsPage() {
         setIsLoading(true);
         const data = await apiClient.get<CustomerDetail>(`/customers/${id}`);
         setCustomer(data);
-        setNotes(data.notes || "");
       } catch (error) {
         console.error("Failed to fetch customer details:", error);
       } finally {
@@ -75,15 +79,54 @@ export default function CustomerDetailsPage() {
     if (id) fetchCustomer();
   }, [id]);
 
-  const handleSaveNotes = async () => {
+  const parsedNotes = useMemo(() => {
+    if (!customer?.notes) return [];
+    try {
+      const parsed = JSON.parse(customer.notes);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      return [{
+        id: "legacy",
+        text: customer.notes,
+        authorName: "System",
+        createdAt: customer.createdAt || new Date().toISOString()
+      }];
+    }
+    return [];
+  }, [customer?.notes]);
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  const handleSaveNote = async () => {
+    if (!newNoteText.trim() || !customer) return;
+
+    const newNote = {
+      id: Math.random().toString(36).substr(2, 9),
+      text: newNoteText,
+      authorName: currentUser?.name || "System",
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedNotesList = [newNote, ...parsedNotes];
+    const notesJson = JSON.stringify(updatedNotesList);
+
     setIsSavingNotes(true);
     try {
-      // In a real app, you'd have a PATCH /customers/:id endpoint for notes
-      // For now, we'll assume it works or just simulate
-      await apiClient.patch(`/customers/${id}`, { notes });
-      alert("Notes saved successfully!");
+      await apiClient.patch(`/customers/${id}`, { notes: notesJson });
+      setNewNoteText("");
+      setIsAddingNote(false);
+      
+      // Local state update
+      setCustomer({ ...customer, notes: notesJson });
+      router.refresh(); // Sync Server Components cache
     } catch (error) {
-      console.error("Failed to save notes:", error);
+      console.error("Failed to save note:", error);
+      alert("Failed to save note.");
     } finally {
       setIsSavingNotes(false);
     }
@@ -275,22 +318,68 @@ export default function CustomerDetailsPage() {
                 </div>
               ) : (
                 <div className="h-full flex flex-col space-y-4">
-                  <div className="flex-1">
-                    <textarea 
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Type private notes about this client here..."
-                      className="w-full h-full min-h-[300px] p-5 rounded-2xl border-gray-100 bg-gray-50/50 text-sm focus:bg-white focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue transition-all resize-none"
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleSaveNotes}
-                      isLoading={isSavingNotes}
-                      leftIcon={<Save className="h-4 w-4" />}
+                  {/* Add Note Button / Input Area */}
+                  {!isAddingNote ? (
+                    <button
+                      onClick={() => setIsAddingNote(true)}
+                      className="w-full py-3 px-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all font-bold text-sm flex items-center justify-center gap-2 bg-gray-50/50 hover:bg-white"
                     >
-                      Save Notes
-                    </Button>
+                      <Plus className="h-4 w-4" />
+                      Add Note
+                    </button>
+                  ) : (
+                    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+                      <textarea
+                        rows={3}
+                        className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none"
+                        placeholder="Type important details about this client..."
+                        value={newNoteText}
+                        onChange={(e) => setNewNoteText(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsAddingNote(false);
+                            setNewNoteText("");
+                          }}
+                          className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSaveNote}
+                          disabled={isSavingNotes}
+                          className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all flex items-center justify-center min-w-[100px] disabled:opacity-50"
+                        >
+                          {isSavingNotes ? "Saving..." : "Save Note"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes Feed */}
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    {parsedNotes.length === 0 ? (
+                      <div className="text-center py-10 text-slate-400 text-sm bg-gray-50 rounded-2xl border border-dashed border-gray-100">
+                        <StickyNote className="h-8 w-8 mx-auto mb-2 text-gray-300 opacity-50" />
+                        No notes added yet.
+                      </div>
+                    ) : (
+                      parsedNotes.map((note) => (
+                        <div key={note.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-slate-200 transition-colors">
+                          <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
+                          <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                            <span className="flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                              {note.authorName || 'System'}
+                            </span>
+                            <span>{formatDate(note.createdAt)}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

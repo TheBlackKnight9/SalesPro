@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, Phone, Mail, Globe, Calendar, User, 
@@ -69,7 +69,8 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<LeadDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "notes" | "tasks">("timeline");
-  const [noteContent, setNoteContent] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteText, setNewNoteText] = useState("");
   const [agents, setAgents] = useState<Agent[]>([]);
   
   // Task Modal state
@@ -85,7 +86,6 @@ export default function LeadDetailPage() {
       setIsLoading(true);
       const data = await apiClient.get<LeadDetail>(`/leads/${id}`);
       setLead(data);
-      setNoteContent(data.notes || "");
     } catch (error) {
       console.error("Failed to fetch lead details:", error);
     } finally {
@@ -147,12 +147,52 @@ export default function LeadDetailPage() {
     }
   };
 
-  const saveNotes = async () => {
+  const parsedNotes = useMemo(() => {
+    if (!lead?.notes) return [];
     try {
-      await apiClient.put(`/leads/${id}`, { notes: noteContent });
-      alert("Notes saved successfully!");
+      const parsed = JSON.parse(lead.notes);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      return [{
+        id: "legacy",
+        text: lead.notes,
+        authorName: "System",
+        createdAt: lead.createdAt || new Date().toISOString()
+      }];
+    }
+    return [];
+  }, [lead?.notes]);
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  const handleSaveNote = async () => {
+    if (!newNoteText.trim() || !lead) return;
+
+    const newNote = {
+      id: Math.random().toString(36).substr(2, 9),
+      text: newNoteText,
+      authorName: currentUser?.name || "System",
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedNotesList = [newNote, ...parsedNotes];
+    const notesJson = JSON.stringify(updatedNotesList);
+
+    try {
+      await apiClient.put(`/leads/${id}`, { notes: notesJson });
+      showToast("Note added successfully.", "success");
+      setNewNoteText("");
+      setIsAddingNote(false);
+      fetchLeadDetails(); // Hot reload details
+      router.refresh();   // Sync Next.js Server Components cache
     } catch (error) {
-      console.error("Failed to save notes:", error);
+      console.error("Failed to save note:", error);
+      showToast("Failed to save note.", "error");
     }
   };
 
@@ -161,12 +201,17 @@ export default function LeadDetailPage() {
     if (!newTask.title) return;
     setIsTaskSubmitting(true);
     try {
-      await apiClient.post(`/leads/${id}/tasks`, newTask);
+      await apiClient.post("/tasks", {
+        ...newTask,
+        linkedLeadId: id,
+      });
+      showToast("Task added successfully.", "success");
       setIsTaskModalOpen(false);
       setNewTask({ title: "", description: "", dueDate: "" });
       fetchLeadDetails(); // Refresh tasks and timeline
     } catch (error) {
       console.error("Failed to add task:", error);
+      showToast("Failed to add task.", "error");
     } finally {
       setIsTaskSubmitting(false);
     }
@@ -462,19 +507,67 @@ export default function LeadDetailPage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="space-y-4"
                   >
-                    <textarea 
-                      className="w-full h-64 p-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium"
-                      placeholder="Type important details about this prospect..."
-                      value={noteContent}
-                      onChange={(e) => setNoteContent(e.target.value)}
-                    />
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={saveNotes}
-                        className="btn btn-primary px-8"
+                    {/* Add Note Button / Input Area */}
+                    {!isAddingNote ? (
+                      <button
+                        onClick={() => setIsAddingNote(true)}
+                        className="w-full py-3 px-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all font-bold text-sm flex items-center justify-center gap-2 bg-gray-50/50 hover:bg-white"
                       >
-                        Save Notes
+                        <Plus className="h-4 w-4" />
+                        Add Note
                       </button>
+                    ) : (
+                      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+                        <textarea
+                          rows={3}
+                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none"
+                          placeholder="Type important details about this prospect..."
+                          value={newNoteText}
+                          onChange={(e) => setNewNoteText(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsAddingNote(false);
+                              setNewNoteText("");
+                            }}
+                            className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSaveNote}
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all"
+                          >
+                            Save Note
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes Feed */}
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                      {parsedNotes.length === 0 ? (
+                        <div className="text-center py-10 text-slate-400 text-sm bg-gray-50 rounded-2xl border border-dashed border-gray-100">
+                          <StickyNote className="h-8 w-8 mx-auto mb-2 text-gray-300 opacity-50" />
+                          No notes added yet.
+                        </div>
+                      ) : (
+                        parsedNotes.map((note) => (
+                          <div key={note.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-slate-200 transition-colors">
+                            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
+                            <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                              <span className="flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                                {note.authorName || 'System'}
+                              </span>
+                              <span>{formatDate(note.createdAt)}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </motion.div>
                 )}
