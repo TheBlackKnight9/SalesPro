@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, Phone, Mail, Globe, Calendar, User, 
   MessageSquare, StickyNote, CheckSquare, Clock, 
-  ExternalLink, Send, MoreVertical, Plus
+  ExternalLink, Send, MoreVertical, Plus, Paperclip, File as FileIcon, X, Loader2, Mic, Square
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "@/lib/api";
@@ -29,6 +29,7 @@ interface Task {
   description?: string;
   status: string;
   dueDate?: string;
+  priority?: string | null;
 }
 
 interface LeadDetail {
@@ -53,6 +54,193 @@ interface LeadDetail {
   statusHistory: any[];
 }
 
+interface Attachment {
+  url: string;
+  name: string;
+  type: string;
+  key?: string;
+}
+
+function AttachmentCard({ att }: { att: Attachment }) {
+  const [viewUrl, setViewUrl] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const fetchSignedUrl = async () => {
+      try {
+        let key = att.key;
+        if (!key) {
+          const notesIdx = att.url.indexOf("/notes/");
+          if (notesIdx !== -1) {
+            key = att.url.substring(notesIdx + 1);
+          } else {
+            const parsed = new URL(att.url);
+            key = parsed.pathname.substring(1);
+          }
+        }
+
+        const res = await fetch(`/api/upload/s3?key=${encodeURIComponent(key)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (active) {
+          setViewUrl(data.viewUrl);
+        }
+      } catch {
+        if (active) {
+          setViewUrl(att.url); // fallback
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchSignedUrl();
+    return () => {
+      active = false;
+    };
+  }, [att]);
+
+  if (loading) {
+    return (
+      <div className="border border-slate-200 bg-slate-50 rounded-xl h-24 w-full flex items-center justify-center">
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
+      </div>
+    );
+  }
+
+  const name = att.name?.toLowerCase() || '';
+  const isImage = att.type.startsWith("image/") || att.type.includes("image") || /\.(jpg|jpeg|png|gif|webp|svg)$/.test(name);
+  const isAudio = att.type.startsWith("audio/") || att.type.includes("audio") || /\.(webm|mp3|ogg|wav|m4a|aac)$/.test(name);
+  const isVideo = att.type.startsWith("video/") || att.type.includes("video") || /\.(mp4|mov|avi|mkv)$/.test(name);
+
+  return (
+    <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow transition-shadow group relative h-24">
+      {isImage ? (
+        <a 
+          href={viewUrl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="block h-full w-full relative group overflow-hidden"
+        >
+          <img
+            src={viewUrl}
+            alt={att.name || "Attachment"}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
+          />
+        </a>
+      ) : isAudio ? (
+        <div className="p-2.5 flex flex-col justify-between h-full">
+          <span className="text-[10px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
+          <audio src={viewUrl} controls className="w-full mt-1 h-8 max-w-full" />
+        </div>
+      ) : isVideo ? (
+        <div className="h-full w-full relative bg-black">
+          <video src={viewUrl} controls className="h-full w-full object-contain" />
+        </div>
+      ) : (
+        <a
+          href={viewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-3 flex items-center gap-2.5 h-full hover:bg-slate-50 transition-colors"
+        >
+          <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+            <FileIcon className="h-5 w-5 text-slate-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-700 truncate">{att.name}</p>
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
+          </div>
+        </a>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// TaskRow — Interactive task item with status toggle
+// ---------------------------------------------------------------------------
+interface TaskRowProps {
+  task: {
+    id: string;
+    title: string;
+    status: string;
+    dueDate?: string | null;
+    priority?: string | null;
+  };
+  onToggle: () => Promise<void>;
+}
+
+function TaskRow({ task, onToggle }: TaskRowProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const isCompleted = task.status === 'COMPLETED';
+
+  const handleToggle = async () => {
+    setIsUpdating(true);
+    try {
+      await onToggle();
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className={`flex items-center gap-4 p-4 bg-white border rounded-2xl transition-all shadow-sm ${isCompleted ? 'border-green-200 bg-green-50/30' : 'border-gray-100 hover:border-brand-blue/20'}`}>
+      {/* Checkbox */}
+      <button
+        onClick={handleToggle}
+        disabled={isUpdating}
+        className={`h-5 w-5 rounded flex items-center justify-center border-2 transition-all flex-shrink-0 ${
+          isCompleted
+            ? 'bg-green-500 border-green-500'
+            : 'border-gray-300 hover:border-brand-blue'
+        } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      >
+        {isUpdating ? (
+          <Loader2 className="h-3 w-3 text-white animate-spin" />
+        ) : isCompleted ? (
+          <CheckSquare className="h-3 w-3 text-white" />
+        ) : null}
+      </button>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <h5 className={`text-sm font-bold transition-all ${isCompleted ? 'line-through text-slate-400' : 'text-gray-800'}`}>
+          {task.title}
+        </h5>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {task.dueDate && (
+            <p className={`text-[10px] font-bold uppercase flex items-center gap-1 ${isCompleted ? 'text-slate-400' : 'text-rose-500'}`}>
+              <Calendar className="h-3 w-3" />
+              Due {new Date(task.dueDate).toLocaleDateString()}
+            </p>
+          )}
+          {task.priority && (
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+              task.priority === 'URGENT' ? 'bg-red-100 text-red-600' :
+              task.priority === 'HIGH' ? 'bg-orange-100 text-orange-600' :
+              task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
+              'bg-slate-100 text-slate-500'
+            }`}>
+              {task.priority}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Status Badge */}
+      {isCompleted && (
+        <span className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">
+          Done
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function LeadDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -71,7 +259,113 @@ export default function LeadDetailPage() {
   const [activeTab, setActiveTab] = useState<"timeline" | "notes" | "tasks">("timeline");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
+
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+      setRecordingDuration(0);
+
+      // timeslice of 100ms ensures ondataavailable fires continuously
+      // so all chunks are populated BEFORE onstop is triggered
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.start(100);
+      setIsRecording(true);
+      
+      timerRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to start recording:", error);
+      showToast("Could not access microphone.", "error");
+    }
+  };
+
+  const stopRecording = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") {
+      setIsRecording(false);
+      setIsRecordModalOpen(false);
+      return;
+    }
+
+    // Set onstop BEFORE calling stop() to guarantee it is registered
+    // when the browser fires the event after flushing the final chunk
+    recorder.onstop = () => {
+      const chunks = audioChunksRef.current;
+      console.log('[VoiceNote] onstop fired, chunks collected:', chunks.length);
+      if (chunks.length === 0) {
+        showToast("Recording was empty. Please try again.", "error");
+        setIsRecording(false);
+        setIsRecordModalOpen(false);
+        return;
+      }
+      // Strip codec params (e.g. "audio/webm;codecs=opus" → "audio/webm")
+      // so S3 Content-Type and DB entries are clean and browser-playable
+      const rawMime = recorder.mimeType || 'audio/webm';
+      const cleanMime = rawMime.split(';')[0].trim();
+      const ext = cleanMime.includes('ogg') ? 'ogg' : 'webm';
+      const audioBlob = new Blob(chunks, { type: cleanMime });
+      const audioFile = new window.File([audioBlob], `voice-note-${Date.now()}.${ext}`, { type: cleanMime });
+      console.log('[VoiceNote] File created:', audioFile.name, audioFile.size, 'bytes', cleanMime);
+
+      setPendingAttachments(prev => [...prev, audioFile]);
+
+      if (recorder.stream) {
+        recorder.stream.getTracks().forEach(track => track.stop());
+      }
+      setIsRecording(false);
+      setIsRecordModalOpen(false);
+    };
+
+    recorder.stop();
+  };
+
+  const cancelRecording = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.onstop = () => {
+        if (mediaRecorderRef.current?.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+        setIsRecording(false);
+        setIsRecordModalOpen(false);
+      };
+      mediaRecorderRef.current.stop();
+    } else {
+      setIsRecording(false);
+      setIsRecordModalOpen(false);
+    }
+  };
   
   // Task Modal state
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -173,26 +467,71 @@ export default function LeadDetailPage() {
   const handleSaveNote = async () => {
     if (!newNoteText.trim() || !lead) return;
 
-    const newNote = {
-      id: Math.random().toString(36).substr(2, 9),
-      text: newNoteText,
-      authorName: currentUser?.name || "System",
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedNotesList = [newNote, ...parsedNotes];
-    const notesJson = JSON.stringify(updatedNotesList);
+    setIsUploading(true);
+    const uploadedAttachments: Array<{ url: string; name: string; type: string }> = [];
 
     try {
+      // Step 1 & 2: Loop through pending attachments and upload directly to S3 via pre-signed URLs
+      for (const file of pendingAttachments) {
+        const res = await fetch("/api/upload/s3", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to generate upload URL for ${file.name}`);
+        }
+
+        const { uploadUrl, fileUrl } = await res.json();
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(`Failed to upload ${file.name} to S3`);
+        }
+
+        uploadedAttachments.push({
+          url: fileUrl,
+          name: file.name,
+          type: file.type,
+        });
+      }
+
+      const newNote = {
+        id: Math.random().toString(36).substr(2, 9),
+        text: newNoteText,
+        authorName: currentUser?.name || "System",
+        createdAt: new Date().toISOString(),
+        attachments: uploadedAttachments,
+      };
+
+      const updatedNotesList = [newNote, ...parsedNotes];
+      const notesJson = JSON.stringify(updatedNotesList);
+
       await apiClient.put(`/leads/${id}`, { notes: notesJson });
       showToast("Note added successfully.", "success");
       setNewNoteText("");
+      setPendingAttachments([]);
       setIsAddingNote(false);
       fetchLeadDetails(); // Hot reload details
       router.refresh();   // Sync Next.js Server Components cache
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save note:", error);
-      showToast("Failed to save note.", "error");
+      showToast(error.message || "Failed to save note.", "error");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -520,28 +859,94 @@ export default function LeadDetailPage() {
                       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
                         <textarea
                           rows={3}
-                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none"
+                          disabled={isUploading}
+                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none disabled:opacity-60"
                           placeholder="Type important details about this prospect..."
                           value={newNoteText}
                           onChange={(e) => setNewNoteText(e.target.value)}
                         />
-                        <div className="flex justify-end gap-3">
+                        
+                        {/* File Input & Paperclip Button */}
+                        <div className="space-y-2">
+                          <input
+                            type="file"
+                            multiple
+                            id="lead-note-file-input"
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                setPendingAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+                              }
+                            }}
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById("lead-note-file-input")?.click()}
+                              disabled={isUploading || isRecording}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                            >
+                              <Paperclip className="h-3.5 w-3.5" />
+                              Attach Files
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsRecordModalOpen(true)}
+                              disabled={isUploading}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                            >
+                              <Mic className="h-3.5 w-3.5" />
+                              Voice Note
+                            </button>
+                          </div>
+                          
+                          {/* Pending Attachments List */}
+                          {pendingAttachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {pendingAttachments.map((file, idx) => (
+                                <div key={idx} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 text-xs text-slate-600 font-medium">
+                                  <FileIcon className="h-3.5 w-3.5 text-slate-400" />
+                                  <span className="truncate max-w-[150px]">{file.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPendingAttachments(prev => prev.filter((_, i) => i !== idx))}
+                                    className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
                           <button
                             type="button"
+                            disabled={isUploading}
                             onClick={() => {
                               setIsAddingNote(false);
                               setNewNoteText("");
+                              setPendingAttachments([]);
                             }}
-                            className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700"
+                            className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 disabled:opacity-50"
                           >
                             Cancel
                           </button>
                           <button
                             type="button"
+                            disabled={isUploading || !newNoteText.trim()}
                             onClick={handleSaveNote}
-                            className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all"
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center"
                           >
-                            Save Note
+                            {isUploading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              "Save Note"
+                            )}
                           </button>
                         </div>
                       </div>
@@ -558,6 +963,16 @@ export default function LeadDetailPage() {
                         parsedNotes.map((note) => (
                           <div key={note.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-slate-200 transition-colors">
                             <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
+                            
+                            {/* Attachments Section */}
+                            {note.attachments && note.attachments.length > 0 && (
+                              <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                {note.attachments.map((att: { url: string; name: string; type: string }, aIdx: number) => (
+                                  <AttachmentCard key={aIdx} att={att} />
+                                ))}
+                              </div>
+                            )}
+
                             <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                               <span className="flex items-center gap-1">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
@@ -597,25 +1012,26 @@ export default function LeadDetailPage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {lead.tasks.map(task => (
-                          <div key={task.id} className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl hover:border-brand-blue/20 transition-all shadow-sm group">
-                            <button className="h-5 w-5 rounded border border-gray-300 flex items-center justify-center hover:border-brand-blue">
-                              <CheckSquare className="h-3 w-3 text-white opacity-0 group-hover:opacity-10" />
-                            </button>
-                            <div className="flex-1">
-                              <h5 className="text-sm font-bold text-gray-800">{task.title}</h5>
-                              {task.dueDate && (
-                                <p className="text-[10px] font-bold text-rose-500 uppercase flex items-center gap-1 mt-0.5">
-                                  <Calendar className="h-3 w-3" />
-                                  Due {new Date(task.dueDate).toLocaleDateString()}
-                                </p>
-                              )}
-                            </div>
-                            <button className="text-gray-300 hover:text-gray-500 transition-colors">
-                              <MoreVertical className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ))}
+                        {lead.tasks.map(task => {
+                          const isCompleted = task.status === 'COMPLETED';
+                          return (
+                            <TaskRow
+                              key={task.id}
+                              task={task}
+                              onToggle={async () => {
+                                const newStatus = isCompleted ? 'PENDING' : 'COMPLETED';
+                                try {
+                                  await apiClient.patch(`/tasks/${task.id}/status`, { status: newStatus });
+                                  showToast(`Task marked as ${newStatus.toLowerCase()}`, 'success');
+                                  router.refresh();
+                                  fetchLeadDetails();
+                                } catch {
+                                  showToast('Failed to update task', 'error');
+                                }
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     )}
                   </motion.div>
@@ -690,6 +1106,69 @@ export default function LeadDetailPage() {
           }}
           preselectedLeadId={lead.id}
         />
+      )}
+
+      {/* Voice Record Modal */}
+      {isRecordModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
+            <h3 className="text-lg font-bold text-slate-800 mb-6">Record Voice Note</h3>
+            
+            <div className="flex flex-col items-center justify-center mb-8">
+              {isRecording ? (
+                <>
+                  <div className="h-20 w-20 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                    <Mic className="h-10 w-10 text-red-600" />
+                  </div>
+                  <p className="text-red-600 font-bold text-sm animate-pulse mb-1">Recording in progress...</p>
+                  <p className="text-slate-500 font-mono text-xl font-semibold">{formatDuration(recordingDuration)}</p>
+                </>
+              ) : (
+                <>
+                  <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                    <Mic className="h-10 w-10 text-slate-400" />
+                  </div>
+                  <p className="text-slate-500 font-medium text-sm">Ready to record</p>
+                </>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              {!isRecording ? (
+                <>
+                  <button 
+                    onClick={() => setIsRecordModalOpen(false)}
+                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={startRecording}
+                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-brand-blue hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all"
+                  >
+                    Start Recording
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={cancelRecording}
+                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={stopRecording}
+                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Square className="h-4 w-4 fill-current" />
+                    Stop & Save
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
