@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, CheckCircle, AlertCircle, FileText, BadgeDollarSign } from "lucide-react";
+import { X, CheckCircle, AlertCircle, FileText, IndianRupee } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -157,8 +157,8 @@ export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, l
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <BadgeDollarSign className="h-3 w-3 text-emerald-500" />
-                              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">${Number(quote.totalAmount).toLocaleString()}</p>
+                              <IndianRupee className="h-3 w-3 text-emerald-500" />
+                              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">₹{Number(quote.totalAmount).toLocaleString('en-IN')}</p>
                             </div>
                           </div>
                         </div>
@@ -186,7 +186,7 @@ export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, l
                   <Button 
                     onClick={handleConvert}
                     className="w-full py-6 text-base font-bold rounded-2xl shadow-xl shadow-brand-blue/20"
-                    isLoading={isSubmitting}
+                    loading={isSubmitting}
                   >
                     Accept Quote & Convert
                   </Button>

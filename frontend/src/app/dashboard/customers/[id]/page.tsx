@@ -14,7 +14,7 @@ import {
   ExternalLink,
   Save,
   MessageSquare,
-  BadgeDollarSign,
+  IndianRupee,
   Plus,
   StickyNote,
   Paperclip,
@@ -437,11 +437,11 @@ export default function CustomerDetailsPage() {
         </div>
         <div className="flex items-center gap-3 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl px-5 py-3 shadow-sm">
           <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
-            <BadgeDollarSign className="h-6 w-6 text-brand-blue" />
+            <IndianRupee className="h-6 w-6 text-brand-blue" />
           </div>
           <div>
             <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Total Revenue</p>
-            <p className="text-xl font-bold text-gray-900 tracking-tight">${Number(customer.totalRevenue).toLocaleString()}</p>
+            <p className="text-xl font-bold text-gray-900 tracking-tight">₹{Number(customer.totalRevenue).toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
@@ -559,7 +559,7 @@ export default function CustomerDetailsPage() {
                           </div>
                           <div className="flex items-center gap-6">
                             <div className="text-right">
-                              <p className="text-sm font-bold text-gray-900">${Number(q.totalAmount).toLocaleString()}</p>
+                              <p className="text-sm font-bold text-gray-900">₹{Number(q.totalAmount).toLocaleString('en-IN')}</p>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                                 q.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-600" : "bg-orange-100 text-orange-600"
                               }`}>

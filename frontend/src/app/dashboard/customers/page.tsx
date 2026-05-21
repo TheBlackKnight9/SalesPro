@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Briefcase, UserPlus, ChevronDown, Calendar, DollarSign } from "lucide-react";
+import { Search, Filter, Briefcase, UserPlus, ChevronDown, Calendar, IndianRupee } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useUser, useUserRole } from "@/store/useAuthStore";
 import AddCustomerSlideOver from "@/components/customers/AddCustomerSlideOver";
@@ -35,8 +35,8 @@ const DATE_FILTERS = [
 
 const REVENUE_FILTERS = [
   { id: "all", label: "Any Revenue" },
-  { id: "gt_1000", label: "> $1,000" },
-  { id: "gt_5000", label: "> $5,000" },
+  { id: "gt_1000", label: "> ₹1,000" },
+  { id: "gt_5000", label: "> ₹5,000" },
 ];
 
 export default function CustomersPage() {
@@ -169,7 +169,7 @@ export default function CustomersPage() {
           <Menu as="div" className="relative flex-1 sm:flex-none">
             <Menu.Button className="flex w-full items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-gray-400" />
+                <IndianRupee className="h-4 w-4 text-gray-400" />
                 {REVENUE_FILTERS.find(f => f.id === activeRevenueFilter)?.label}
               </div>
               <ChevronDown className="h-4 w-4 text-gray-400" />
@@ -266,7 +266,7 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-bold tracking-tight">
-                        ${Number(customer.totalRevenue).toLocaleString()}
+                        ₹{Number(customer.totalRevenue).toLocaleString('en-IN')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 font-medium">

@@ -36,6 +36,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
   const [selectedEntityId, setSelectedEntityId] = useState(preselectedLeadId || "");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [taxRate, setTaxRate] = useState<number>(18);
 
   const [formData, setFormData] = useState({
     validUntil: "",
@@ -97,13 +98,9 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
     setFormData({ ...formData, items: newItems });
   };
 
-  const calculateTotal = () => {
-    return formData.items.reduce((sum, item) => {
-      const lineTotal = item.quantity * item.unitPrice;
-      const tax = lineTotal * (item.taxRate / 100);
-      return sum + lineTotal + tax;
-    }, 0);
-  };
+  const subtotal = formData.items.reduce((acc, item) => acc + (Number(item.quantity || 0) * Number(item.unitPrice || 0)), 0);
+  const taxAmount = subtotal * (taxRate / 100);
+  const totalAmountWithTax = subtotal + taxAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +114,10 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
       const payload = {
         validUntil: formData.validUntil,
         notes: formData.notes,
-        items: formData.items,
+        items: formData.items.map(item => ({
+          ...item,
+          taxRate: taxRate
+        })),
         leadId: entityType === 'LEAD' ? selectedEntityId : undefined,
         customerId: entityType === 'CUSTOMER' ? selectedEntityId : undefined,
       };
@@ -339,7 +339,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
                         />
                         <input
                           type="number"
-                          placeholder="Price"
+                          placeholder="₹ Price"
                           required
                           min="0"
                           value={item.unitPrice || ""}
@@ -370,13 +370,25 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
                 />
               </div>
 
+              <div className="flex justify-between items-center mb-4 px-2">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tax Rate (%)</label>
+                <input 
+                  type="number" 
+                  value={taxRate} 
+                  onChange={(e) => setTaxRate(Number(e.target.value))} 
+                  placeholder="0"
+                  className="w-20 px-3 py-1.5 text-xs text-right border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:border-brand-blue rounded-lg font-semibold"
+                  min="0"
+                />
+              </div>
+
               {/* Summary Footer */}
               <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-3 px-4 py-2 bg-brand-blue/5 dark:bg-brand-blue/10 rounded-2xl border border-brand-blue/10">
                   <Calculator className="h-5 w-5 text-brand-blue" />
                   <div>
                     <p className="text-[10px] font-bold text-brand-blue uppercase tracking-tighter">Total Amount (Incl. Tax)</p>
-                    <p className="text-lg font-black text-brand-blue">${calculateTotal().toLocaleString()}</p>
+                    <p className="text-lg font-black text-brand-blue">₹{totalAmountWithTax.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">

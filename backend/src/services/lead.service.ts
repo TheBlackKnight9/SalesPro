@@ -114,7 +114,13 @@ export class LeadService {
     if (query.officeId && currentUser.role === "SUPER_ADMIN") {
       where.officeId = query.officeId;
     }
-    if (query.status) where.status = query.status;
+    if (query.status) {
+      if (typeof query.status === "string" && query.status.includes(",")) {
+        where.status = { in: query.status.split(",") as any[] };
+      } else {
+        where.status = query.status;
+      }
+    }
     if (query.source) where.source = query.source;
     if (search) {
       where.OR = [

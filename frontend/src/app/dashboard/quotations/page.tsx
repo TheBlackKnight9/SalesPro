@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Filter, FileText, Plus, Download, Eye, CheckCircle2, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, Filter, FileText, Plus, Download, Eye, CheckCircle2, X, Check } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
@@ -27,6 +27,38 @@ export default function QuotationsPage() {
   const [viewingQuote, setViewingQuote] = useState<Quotation | null>(null);
   const [viewingQuoteDetails, setViewingQuoteDetails] = useState<any | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const getClientName = (q: Quotation) => {
+    if (q.customer) return `${q.customer.firstName} ${q.customer.lastName || ""}`.trim();
+    if (q.lead) return `${q.lead.firstName} ${q.lead.lastName || ""}`.trim();
+    return "";
+  };
+
+  const finalDisplayData = quotations.filter((q) => {
+    const clientName = getClientName(q);
+    const matchesSearch = 
+      q.quotationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      clientName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = selectedStatus ? q.status === selectedStatus : true;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const handleOpenQuickView = async (quote: Quotation) => {
     setViewingQuote(quote);
@@ -114,10 +146,50 @@ export default function QuotationsPage() {
             className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue dark:text-white transition-all outline-none"
           />
         </div>
-        <button className="btn btn-secondary w-full sm:w-auto dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
-          <Filter className="mr-2 h-4 w-4" />
-          Filters
-        </button>
+        <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="btn btn-secondary w-full sm:w-auto dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 flex items-center justify-center"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            {selectedStatus ? `Status: ${selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase()}` : "Filters"}
+          </button>
+          
+          {isFilterOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                Filter by Status
+              </div>
+              <div className="space-y-1">
+                {[
+                  { value: null, label: "All Statuses" },
+                  { value: "DRAFT", label: "Draft" },
+                  { value: "SENT", label: "Sent" },
+                  { value: "ACCEPTED", label: "Accepted" },
+                  { value: "REJECTED", label: "Rejected" }
+                ].map((statusOption) => (
+                  <button
+                    key={statusOption.value || "ALL"}
+                    onClick={() => {
+                      setSelectedStatus(statusOption.value);
+                      setIsFilterOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${
+                      selectedStatus === statusOption.value
+                        ? "bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/20 dark:text-brand-blue-light"
+                        : "text-gray-700 dark:text-slate-300 hover:bg-gray-150 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <span>{statusOption.label}</span>
+                    {selectedStatus === statusOption.value && (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table Card */}
@@ -143,10 +215,12 @@ export default function QuotationsPage() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-slate-500 font-medium">No quotations found.</td>
                 </tr>
+              ) : finalDisplayData.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-slate-500 font-medium">No quotations matched your search criteria.</td>
+                </tr>
               ) : (
-                quotations
-                  .filter(q => q.quotationNumber.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((q) => (
+                finalDisplayData.map((q) => (
                   <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors group">
                     <td className="px-6 py-4">
                       <span className="font-bold text-gray-900 dark:text-white">{q.quotationNumber}</span>
@@ -166,7 +240,7 @@ export default function QuotationsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm font-extrabold text-gray-900 dark:text-white">${Number(q.totalAmount).toLocaleString()}</span>
+                      <span className="text-sm font-extrabold text-gray-900 dark:text-white">₹{Number(q.totalAmount).toLocaleString('en-IN')}</span>
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(q.status)}</td>
                     <td className="px-6 py-4">
@@ -346,8 +420,8 @@ export default function QuotationsPage() {
                             <tr key={item.id} className="text-sm">
                               <td className="px-4 py-3 font-semibold text-gray-800 dark:text-slate-300">{item.description}</td>
                               <td className="px-4 py-3 text-center text-gray-600 dark:text-slate-400">{Number(item.quantity)}</td>
-                              <td className="px-4 py-3 text-right text-gray-600 dark:text-slate-400">${Number(item.unitPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                              <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">${Number(item.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                              <td className="px-4 py-3 text-right text-gray-600 dark:text-slate-400">₹{Number(item.unitPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                              <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">₹{Number(item.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -367,15 +441,15 @@ export default function QuotationsPage() {
                   <div className="border-t border-gray-150 dark:border-white/5 pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500 dark:text-slate-400 font-medium">Subtotal</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">${Number(viewingQuoteDetails.subtotal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">₹{Number(viewingQuoteDetails.subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500 dark:text-slate-400 font-medium">Tax Amount</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">${Number(viewingQuoteDetails.taxAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">₹{Number(viewingQuoteDetails.taxAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between border-t border-gray-150 dark:border-white/10 pt-2 text-base font-bold">
                       <span className="text-gray-900 dark:text-white">Grand Total</span>
-                      <span className="text-cyan-600 dark:text-cyan-400">${Number(viewingQuoteDetails.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="text-cyan-600 dark:text-cyan-400">₹{Number(viewingQuoteDetails.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </>
