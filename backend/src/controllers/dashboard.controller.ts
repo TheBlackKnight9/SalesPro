@@ -59,7 +59,200 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     const now = new Date();
     const role = req.user?.role;
     const userId = req.user?.userId;
-    
+
+    if (role === UserRole.SUPER_ADMIN) {
+      // 1. Fetch all active offices
+      const offices = await prisma.office.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, city: true, state: true, monthlyTarget: true }
+      });
+
+      // 2. Global KPIs
+      const globalRevenueSum = await prisma.quotation.aggregate({
+        where: { status: "ACCEPTED" },
+        _sum: { totalAmount: true }
+      });
+      const totalRevenue = Number(globalRevenueSum._sum.totalAmount || 0);
+      const totalLeadsGlobal = await prisma.lead.count();
+      const activeOffices = offices.length;
+      const totalAccountsActive = await prisma.user.count({ where: { isActive: true } });
+
+      // 3. Regional Performance Grid
+      const regionalPerformance = await Promise.all(offices.map(async (office) => {
+        const acceptedQuotes = await prisma.quotation.findMany({
+          where: {
+            status: "ACCEPTED",
+            createdBy: { officeId: office.id }
+          },
+          select: { totalAmount: true }
+        });
+        const officeRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        const officeLeadsCount = await prisma.lead.count({ where: { officeId: office.id } });
+        const wonLeadsCount = await prisma.lead.count({ where: { officeId: office.id, status: "WON" } });
+        const conversionRate = officeLeadsCount > 0 
+          ? Number(((wonLeadsCount / officeLeadsCount) * 100).toFixed(1))
+          : 0;
+
+        const target = office.monthlyTarget || 5000000;
+
+        const progressPercent = Math.min(Math.round((officeRevenue / target) * 100), 100);
+        const status = officeRevenue >= target * 0.75 ? "On Target" : "Behind";
+
+        return {
+          id: office.id,
+          name: office.name,
+          status,
+          revenue: officeRevenue,
+          leads: officeLeadsCount,
+          conversionRate,
+          target,
+          progressPercent
+        };
+      }));
+
+      // 4. Trend Data over the past 6 calendar months
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+
+      const trendQuotations = await prisma.quotation.findMany({
+        where: {
+          status: "ACCEPTED",
+          createdAt: { gte: sixMonthsAgo }
+        },
+        select: {
+          totalAmount: true,
+          createdAt: true,
+          createdBy: {
+            select: {
+              office: { select: { name: true } }
+            }
+          }
+        }
+      });
+
+      const monthsList: { key: string; name: string }[] = [];
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        monthsList.push({
+          key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+          name: monthNames[d.getMonth()]
+        });
+      }
+
+      const trendData = monthsList.map(m => {
+        const item: any = { name: m.name };
+        offices.forEach(o => {
+          const key = o.name.replace(" Office", "");
+          item[key] = 0;
+        });
+        return item;
+      });
+
+      trendQuotations.forEach(q => {
+        const qDate = new Date(q.createdAt);
+        const qKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, "0")}`;
+        const monthItem = trendData.find((t, idx) => monthsList[idx].key === qKey);
+        if (monthItem && q.createdBy?.office) {
+          const key = q.createdBy.office.name.replace(" Office", "");
+          monthItem[key] = Number(monthItem[key] || 0) + Number(q.totalAmount || 0);
+        }
+      });
+
+      // 5. Top Agents Leaderboard Matrix
+      const allUsers = await prisma.user.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, office: { select: { name: true } } }
+      });
+
+      const agentLeaderboard = await Promise.all(allUsers.map(async (u) => {
+        const acceptedQuotes = await prisma.quotation.aggregate({
+          where: { status: "ACCEPTED", createdById: u.id },
+          _sum: { totalAmount: true }
+        });
+        const revenue = Number(acceptedQuotes._sum.totalAmount || 0);
+        const totalLeads = await prisma.lead.count({ where: { agentId: u.id } });
+        const wonLeads = await prisma.lead.count({ where: { agentId: u.id, status: "WON" } });
+        const conversionRate = totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
+
+        return {
+          name: u.name,
+          officeName: u.office?.name ? u.office.name.replace(" Office", "") : "HQ",
+          conversionRate,
+          revenue
+        };
+      }));
+
+      agentLeaderboard.sort((a, b) => b.revenue - a.revenue);
+      const topAgents = agentLeaderboard.slice(0, 5);
+
+      // 6. Global Lead Source Distribution
+      const leadSourceGroup = await prisma.lead.groupBy({
+        by: ["source"],
+        _count: { id: true }
+      });
+      const sourceColors = {
+        WEBSITE: "#6366F1",
+        REFERRAL: "#10B981",
+        SOCIAL_MEDIA: "#F59E0B",
+        WALK_IN: "#EC4899",
+        WHATSAPP: "#25D366",
+        MANUAL: "#64748B",
+        OTHER: "#94A3B8"
+      };
+      const totalLeadsCount = await prisma.lead.count();
+      const leadSources = leadSourceGroup.map(g => {
+        const percentage = totalLeadsCount > 0 ? Math.round((g._count.id / totalLeadsCount) * 100) : 0;
+        return {
+          name: g.source,
+          value: g._count.id,
+          percentage: `${percentage}%`,
+          color: (sourceColors as any)[g.source] || "#94A3B8"
+        };
+      }).sort((a, b) => b.value - a.value);
+
+      // 7. Deficit Calculations
+      const companyQuota = 20000000; // ₹2Cr
+      const quotaProgressPercent = Math.min(Math.round((totalRevenue / companyQuota) * 100), 100);
+      const deficit = Math.max(companyQuota - totalRevenue, 0);
+
+      let deficitText = "";
+      if (deficit <= 0) {
+        deficitText = "Organization goal achieved!";
+      } else {
+        if (deficit >= 10000000) {
+          deficitText = `need ₹${(deficit / 10000000).toFixed(2)}Cr more to hit org goal`;
+        } else if (deficit >= 100000) {
+          deficitText = `need ₹${(deficit / 100000).toFixed(1)}L more to hit org goal`;
+        } else {
+          deficitText = `need ₹${deficit.toLocaleString('en-IN')} more to hit org goal`;
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          isSuperAdmin: true,
+          kpis: {
+            totalRevenue,
+            totalLeadsGlobal,
+            activeOffices,
+            totalAccountsActive
+          },
+          regionalPerformance,
+          trendData,
+          topAgents,
+          leadSources,
+          companyQuota,
+          quotaProgressPercent,
+          deficitText
+        }
+      });
+    }
+
     // Dynamic base clauses based on UserRole
     const leadWhereClause: any = {};
     const taskWhereClause: any = {};
@@ -514,7 +707,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       };
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         kpis: { newLeads, hotLeads, converted, pipelineValue },
@@ -529,6 +722,6 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching dashboard metrics:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

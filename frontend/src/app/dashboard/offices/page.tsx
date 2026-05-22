@@ -1,20 +1,68 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Building2, Plus, MapPin, Phone, Users } from "lucide-react";
+import { Fragment, useState, useEffect } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Building2, Plus, MapPin, Phone, Users, X, Mail, Globe, Check, Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 interface Office {
   id: string;
   name: string;
   address: string | null;
+  city: string | null;
+  state: string | null;
   phone: string | null;
+  email: string | null;
+  isActive: boolean;
+  monthlyTarget: number;
   _count?: { users: number; leads: number };
+}
+
+function formatIndianCurrency(value: number, short = false) {
+  if (!value) return "₹0";
+  if (short) {
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
+    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
+    return `₹${value}`;
+  }
+  return `₹${new Intl.NumberFormat('en-IN').format(value)}`;
 }
 
 export default function OfficesPage() {
   const [offices, setOffices] = useState<Office[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Modal Visibility States
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedOffice, setSelectedOffice] = useState<Office | null>(null);
+  
+  // Submit loading states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form States
+  const [addForm, setAddForm] = useState({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    phone: "",
+    email: "",
+    monthlyTarget: 5000000,
+    isActive: true,
+  });
+
+  const [editForm, setEditForm] = useState({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    phone: "",
+    email: "",
+    monthlyTarget: 5000000,
+    isActive: true,
+  });
 
   const fetchOffices = async () => {
     try {
@@ -32,62 +80,538 @@ export default function OfficesPage() {
     fetchOffices();
   }, []);
 
+  // Handle opening Edit Modal
+  const handleEditClick = (office: Office) => {
+    setSelectedOffice(office);
+    setEditForm({
+      name: office.name || "",
+      address: office.address || "",
+      city: office.city || "",
+      state: office.state || "",
+      phone: office.phone || "",
+      email: office.email || "",
+      monthlyTarget: office.monthlyTarget ?? 5000000,
+      isActive: office.isActive ?? true,
+    });
+    setIsEditOpen(true);
+  };
+
+  // Create Office Submit Handler
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await apiClient.post("/offices", addForm);
+      await fetchOffices();
+      setIsAddOpen(false);
+      // Reset form
+      setAddForm({
+        name: "",
+        address: "",
+        city: "",
+        state: "",
+        phone: "",
+        email: "",
+        monthlyTarget: 5000000,
+        isActive: true,
+      });
+    } catch (error: any) {
+      console.error("Failed to create office:", error);
+      alert(error.message || "Failed to create office.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Edit Office Submit Handler
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOffice) return;
+    setIsSubmitting(true);
+    try {
+      await apiClient.put(`/offices/${selectedOffice.id}`, editForm);
+      await fetchOffices();
+      setIsEditOpen(false);
+      setSelectedOffice(null);
+    } catch (error: any) {
+      console.error("Failed to update office:", error);
+      alert(error.message || "Failed to update office.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8 bg-[#f8f9fa] -m-6 p-6 min-h-screen">
+      {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Offices</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage your business locations and branches.</p>
+          <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">Offices</h1>
+          <p className="mt-1 text-xs text-slate-500">Manage your business locations, branch status, and monthly targets.</p>
         </div>
-        <button className="btn btn-primary">
-          <Plus className="mr-2 h-4 w-4" />
+        <button 
+          onClick={() => setIsAddOpen(true)}
+          className="flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all w-fit"
+        >
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
           Add Office
         </button>
       </div>
 
+      {/* Grid Canvas */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
-          <p className="text-gray-500">Loading offices...</p>
+          <div className="col-span-full py-12 flex justify-center items-center">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <span className="ml-2 text-xs text-slate-500 font-medium">Loading branch structures...</span>
+          </div>
         ) : offices.length === 0 ? (
-          <p className="text-gray-500">No offices found.</p>
+          <div className="col-span-full bg-white rounded-xl border border-slate-200/80 p-8 shadow-sm text-center">
+            <Building2 className="mx-auto h-8 w-8 text-slate-300 mb-2" />
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">No Offices Registered</p>
+            <p className="text-xs text-slate-500 mt-1">Create your first branch office using the top-right controls.</p>
+          </div>
         ) : (
           offices.map((office) => (
-            <div key={office.id} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center text-accent">
-                  <Building2 className="h-6 w-6" />
+            <div 
+              key={office.id} 
+              className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex justify-between items-start gap-2 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{office.name}</h3>
+                      <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">{office.city || "Branch Location"}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                    office.isActive 
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                      : "bg-rose-50 text-rose-700 border border-rose-100"
+                  }`}>
+                    {office.isActive ? "Active" : "Inactive"}
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">{office.name}</h3>
-              </div>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex items-start gap-3 text-sm text-gray-600">
-                  <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" />
-                  <span>{office.address || "No address provided"}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Phone className="h-4 w-4 shrink-0 text-gray-400" />
-                  <span>{office.phone || "No phone provided"}</span>
+                
+                <div className="space-y-2 mb-6">
+                  <div className="flex items-start gap-2.5 text-xs text-slate-600">
+                    <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-slate-400" />
+                    <span className="line-clamp-2">{office.address || "No address provided"}</span>
+                  </div>
+                  {office.phone && (
+                    <div className="flex items-center gap-2.5 text-xs text-slate-600">
+                      <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      <span>{office.phone}</span>
+                    </div>
+                  )}
+                  {office.email && (
+                    <div className="flex items-center gap-2.5 text-xs text-slate-600">
+                      <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      <span className="truncate">{office.email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                 <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <Users className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <Users className="h-3.5 w-3.5 text-slate-300" />
                     <span>{office._count?.users || 0} Team</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>{office._count?.leads || 0} Leads</span>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <span className="text-slate-300 text-xs font-bold">₹</span>
+                    <span>Target: <strong className="text-slate-700">{formatIndianCurrency(office.monthlyTarget || 0, true)}</strong></span>
                   </div>
                 </div>
-                <button className="text-accent text-sm font-medium hover:underline">Edit</button>
+                <button 
+                  onClick={() => handleEditClick(office)}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                >
+                  Edit
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* ========================================== */}
+      {/* DIALOG 1: ADD OFFICE                       */}
+      {/* ========================================== */}
+      <Transition.Root show={isAddOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsAddOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-[1px] transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-xl bg-white p-5 text-left shadow-xl border border-slate-100 transition-all max-w-md w-full">
+                  <div className="absolute right-4 top-4">
+                    <button
+                      type="button"
+                      className="rounded-md bg-transparent text-slate-400 hover:text-slate-500 focus:outline-none"
+                      onClick={() => setIsAddOpen(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div>
+                    <Dialog.Title as="h3" className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-1">
+                      Add New Office Branch
+                    </Dialog.Title>
+                    <p className="text-xs text-slate-400 font-medium">Configure corporate properties and revenue target values.</p>
+                  </div>
+
+                  <form onSubmit={handleAddSubmit} className="mt-5 space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Office Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={addForm.name}
+                        onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        placeholder="e.g. Jaipur Corporate Headquarter"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Location Tag (City)</label>
+                        <input
+                          type="text"
+                          required
+                          value={addForm.city}
+                          onChange={(e) => setAddForm({ ...addForm, city: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="e.g. Jaipur"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">State / Region</label>
+                        <input
+                          type="text"
+                          value={addForm.state}
+                          onChange={(e) => setAddForm({ ...addForm, state: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="e.g. Rajasthan"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Revenue Target (INR)</label>
+                      <div className="relative rounded-lg shadow-sm">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs font-semibold">₹</span>
+                        <input 
+                          type="number" 
+                          required
+                          value={addForm.monthlyTarget} 
+                          onChange={(e) => setAddForm({ ...addForm, monthlyTarget: Number(e.target.value) })}
+                          className="w-full pl-7 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="Enter Target Amount"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Street Address</label>
+                      <input
+                        type="text"
+                        value={addForm.address}
+                        onChange={(e) => setAddForm({ ...addForm, address: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        placeholder="e.g. 456 Tonk Road"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Phone</label>
+                        <input
+                          type="tel"
+                          value={addForm.phone}
+                          onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="e.g. +91 98765 43210"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Email</label>
+                        <input
+                          type="email"
+                          value={addForm.email}
+                          onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="e.g. jaipur@salespro.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Initial Status</label>
+                      <div className="flex bg-slate-100 p-0.5 rounded-lg w-fit">
+                        <button
+                          type="button"
+                          onClick={() => setAddForm({ ...addForm, isActive: true })}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                            addForm.isActive
+                              ? "bg-white text-emerald-600 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Active
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAddForm({ ...addForm, isActive: false })}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                            !addForm.isActive
+                              ? "bg-white text-rose-600 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Inactive
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all"
+                        onClick={() => setIsAddOpen(false)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-all disabled:opacity-50"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Create Office"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* ========================================== */}
+      {/* DIALOG 2: EDIT OFFICE                      */}
+      {/* ========================================== */}
+      <Transition.Root show={isEditOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsEditOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-[1px] transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-xl bg-white p-5 text-left shadow-xl border border-slate-100 transition-all max-w-md w-full">
+                  <div className="absolute right-4 top-4">
+                    <button
+                      type="button"
+                      className="rounded-md bg-transparent text-slate-400 hover:text-slate-500 focus:outline-none"
+                      onClick={() => setIsEditOpen(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div>
+                    <Dialog.Title as="h3" className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-1">
+                      Edit Office Parameters
+                    </Dialog.Title>
+                    <p className="text-xs text-slate-400 font-medium">Update parameters, revenue targets, and status conditions.</p>
+                  </div>
+
+                  <form onSubmit={handleEditSubmit} className="mt-5 space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Office Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        placeholder="Jaipur Corporate Headquarter"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Location Tag (City)</label>
+                        <input
+                          type="text"
+                          required
+                          value={editForm.city}
+                          onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="Jaipur"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">State / Region</label>
+                        <input
+                          type="text"
+                          value={editForm.state}
+                          onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                          placeholder="Rajasthan"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Revenue Target (INR)</label>
+                      <div className="relative rounded-lg shadow-sm">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs font-semibold">₹</span>
+                        <input 
+                          type="number" 
+                          value={editForm.monthlyTarget} 
+                          onChange={(e) => setEditForm({ ...editForm, monthlyTarget: Number(e.target.value) })}
+                          className="w-full pl-7 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Street Address</label>
+                      <input
+                        type="text"
+                        value={editForm.address}
+                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Phone</label>
+                        <input
+                          type="tel"
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Email</label>
+                        <input
+                          type="email"
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Branch Status</label>
+                      <div className="flex bg-slate-100 p-0.5 rounded-lg w-fit">
+                        <button
+                          type="button"
+                          onClick={() => setEditForm({ ...editForm, isActive: true })}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                            editForm.isActive
+                              ? "bg-white text-emerald-600 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Active
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm({ ...editForm, isActive: false })}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                            !editForm.isActive
+                              ? "bg-white text-rose-600 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Inactive
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all"
+                        onClick={() => setIsEditOpen(false)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-all disabled:opacity-50"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
     </div>
   );
 }

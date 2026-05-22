@@ -172,7 +172,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Lead / Customer Selection */}
                 <div className="space-y-2 relative">
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <User className="h-3 w-3" /> Target Recipient
                   </label>
 
@@ -220,7 +220,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
                           {selectedEntity.firstName} {selectedEntity.lastName || ""}
                         </span>
                         {selectedEntity.company && (
-                          <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">
+                          <span className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase">
                             {selectedEntity.company}
                           </span>
                         )}
@@ -275,7 +275,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
                                 >
                                   <span>{entity.firstName} {entity.lastName || ""}</span>
                                   {entity.company && (
-                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">{entity.company}</span>
+                                    <span className="text-[11px] text-gray-400 dark:text-slate-500 uppercase">{entity.company}</span>
                                   )}
                                 </button>
                               ))
@@ -289,7 +289,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
 
                 {/* Expiry Date */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <Calendar className="h-3 w-3" /> Valid Until
                   </label>
                   <input
@@ -305,7 +305,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
               {/* Items Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Line Items</label>
+                  <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Line Items</label>
                   <button
                     type="button"
                     onClick={addItem}
@@ -361,7 +361,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
 
               {/* Notes */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Additional Notes</label>
+                <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Additional Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -387,7 +387,7 @@ export default function CreateQuotationModal({ isOpen, onClose, onSuccess, prese
                 <div className="flex items-center gap-3 px-4 py-2 bg-brand-blue/5 dark:bg-brand-blue/10 rounded-2xl border border-brand-blue/10">
                   <Calculator className="h-5 w-5 text-brand-blue" />
                   <div>
-                    <p className="text-[10px] font-bold text-brand-blue uppercase tracking-tighter">Total Amount (Incl. Tax)</p>
+                    <p className="text-[11px] font-bold text-brand-blue uppercase tracking-tighter">Total Amount (Incl. Tax)</p>
                     <p className="text-lg font-black text-brand-blue">₹{totalAmountWithTax.toLocaleString('en-IN')}</p>
                   </div>
                 </div>

@@ -289,7 +289,7 @@ export default function LeadsPage() {
                         </td>
                       )}
                       <td className="px-6 py-4">
-                        <span className="inline-flex px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
+                        <span className="inline-flex px-2 py-1 bg-gray-100 rounded text-[11px] font-bold text-gray-600 uppercase tracking-tighter">
                           {lead.source}
                         </span>
                       </td>

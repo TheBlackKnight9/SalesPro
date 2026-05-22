@@ -115,7 +115,7 @@ export default function AddLeadSlideOver({
 
                       <div className="relative mt-8 flex-1 px-6 space-y-6">
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                             <User className="h-3 w-3" />
                             First Name <span className="text-rose-500">*</span>
                           </label>
@@ -131,7 +131,7 @@ export default function AddLeadSlideOver({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                             <Phone className="h-3 w-3" />
                             Phone Number <span className="text-rose-500">*</span>
                           </label>
@@ -147,7 +147,7 @@ export default function AddLeadSlideOver({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                             <Mail className="h-3 w-3" />
                             Email Address
                           </label>
@@ -162,7 +162,7 @@ export default function AddLeadSlideOver({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                             <Building className="h-3 w-3" />
                             Company Name
                           </label>
@@ -177,7 +177,7 @@ export default function AddLeadSlideOver({
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                             <Globe className="h-3 w-3" />
                             Lead Source
                           </label>

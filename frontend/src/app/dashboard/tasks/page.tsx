@@ -226,14 +226,14 @@ export default function TasksPage() {
                         {task.description ? (
                           <p className="text-xs text-slate-600 leading-relaxed">{task.description}</p>
                         ) : (
-                          <span className="italic text-[10px] text-slate-400">No description provided.</span>
+                          <span className="italic text-[11px] text-slate-400">No description provided.</span>
                         )}
                       </div>
                     </td>
 
                     {/* PRIORITY */}
                     <td className="px-3 py-2.5">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${isReadOnly ? "bg-gray-100 text-gray-400 border-gray-200" : getPriorityStyles(task.priority)}`}>
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase border ${isReadOnly ? "bg-gray-100 text-gray-400 border-gray-200" : getPriorityStyles(task.priority)}`}>
                         {task.priority}
                       </span>
                     </td>
@@ -270,7 +270,7 @@ export default function TasksPage() {
                         ) : (
                           <div className="flex flex-col">
                             <span className="text-sm">{task.assignedTo?.name || "Unassigned"}</span>
-                            <span className="text-[10px] text-slate-400 capitalize">{task.assignedTo?.role?.toLowerCase() || 'Agent'}</span>
+                            <span className="text-[11px] text-slate-400 capitalize">{task.assignedTo?.role?.toLowerCase() || 'Agent'}</span>
                           </div>
                         )}
                       </td>

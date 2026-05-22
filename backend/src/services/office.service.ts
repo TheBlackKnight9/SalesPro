@@ -14,6 +14,7 @@ export class OfficeService {
         country: dto.country ?? "India",
         phone: dto.phone,
         email: dto.email,
+        monthlyTarget: dto.monthlyTarget,
       },
     });
   }

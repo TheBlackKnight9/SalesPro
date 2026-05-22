@@ -10,6 +10,7 @@ export interface CreateOfficeDto {
   country?: string;
   phone?: string;
   email?: string;
+  monthlyTarget?: number;
 }
 
 export interface UpdateOfficeDto {
@@ -21,4 +22,5 @@ export interface UpdateOfficeDto {
   phone?: string;
   email?: string;
   isActive?: boolean;
+  monthlyTarget?: number;
 }

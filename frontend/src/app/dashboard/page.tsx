@@ -18,7 +18,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Cell
+  Cell,
+  Legend
 } from "recharts";
 import { Button } from "@/components/ui/Button";
 import { useUser, useIsHydrated } from "@/store/useAuthStore";
@@ -30,6 +31,17 @@ function formatINR(value: number) {
   if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
   if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
   return `₹${value.toLocaleString('en-IN')}`;
+}
+
+function formatIndianCurrency(value: number, short = false) {
+  if (!value) return "₹0";
+  if (short) {
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
+    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
+    return `₹${value}`;
+  }
+  return `₹${new Intl.NumberFormat('en-IN').format(value)}`;
 }
 
 function formatEnum(val?: string) {
@@ -161,6 +173,309 @@ export default function DashboardPage() {
     ? pipelineByStage.reduce((sum: number, s: any) => sum + (s.value || 0), 0)
     : (kpis.pipelineValue ?? 0);
 
+  if (user?.role === "SUPER_ADMIN" && dashboardData?.isSuperAdmin) {
+    const adminKpis = dashboardData.kpis || { totalRevenue: 0, totalLeadsGlobal: 0, activeOffices: 0, totalAccountsActive: 0 };
+    const regionalPerformance = dashboardData.regionalPerformance || [];
+    const trendData = dashboardData.trendData || [];
+    const topAgents = dashboardData.topAgents || [];
+    const leadSources = dashboardData.leadSources || [];
+    const companyQuota = dashboardData.companyQuota || 20000000;
+    const quotaProgressPercent = dashboardData.quotaProgressPercent || 0;
+    const deficitText = dashboardData.deficitText || "";
+
+    return (
+      <div className="space-y-6 pb-8 bg-[#f8f9fa] -m-6 p-6 min-h-screen">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">
+              Enterprise Super Admin Panel
+            </h1>
+            <p className="mt-1 text-xs text-slate-500">
+              Multi-office corporate architecture metrics and organizational goals.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" onClick={() => setIsAddLeadOpen(true)}>
+              Add Lead
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setIsTaskModalOpen(true)}>
+              New Task
+            </Button>
+          </div>
+        </div>
+
+        {/* 1. Global KPI Metrics Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+            <p className="text-xl font-extrabold text-slate-800 mt-1">
+              {formatIndianCurrency(adminKpis.totalRevenue)}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Cumulative Accepted volume ({formatIndianCurrency(adminKpis.totalRevenue, true)})
+            </p>
+          </div>
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Leads Global</p>
+            <p className="text-xl font-extrabold text-slate-800 mt-1">
+              {adminKpis.totalLeadsGlobal}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">Active operational leads globally</p>
+          </div>
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Offices</p>
+            <p className="text-xl font-extrabold text-slate-800 mt-1">
+              {adminKpis.activeOffices}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">Unique active location segments</p>
+          </div>
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Accounts Active</p>
+            <p className="text-xl font-extrabold text-slate-800 mt-1">
+              {adminKpis.totalAccountsActive}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">Registered active workspace users</p>
+          </div>
+        </div>
+
+        {/* 2. Regional Office Performance Row */}
+        <div>
+          <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Regional Performance Grid</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {regionalPerformance.map((office: any) => (
+              <div key={office.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-sm font-bold text-slate-800">{office.name}</span>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                      office.status === "On Target" 
+                        ? "bg-emerald-50 text-emerald-700" 
+                        : "bg-rose-50 text-rose-700"
+                    }`}>
+                      {office.status}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5 text-[11px] font-medium text-slate-600 mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Revenue</span>
+                      <span className="font-semibold text-slate-800">{formatIndianCurrency(office.revenue, true)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Leads</span>
+                      <span className="font-semibold text-slate-800">{office.leads}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Conv. Rate</span>
+                      <span className="font-bold text-indigo-600">{office.conversionRate}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1">
+                    <span>Target: {formatIndianCurrency(office.target, true)}</span>
+                    <span>{office.progressPercent}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-500 ${
+                      office.status === "On Target" ? "bg-emerald-500" : "bg-rose-500"
+                    }`} style={{ width: `${office.progressPercent}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Charts Row: Cross-Office Revenue Trend & Conversion Efficiency */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Revenue Trend LineChart (2/3 width) */}
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm lg:col-span-2">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Cross-Office Revenue Trend</h3>
+            <div className="w-full overflow-hidden">
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={trendData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} />
+                  <YAxis fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => formatIndianCurrency(v, true)} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: any) => [formatIndianCurrency(Number(v)), "Revenue"]} />
+                  <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                  {regionalPerformance.map((office: any, idx: number) => {
+                    const key = office.name.replace(" Office", "");
+                    const colors = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#25D366"];
+                    return (
+                      <Line
+                        key={key}
+                        type="monotone"
+                        dataKey={key}
+                        stroke={colors[idx % colors.length]}
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Branch Conversion Efficiency BarChart (1/3 width) */}
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Branch Conversion Efficiency</h3>
+            <div className="w-full overflow-hidden">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={regionalPerformance} margin={{ top: 10, right: 10, left: 20, bottom: 5 }}>
+                  <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
+                  <YAxis type="category" dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => v.replace(" Office", "")} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: any) => [`${v}%`, "Conversion Rate"]} />
+                  <Bar dataKey="conversionRate" radius={[0, 4, 4, 0]} barSize={16}>
+                    {regionalPerformance.map((entry: any, index: number) => {
+                      const colors = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#25D366"];
+                      return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Bottom Grid: Top Agents Leaderboard & Goal Progress Organization Block */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Agents Cross-Office Leaderboard Matrix */}
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Top Agents Leaderboard</h3>
+            {topAgents.length > 0 ? (
+              <div className="space-y-3">
+                {topAgents.map((agent: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between border-b border-slate-100 pb-2.5 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold text-slate-400 w-4">{idx + 1}</span>
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 font-semibold flex items-center justify-center text-xs text-slate-700">
+                        {agent.name?.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-slate-800">{agent.name}</span>
+                          <span className="bg-blue-50 text-blue-600 text-[9px] font-medium px-1.5 py-0.2 rounded">
+                            {agent.officeName}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {agent.conversionRate}% conv
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">
+                      {formatIndianCurrency(agent.revenue, true)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[11px] text-slate-400 text-center py-6">No active agents found</div>
+            )}
+          </div>
+
+          {/* Goal Progress & Organization Totals Block */}
+          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Goal Progress & Global Totals</h3>
+              <div className="space-y-3">
+                {regionalPerformance.map((office: any) => (
+                  <div key={office.id} className="space-y-1">
+                    <div className="flex justify-between text-[11px] font-medium text-slate-600">
+                      <span>{office.name}</span>
+                      <span className="font-bold text-slate-700">{formatIndianCurrency(office.revenue, true)} / {formatIndianCurrency(office.target, true)}</span>
+                    </div>
+                    <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${
+                        office.status === "On Target" ? "bg-emerald-500" : "bg-rose-500"
+                      }`} style={{ width: `${office.progressPercent}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Master Organization Summary Block */}
+            <div className="mt-6 border-t border-slate-100 pt-4">
+              <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                <span>Organisation total</span>
+                <span>
+                  {formatIndianCurrency(adminKpis.totalRevenue, true)} / {formatIndianCurrency(companyQuota, true)} • {quotaProgressPercent}%
+                </span>
+              </div>
+              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${quotaProgressPercent}%` }} />
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium italic mt-2">
+                9 working days left • {deficitText}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Consolidated Global Lead Source Distribution Matrix */}
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Global Lead Source Distribution</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="h-[120px] w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={leadSources}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={40}
+                    outerRadius={60}
+                    paddingAngle={2}
+                  >
+                    {leadSources.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-1.5">
+              {leadSources.map((source: any, index: number) => (
+                <div key={index} className="flex justify-between items-center text-xs font-medium text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: source.color || '#cbd5e1' }} />
+                    <span className="capitalize">{source.name.toLowerCase().replace("_", " ")}</span>
+                  </div>
+                  <div className="flex items-center gap-1 flex-1 px-4 text-slate-200">
+                    <span className="border-b border-dashed border-slate-200 flex-1 h-3" />
+                  </div>
+                  <span className="font-bold text-slate-800">{source.percentage || `${source.value}%`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <AddLeadModal
+          isOpen={isAddLeadOpen}
+          onClose={() => setIsAddLeadOpen(false)}
+          onSuccess={() => window.location.reload()}
+        />
+
+        <CreateTaskModal 
+          isOpen={isTaskModalOpen} 
+          onClose={() => setIsTaskModalOpen(false)} 
+          onSuccess={() => {
+            setIsTaskModalOpen(false);
+            window.location.reload();
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
@@ -254,26 +569,26 @@ export default function DashboardPage() {
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="h-3.5 w-3.5 text-slate-400" />
-                  <h3 className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">Agent Leaderboard</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Agent Leaderboard</h3>
                 </div>
                 {agentLeaderboard.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-slate-100">
-                          <th className="text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">#</th>
-                          <th className="text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Agent</th>
-                          <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Active Leads</th>
-                          <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Converted</th>
-                          <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Pipeline Value</th>
-                          <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Status</th>
+                          <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">#</th>
+                          <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Agent</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Active Leads</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Converted</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Pipeline Value</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {agentLeaderboard.map((agent: any, idx: number) => (
                           <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                             <td className="py-2.5 pr-4">
-                              <span className={`text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ${
+                              <span className={`text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center ${
                                 idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-100 text-slate-600' : idx === 2 ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400'
                               }`}>
                                 {idx + 1}
@@ -292,9 +607,9 @@ export default function DashboardPage() {
                             <td className="py-2.5 pr-4 text-right text-xs font-bold text-slate-800">{formatINR(agent.pipelineValue)}</td>
                             <td className="py-2.5 text-right">
                               {agent.needsReview ? (
-                                <span className="text-[10px] bg-amber-50 text-amber-600 rounded-full px-2 py-0.5 font-medium whitespace-nowrap">⚠️ Needs Review</span>
+                                <span className="text-[11px] bg-amber-50 text-amber-600 rounded-full px-2 py-0.5 font-medium whitespace-nowrap">⚠️ Needs Review</span>
                               ) : (
-                                <span className="text-[10px] bg-emerald-50 text-emerald-600 rounded-full px-2 py-0.5 font-medium">✓ On Track</span>
+                                <span className="text-[11px] bg-emerald-50 text-emerald-600 rounded-full px-2 py-0.5 font-medium">✓ On Track</span>
                               )}
                             </td>
                           </tr>
@@ -312,7 +627,7 @@ export default function DashboardPage() {
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                    <h3 className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">Action Alerts</h3>
+                    <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Action Alerts</h3>
                   </div>
                   <div className="space-y-2">
                     {managementAlerts.length > 0 ? managementAlerts.map((alert: any, idx: number) => (
@@ -338,7 +653,7 @@ export default function DashboardPage() {
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2">
                   <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="h-3.5 w-3.5 text-slate-400" />
-                    <h3 className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">Pipeline Value by Stage</h3>
+                    <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Pipeline Value by Stage</h3>
                   </div>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={pipelineByStage} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -360,15 +675,15 @@ export default function DashboardPage() {
 
                 {/* ── 4. Strategic Lead Source Pipeline ────────────────── */}
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                  <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Source Pipeline</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Source Pipeline</h3>
                   {sourcePipeline.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-slate-100">
-                            <th className="text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Source</th>
-                            <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Leads</th>
-                            <th className="text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Value</th>
+                            <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Source</th>
+                            <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Leads</th>
+                            <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Value</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -389,7 +704,7 @@ export default function DashboardPage() {
 
                 {/* ── 5. Agent Task Completion Matrix ──────────────────── */}
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2">
-                  <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Agent Task Completion</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Agent Task Completion</h3>
                   {agentTaskMatrix.length > 0 ? (
                     <div className="space-y-3">
                       {agentTaskMatrix.map((agent: any, idx: number) => (
@@ -404,7 +719,7 @@ export default function DashboardPage() {
                               style={{ width: `${agent.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[10px] font-semibold text-slate-500 shrink-0 w-16 text-right">
+                          <span className="text-[11px] font-semibold text-slate-500 shrink-0 w-16 text-right">
                             {agent.completed}/{agent.total} <span className="text-slate-400">({agent.percentage}%)</span>
                           </span>
                         </div>
@@ -437,7 +752,7 @@ export default function DashboardPage() {
               {/* 1. Stage Breakdown */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
                   <div className="space-y-2.5">
                     {stageBreakdown.length > 0 ? stageBreakdown.map((item: any, idx: number) => {
                       const label = item.stage || item.name || "Unknown";
@@ -464,7 +779,7 @@ export default function DashboardPage() {
               {/* 2. Weekly Funnel Trend */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">Weekly Funnel Trend</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Weekly Funnel Trend</h3>
                   <div className="flex gap-2 text-[9px] font-semibold text-slate-400">
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> New</span>
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Contacted</span>
@@ -494,17 +809,17 @@ export default function DashboardPage() {
 
               {/* 3. Hot Leads to Action */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Hot Leads to Action</h3>
+                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Hot Leads to Action</h3>
                 <div className="space-y-2.5">
                   {hotLeadsList.length > 0 ? hotLeadsList.map((lead: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between p-2 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors bg-slate-50/50">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 text-[10px] bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold shrink-0">
+                        <div className="w-7 h-7 text-[11px] bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold shrink-0">
                           {lead.initials || lead.name?.substring(0, 2).toUpperCase() || 'NA'}
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="text-[11px] font-semibold text-slate-800 truncate">{lead.name}</span>
-                          <span className="text-[10px] text-slate-400 font-medium truncate">{lead.subtext}</span>
+                          <span className="text-[11px] text-slate-400 font-medium truncate">{lead.subtext}</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
@@ -522,7 +837,7 @@ export default function DashboardPage() {
 
               {/* 4. Today's Tasks */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Today's Tasks</h3>
+                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Today's Tasks</h3>
                 <div className="space-y-2">
                   {todaysTasks.length > 0 ? todaysTasks.map((task: any, idx: number) => (
                     <div key={idx} className="flex items-start gap-2 p-2 rounded border border-slate-100">
@@ -560,7 +875,7 @@ export default function DashboardPage() {
 
               {/* 5. Lead Sources */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Sources</h3>
+                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Sources</h3>
                 <div className="flex flex-col justify-between h-[calc(100%-1.5rem)]">
                   {leadSources.length > 0 ? (
                     <>
@@ -585,7 +900,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="w-full mt-2 space-y-1">
                         {leadSources.map((source: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center text-[10px] font-medium text-slate-600">
+                          <div key={index} className="flex justify-between items-center text-[11px] font-medium text-slate-600">
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: source.color || '#cbd5e1' }} />
                               <span>{formatEnum(source.name)}</span>
@@ -603,7 +918,7 @@ export default function DashboardPage() {
 
               {/* 6. Activity Feed */}
               <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[10px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Recent Activities</h3>
+                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Recent Activities</h3>
                 <div className="border-l border-slate-200 ml-1 pl-3.5 space-y-4 py-1 relative">
                   {recentActivities.length > 0 ? recentActivities.map((activity: any, idx: number) => (
                     <div key={idx} className="relative">

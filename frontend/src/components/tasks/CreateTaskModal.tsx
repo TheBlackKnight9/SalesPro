@@ -149,7 +149,7 @@ export default function CreateTaskModal({
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Title */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
                       Task Title *
                     </label>
                     <input
@@ -165,7 +165,7 @@ export default function CreateTaskModal({
 
                   {/* Description */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <AlignLeft className="h-3 w-3" />
                       Description
                     </label>
@@ -182,7 +182,7 @@ export default function CreateTaskModal({
                   <div className="grid grid-cols-2 gap-4">
                     {/* Due Date */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                         <Calendar className="h-3 w-3" />
                         Due Date
                       </label>
@@ -197,7 +197,7 @@ export default function CreateTaskModal({
 
                     {/* Priority */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                         <Flag className="h-3 w-3" />
                         Priority
                       </label>
@@ -217,7 +217,7 @@ export default function CreateTaskModal({
 
                   {/* Entity Linkage */}
                   <div className="space-y-3 pt-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <Link className="h-3 w-3" />
                       Relate To
                     </label>

@@ -82,7 +82,7 @@ export default function WhatsAppPage() {
                   }`}>
                     <p className="text-xs opacity-70 mb-1">{msg.fromPhone} → {msg.toPhone}</p>
                     <p>{msg.body}</p>
-                    <p className="text-[10px] text-right mt-1 opacity-70">
+                    <p className="text-[11px] text-right mt-1 opacity-70">
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>

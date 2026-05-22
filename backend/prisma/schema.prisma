@@ -145,17 +145,18 @@ enum NotificationType {
 // TABLE 1: Office
 // ─────────────────────────────────────────────
 model Office {
-  id          String   @id @default(cuid())
-  name        String
-  address     String?
-  city        String?
-  state       String?
-  country     String   @default("India")
-  phone       String?
-  email       String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  address       String?
+  city          String?
+  state         String?
+  country       String   @default("India")
+  phone         String?
+  email         String?
+  isActive      Boolean  @default(true)
+  monthlyTarget Float    @default(5000000)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   users       User[]

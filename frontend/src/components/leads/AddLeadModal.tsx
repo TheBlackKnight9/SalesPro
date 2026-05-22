@@ -112,7 +112,7 @@ export default function AddLeadModal({
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <User className="h-3 w-3" />
                       First Name <span className="text-rose-500">*</span>
                     </label>
@@ -128,7 +128,7 @@ export default function AddLeadModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <Phone className="h-3 w-3" />
                       Phone Number <span className="text-rose-500">*</span>
                     </label>
@@ -144,7 +144,7 @@ export default function AddLeadModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <Mail className="h-3 w-3" />
                       Email Address
                     </label>
@@ -159,7 +159,7 @@ export default function AddLeadModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <Building className="h-3 w-3" />
                       Company Name
                     </label>
@@ -174,7 +174,7 @@ export default function AddLeadModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <Globe className="h-3 w-3" />
                       Lead Source
                     </label>

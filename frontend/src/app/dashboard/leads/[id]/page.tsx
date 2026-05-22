@@ -106,7 +106,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
   if (loading) {
     return (
       <div className="border border-slate-200 bg-slate-50 rounded-xl h-24 w-full flex items-center justify-center">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
       </div>
     );
   }
@@ -133,7 +133,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
         </a>
       ) : isAudio ? (
         <div className="p-2.5 flex flex-col justify-between h-full">
-          <span className="text-[10px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
+          <span className="text-[11px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
           <audio src={viewUrl} controls className="w-full mt-1 h-8 max-w-full" />
         </div>
       ) : isVideo ? (
@@ -152,7 +152,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-700 truncate">{att.name}</p>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
+            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
           </div>
         </a>
       )}
@@ -213,7 +213,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
         </h5>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {task.dueDate && (
-            <p className={`text-[10px] font-bold uppercase flex items-center gap-1 ${isCompleted ? 'text-slate-400' : 'text-rose-500'}`}>
+            <p className={`text-[11px] font-bold uppercase flex items-center gap-1 ${isCompleted ? 'text-slate-400' : 'text-rose-500'}`}>
               <Calendar className="h-3 w-3" />
               Due {new Date(task.dueDate).toLocaleDateString()}
             </p>
@@ -233,7 +233,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
 
       {/* Status Badge */}
       {isCompleted && (
-        <span className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">
+        <span className="text-[11px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">
           Done
         </span>
       )}
@@ -647,7 +647,7 @@ export default function LeadDetailPage() {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-gray-900">{lead.phone}</span>
-                      <span className="text-[10px] text-gray-400 font-bold uppercase">Primary</span>
+                      <span className="text-[11px] text-gray-400 font-bold uppercase">Primary</span>
                     </div>
                   </div>
                   {lead.email && (
@@ -657,7 +657,7 @@ export default function LeadDetailPage() {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-gray-900 truncate max-w-[180px]">{lead.email}</span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase">Email</span>
+                        <span className="text-[11px] text-gray-400 font-bold uppercase">Email</span>
                       </div>
                     </div>
                   )}
@@ -671,16 +671,16 @@ export default function LeadDetailPage() {
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Metadata</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase">Source</span>
+                    <span className="text-[11px] text-gray-400 font-bold uppercase">Source</span>
                     <p className="text-sm font-bold text-gray-700">{lead.source}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase">Priority</span>
+                    <span className="text-[11px] text-gray-400 font-bold uppercase">Priority</span>
                     <div className="relative group">
                       <select
                         value={lead.priority}
                         onChange={(e) => handlePriorityChange(e.target.value)}
-                        className={`block w-full px-2 py-1 rounded text-[10px] font-extrabold border-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all ${
+                        className={`block w-full px-2 py-1 rounded text-[11px] font-extrabold border-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all ${
                           lead.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 
                           lead.priority === 'URGENT' ? 'bg-rose-600 text-white' :
                           lead.priority === 'MEDIUM' ? 'bg-blue-50 text-blue-700' :
@@ -700,17 +700,17 @@ export default function LeadDetailPage() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase">Company</span>
+                    <span className="text-[11px] text-gray-400 font-bold uppercase">Company</span>
                     <p className="text-sm font-bold text-gray-700 truncate">{lead.company || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase">Assigned Agent</span>
+                    <span className="text-[11px] text-gray-400 font-bold uppercase">Assigned Agent</span>
                     {role === "SUPER_ADMIN" || role === "MANAGER" ? (
                       <div className="relative group">
                         <select
                           value={lead.agent?.id || ""}
                           onChange={(e) => handleAssignAgent(e.target.value)}
-                          className="block w-full px-2 py-1 rounded text-[10px] font-extrabold border-none bg-gray-100 text-gray-700 focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all"
+                          className="block w-full px-2 py-1 rounded text-[11px] font-extrabold border-none bg-gray-100 text-gray-700 focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all"
                         >
                           <option value="">Unassigned</option>
                           {agents.map((agent) => (
@@ -755,14 +755,14 @@ export default function LeadDetailPage() {
 
           {/* Manager Card (Small) */}
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 text-white shadow-xl">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account Manager</h4>
+            <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account Manager</h4>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
                 <User className="h-5 w-5 text-gray-300" />
               </div>
               <div>
                 <p className="text-sm font-bold">{lead.manager?.name || 'Global HQ'}</p>
-                <p className="text-[10px] text-gray-400 font-medium">Reporting Office</p>
+                <p className="text-[11px] text-gray-400 font-medium">Reporting Office</p>
               </div>
             </div>
           </div>
@@ -819,7 +819,7 @@ export default function LeadDetailPage() {
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <h4 className="text-sm font-bold text-gray-900">{activity.title}</h4>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
                                   {new Date(activity.createdAt).toLocaleString()}
                                 </span>
                               </div>
@@ -828,7 +828,7 @@ export default function LeadDetailPage() {
                                 <div className="h-4 w-4 rounded-full bg-gray-100 flex items-center justify-center">
                                   <User className="h-2 w-2 text-gray-500" />
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-500">By {activity.performedBy.name}</span>
+                                <span className="text-[11px] font-bold text-gray-500">By {activity.performedBy.name}</span>
                               </div>
                             </div>
                           </div>

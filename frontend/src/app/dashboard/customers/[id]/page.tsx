@@ -108,7 +108,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
   if (loading) {
     return (
       <div className="border border-slate-200 bg-slate-50 rounded-xl h-24 w-full flex items-center justify-center">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
       </div>
     );
   }
@@ -135,7 +135,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
         </a>
       ) : isAudio ? (
         <div className="p-2.5 flex flex-col justify-between h-full">
-          <span className="text-[10px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
+          <span className="text-[11px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
           <audio src={viewUrl} controls className="w-full mt-1 h-8 max-w-full" />
         </div>
       ) : isVideo ? (
@@ -154,7 +154,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-700 truncate">{att.name}</p>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
+            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
           </div>
         </a>
       )}
@@ -440,7 +440,7 @@ export default function CustomerDetailsPage() {
             <IndianRupee className="h-6 w-6 text-brand-blue" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Total Revenue</p>
+            <p className="text-[11px] font-bold text-brand-blue uppercase tracking-widest">Total Revenue</p>
             <p className="text-xl font-bold text-gray-900 tracking-tight">₹{Number(customer.totalRevenue).toLocaleString('en-IN')}</p>
           </div>
         </div>
@@ -459,7 +459,7 @@ export default function CustomerDetailsPage() {
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Company</label>
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Company</label>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
                   <Building2 className="h-4 w-4 text-gray-300" />
                   {customer.company || "Individual Client"}
@@ -467,7 +467,7 @@ export default function CustomerDetailsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone</label>
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Phone</label>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
                   <Phone className="h-4 w-4 text-gray-300" />
                   {customer.phone}
@@ -475,7 +475,7 @@ export default function CustomerDetailsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email</label>
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Email</label>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
                   <Mail className="h-4 w-4 text-gray-300" />
                   {customer.email || "No email provided"}
@@ -483,7 +483,7 @@ export default function CustomerDetailsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assigned Office</label>
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Assigned Office</label>
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
                   <Building2 className="h-4 w-4 text-gray-300" />
                   {customer.office?.name || "Global Office"}
@@ -492,7 +492,7 @@ export default function CustomerDetailsPage() {
 
               {customer.conversionNote && (
                 <div className="space-y-1 pt-4 border-t border-gray-50">
-                  <label className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">Conversion Note</label>
+                  <label className="text-[11px] font-bold text-brand-blue uppercase tracking-widest">Conversion Note</label>
                   <p className="text-xs font-medium text-gray-600 leading-relaxed italic">
                     "{customer.conversionNote}"
                   </p>
@@ -560,7 +560,7 @@ export default function CustomerDetailsPage() {
                           <div className="flex items-center gap-6">
                             <div className="text-right">
                               <p className="text-sm font-bold text-gray-900">₹{Number(q.totalAmount).toLocaleString('en-IN')}</p>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
                                 q.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-600" : "bg-orange-100 text-orange-600"
                               }`}>
                                 {q.status}

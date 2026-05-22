@@ -92,12 +92,12 @@ export default function QuotationsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "DRAFT": return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Draft</span>;
-      case "SENT": return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Sent</span>;
-      case "ACCEPTED": return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">Accepted</span>;
-      case "REJECTED": return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">Rejected</span>;
-      case "EXPIRED": return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">Expired</span>;
-      default: return <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">{status}</span>;
+      case "DRAFT": return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Draft</span>;
+      case "SENT": return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Sent</span>;
+      case "ACCEPTED": return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">Accepted</span>;
+      case "REJECTED": return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">Rejected</span>;
+      case "EXPIRED": return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">Expired</span>;
+      default: return <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">{status}</span>;
     }
   };
 
@@ -157,7 +157,7 @@ export default function QuotationsPage() {
           
           {isFilterOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+              <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
                 Filter by Status
               </div>
               <div className="space-y-1">
@@ -198,12 +198,12 @@ export default function QuotationsPage() {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 dark:bg-slate-800/50">
               <tr>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quote #</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Amount</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Expiry</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quote #</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Amount</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Expiry</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -234,7 +234,7 @@ export default function QuotationsPage() {
                               ? `${q.lead.firstName} ${q.lead.lastName || ''}` 
                               : "N/A"}
                         </span>
-                        <span className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase">
+                        <span className="text-[11px] text-gray-400 dark:text-slate-500 font-bold uppercase">
                           {q.customer?.company || q.lead?.company || 'Personal'}
                         </span>
                       </div>
@@ -297,7 +297,7 @@ export default function QuotationsPage() {
                               toast.error(err.message || "Failed to update status");
                             }
                           }}
-                          className="bg-slate-50 dark:bg-slate-800 border-none text-[10px] font-bold rounded-lg px-2 py-1 focus:ring-1 focus:ring-brand-blue/20 outline-none cursor-pointer transition-all uppercase tracking-wider"
+                          className="bg-slate-50 dark:bg-slate-800 border-none text-[11px] font-bold rounded-lg px-2 py-1 focus:ring-1 focus:ring-brand-blue/20 outline-none cursor-pointer transition-all uppercase tracking-wider"
                         >
                           <option value="DRAFT">Draft</option>
                           <option value="SENT">Sent</option>
@@ -378,7 +378,7 @@ export default function QuotationsPage() {
                   {/* Client Info Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5">
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client Name</p>
+                      <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client Name</p>
                       <p className="text-sm font-bold mt-0.5 text-gray-900 dark:text-slate-200">
                         {viewingQuoteDetails.customer 
                           ? `${viewingQuoteDetails.customer.firstName} ${viewingQuoteDetails.customer.lastName || ''}` 
@@ -388,14 +388,14 @@ export default function QuotationsPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Company / Org</p>
+                      <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Company / Org</p>
                       <p className="text-sm font-bold mt-0.5 text-gray-900 dark:text-slate-200">
                         {viewingQuoteDetails.customer?.company || viewingQuoteDetails.lead?.company || 'Personal'}
                       </p>
                     </div>
                     {viewingQuoteDetails.validUntil && (
                       <div className="md:col-span-2 border-t border-gray-150 dark:border-white/5 pt-2 mt-1">
-                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quotation Validity</p>
+                        <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quotation Validity</p>
                         <p className="text-xs font-semibold text-gray-600 dark:text-slate-400 mt-0.5">
                           Valid until {new Date(viewingQuoteDetails.validUntil).toLocaleDateString(undefined, { dateStyle: 'long' })}
                         </p>
@@ -409,10 +409,10 @@ export default function QuotationsPage() {
                       <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50 dark:bg-white/5">
                           <tr>
-                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Item Description</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Qty</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Price</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Total</th>
+                            <th className="px-4 py-3 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Item Description</th>
+                            <th className="px-4 py-3 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-center">Qty</th>
+                            <th className="px-4 py-3 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Price</th>
+                            <th className="px-4 py-3 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Total</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -432,7 +432,7 @@ export default function QuotationsPage() {
                   {/* Notes Section */}
                   {viewingQuoteDetails.notes && (
                     <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10">
-                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Notes & Special Instructions</p>
+                      <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Notes & Special Instructions</p>
                       <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 mt-1 whitespace-pre-wrap">{viewingQuoteDetails.notes}</p>
                     </div>
                   )}

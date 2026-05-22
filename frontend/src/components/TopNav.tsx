@@ -22,7 +22,7 @@ export default function TopNav() {
           SP
         </div>
         <div className="hidden sm:block">
-          <p className="text-[10px] uppercase tracking-[0.28em] text-white/70">SalesPro CRM</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-white/70">SalesPro CRM</p>
           <p className="text-xs font-semibold leading-tight text-white">Unified workspace</p>
         </div>
       </div>

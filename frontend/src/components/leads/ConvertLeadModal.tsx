@@ -131,7 +131,7 @@ export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, l
               <>
                 {/* Quote Selection */}
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Select Quotation to Accept & Link</label>
+                  <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Select Quotation to Accept & Link</label>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                     {quotes.map((quote) => (
                       <div 
@@ -170,7 +170,7 @@ export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, l
 
                 {/* Conversion Note */}
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                  <label className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                     Conversion Note {selectedQuoteId ? "(Optional if Quote selected)" : "(Mandatory if no Quote)"}
                   </label>
                   <textarea 
