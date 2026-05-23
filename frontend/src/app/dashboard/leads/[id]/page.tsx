@@ -105,8 +105,8 @@ function AttachmentCard({ att }: { att: Attachment }) {
 
   if (loading) {
     return (
-      <div className="border border-slate-200 bg-slate-50 rounded-xl h-24 w-full flex items-center justify-center">
-        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
+      <div className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl h-24 w-full flex items-center justify-center">
+        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
       </div>
     );
   }
@@ -117,7 +117,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
   const isVideo = att.type.startsWith("video/") || att.type.includes("video") || /\.(mp4|mov|avi|mkv)$/.test(name);
 
   return (
-    <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow transition-shadow group relative h-24">
+    <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow group relative h-24">
       {isImage ? (
         <a 
           href={viewUrl} 
@@ -133,7 +133,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
         </a>
       ) : isAudio ? (
         <div className="p-2.5 flex flex-col justify-between h-full">
-          <span className="text-[11px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 truncate uppercase tracking-wider">{att.name}</span>
           <audio src={viewUrl} controls className="w-full mt-1 h-8 max-w-full" />
         </div>
       ) : isVideo ? (
@@ -145,14 +145,14 @@ function AttachmentCard({ att }: { att: Attachment }) {
           href={viewUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-3 flex items-center gap-2.5 h-full hover:bg-slate-50 transition-colors"
+          className="p-3 flex items-center gap-2.5 h-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
         >
-          <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-            <FileIcon className="h-5 w-5 text-slate-400" />
+          <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-slate-800">
+            <FileIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-700 truncate">{att.name}</p>
-            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{att.name}</p>
+            <p className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
           </div>
         </a>
       )}
@@ -188,19 +188,19 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
   };
 
   return (
-    <div className={`flex items-center gap-4 p-4 bg-white border rounded-2xl transition-all shadow-sm ${isCompleted ? 'border-green-200 bg-green-50/30' : 'border-gray-100 hover:border-brand-blue/20'}`}>
+    <div className={`flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border rounded-2xl transition-all shadow-sm ${isCompleted ? 'border-green-200 dark:border-green-900/30 bg-green-50/10 dark:bg-green-950/10' : 'border-slate-200/60 dark:border-slate-800 hover:border-brand-blue/20'}`}>
       {/* Checkbox */}
       <button
         onClick={handleToggle}
         disabled={isUpdating}
         className={`h-5 w-5 rounded flex items-center justify-center border-2 transition-all flex-shrink-0 ${
           isCompleted
-            ? 'bg-green-500 border-green-500'
-            : 'border-gray-300 hover:border-brand-blue'
+            ? 'bg-green-500 border-green-500 dark:bg-green-600 dark:border-green-600'
+            : 'border-slate-300 dark:border-slate-700 hover:border-brand-blue dark:hover:border-brand-blue'
         } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         {isUpdating ? (
-          <Loader2 className="h-3 w-3 text-white animate-spin" />
+          <Loader2 className="h-3 w-3 text-white dark:text-slate-350 animate-spin" />
         ) : isCompleted ? (
           <CheckSquare className="h-3 w-3 text-white" />
         ) : null}
@@ -208,22 +208,22 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h5 className={`text-sm font-bold transition-all ${isCompleted ? 'line-through text-slate-400' : 'text-gray-800'}`}>
+        <h5 className={`text-sm transition-all ${isCompleted ? 'line-through text-slate-400 dark:text-slate-500 font-medium' : 'text-slate-800 dark:text-slate-200 font-semibold'}`}>
           {task.title}
         </h5>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {task.dueDate && (
-            <p className={`text-[11px] font-bold uppercase flex items-center gap-1 ${isCompleted ? 'text-slate-400' : 'text-rose-500'}`}>
+            <p className={`text-[11px] font-semibold uppercase flex items-center gap-1 ${isCompleted ? 'text-slate-400 dark:text-slate-500' : 'text-rose-500 dark:text-rose-400'}`}>
               <Calendar className="h-3 w-3" />
               Due {new Date(task.dueDate).toLocaleDateString()}
             </p>
           )}
           {task.priority && (
             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-              task.priority === 'URGENT' ? 'bg-red-100 text-red-600' :
-              task.priority === 'HIGH' ? 'bg-orange-100 text-orange-600' :
-              task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-600' :
-              'bg-slate-100 text-slate-500'
+              task.priority === 'URGENT' ? 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400' :
+              task.priority === 'HIGH' ? 'bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400' :
+              task.priority === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400' :
+              'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-450'
             }`}>
               {task.priority}
             </span>
@@ -233,7 +233,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
 
       {/* Status Badge */}
       {isCompleted && (
-        <span className="text-[11px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">
+        <span className="text-[11px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-950/30 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">
           Done
         </span>
       )}
@@ -266,6 +266,62 @@ export default function LeadDetailPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
+
+  // Edit Profile modal and form states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    alternatePhone: "",
+    company: "",
+    designation: "",
+    source: "",
+    priority: "",
+    budget: "",
+    notes: ""
+  });
+
+  const handleOpenEditModal = () => {
+    if (!lead) return;
+    setEditForm({
+      firstName: lead.firstName || "",
+      lastName: lead.lastName || "",
+      email: lead.email || "",
+      phone: lead.phone || "",
+      alternatePhone: lead.alternatePhone || "",
+      company: lead.company || "",
+      designation: lead.designation || "",
+      source: lead.source || "OTHER",
+      priority: lead.priority || "MEDIUM",
+      budget: lead.budget ? String(lead.budget) : "",
+      notes: lead.notes || ""
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lead) return;
+    setIsSavingEdit(true);
+    try {
+      const payload = {
+        ...editForm,
+        budget: editForm.budget ? Number(editForm.budget) : null,
+      };
+      await apiClient.put(`/leads/${id}`, payload);
+      showToast("Profile updated successfully.", "success");
+      setIsEditModalOpen(false);
+      fetchLeadDetails(); // refresh leads data on UI
+    } catch (error: any) {
+      console.error("Failed to update lead profile:", error);
+      showToast(error.message || "Failed to update profile.", "error");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const [recordingDuration, setRecordingDuration] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -593,19 +649,19 @@ export default function LeadDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto w-full">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.back()}
-            className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all shadow-sm"
+            className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-medium text-slate-900 dark:text-white tracking-tight">
                 {lead.firstName} {lead.lastName || ""}
               </h1>
               <StatusDropdown 
@@ -615,17 +671,22 @@ export default function LeadDetailPage() {
                 onStatusChange={handleStatusChange}
               />
             </div>
-            <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5 font-medium">
-              <Clock className="h-3.5 w-3.5" />
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
+              <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
               Created on {new Date(lead.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="btn btn-secondary shadow-sm">Edit Profile</button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button 
+            onClick={handleOpenEditModal}
+            className="btn btn-secondary dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-750 shadow-sm text-xs h-9"
+          >
+            Edit Profile
+          </button>
           <button 
             onClick={() => setIsQuoteModalOpen(true)}
-            className="btn btn-primary shadow-lg shadow-brand-blue/20"
+            className="btn btn-primary shadow-sm hover:shadow active:scale-95 transition-all h-9 text-xs"
           >
             Generate Quotation
           </button>
@@ -635,98 +696,98 @@ export default function LeadDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Profile Card */}
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden">
             <div className="p-6 space-y-6">
               {/* Contact Info */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contact Details</h3>
+                <h3 className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest">Contact Details</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center text-brand-blue">
+                    <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-brand-blue dark:text-brand-blue/90">
                       <Phone className="h-4 w-4" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-gray-900">{lead.phone}</span>
-                      <span className="text-[11px] text-gray-400 font-bold uppercase">Primary</span>
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{lead.phone}</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-550 font-semibold uppercase tracking-wider mt-0.5">Primary</span>
                     </div>
                   </div>
                   {lead.email && (
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                      <div className="h-9 w-9 rounded-xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
                         <Mail className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 truncate max-w-[180px]">{lead.email}</span>
-                        <span className="text-[11px] text-gray-400 font-bold uppercase">Email</span>
+                        <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">{lead.email}</span>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-550 font-semibold uppercase tracking-wider mt-0.5">Email</span>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100" />
+              <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
               {/* Lead Details */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Metadata</h3>
+                <h3 className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest">Metadata</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <span className="text-[11px] text-gray-400 font-bold uppercase">Source</span>
-                    <p className="text-sm font-bold text-gray-700">{lead.source}</p>
+                    <span className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider">Source</span>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{lead.source}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[11px] text-gray-400 font-bold uppercase">Priority</span>
+                    <span className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider">Priority</span>
                     <div className="relative group">
                       <select
                         value={lead.priority}
                         onChange={(e) => handlePriorityChange(e.target.value)}
-                        className={`block w-full px-2 py-1 rounded text-[11px] font-extrabold border-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all ${
-                          lead.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 
-                          lead.priority === 'URGENT' ? 'bg-rose-600 text-white' :
-                          lead.priority === 'MEDIUM' ? 'bg-blue-50 text-blue-700' :
-                          'bg-gray-100 text-gray-600'
+                        className={`block w-full px-2 py-1 rounded text-[11px] font-bold border-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all ${
+                          lead.priority === 'HIGH' ? 'bg-red-100 dark:bg-red-950/30 text-red-750 dark:text-red-400' : 
+                          lead.priority === 'URGENT' ? 'bg-rose-600 dark:bg-rose-900 text-white' :
+                          lead.priority === 'MEDIUM' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-750 dark:text-blue-400' :
+                          'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                         }`}
                       >
-                        <option value="LOW">LOW</option>
-                        <option value="MEDIUM">MEDIUM</option>
-                        <option value="HIGH">HIGH</option>
-                        <option value="URGENT">URGENT</option>
+                        <option value="LOW" className="dark:bg-slate-900">LOW</option>
+                        <option value="MEDIUM" className="dark:bg-slate-900">MEDIUM</option>
+                        <option value="HIGH" className="dark:bg-slate-900">HIGH</option>
+                        <option value="URGENT" className="dark:bg-slate-900">URGENT</option>
                       </select>
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[11px] text-gray-400 font-bold uppercase">Company</span>
-                    <p className="text-sm font-bold text-gray-700 truncate">{lead.company || 'N/A'}</p>
+                    <span className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider">Company</span>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{lead.company || 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[11px] text-gray-400 font-bold uppercase">Assigned Agent</span>
+                    <span className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider">Assigned Agent</span>
                     {role === "SUPER_ADMIN" || role === "MANAGER" ? (
                       <div className="relative group">
                         <select
                           value={lead.agent?.id || ""}
                           onChange={(e) => handleAssignAgent(e.target.value)}
-                          className="block w-full px-2 py-1 rounded text-[11px] font-extrabold border-none bg-gray-100 text-gray-700 focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all"
+                          className="block w-full px-2 py-1 rounded text-[11px] font-bold border-none bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-blue/20 cursor-pointer appearance-none transition-all"
                         >
-                          <option value="">Unassigned</option>
+                          <option value="" className="dark:bg-slate-900">Unassigned</option>
                           {agents.map((agent) => (
-                            <option key={agent.id} value={agent.id}>
+                            <option key={agent.id} value={agent.id} className="dark:bg-slate-900">
                               {agent.name}
                             </option>
                           ))}
                         </select>
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-2.5 h-2.5 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm font-bold text-gray-700">{lead.agent?.name || 'Unassigned'}</p>
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{lead.agent?.name || 'Unassigned'}</p>
                     )}
                   </div>
                 </div>
@@ -736,7 +797,7 @@ export default function LeadDetailPage() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <a 
                   href={`tel:${lead.phone}`}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-brand-blue text-white rounded-xl font-bold text-sm shadow-md shadow-brand-blue/10 hover:brightness-110 transition-all"
+                  className="flex items-center justify-center gap-2 py-2.5 bg-brand-blue text-white rounded-xl font-bold text-sm shadow-md shadow-brand-blue/10 hover:brightness-110 active:scale-95 transition-all"
                 >
                   <Phone className="h-4 w-4" />
                   Call
@@ -744,7 +805,7 @@ export default function LeadDetailPage() {
                 <a 
                   href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`}
                   target="_blank"
-                  className="flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm shadow-md shadow-green-500/10 hover:brightness-110 transition-all"
+                  className="flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm shadow-md shadow-green-500/10 hover:brightness-110 active:scale-95 transition-all"
                 >
                   <MessageSquare className="h-4 w-4" />
                   WhatsApp
@@ -754,15 +815,15 @@ export default function LeadDetailPage() {
           </div>
 
           {/* Manager Card (Small) */}
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 text-white shadow-xl">
-            <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account Manager</h4>
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 rounded-3xl p-6 text-white shadow-xl border dark:border-slate-800">
+            <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Account Manager</h4>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                <User className="h-5 w-5 text-gray-300" />
+                <User className="h-5 w-5 text-gray-300 dark:text-slate-400" />
               </div>
               <div>
                 <p className="text-sm font-bold">{lead.manager?.name || 'Global HQ'}</p>
-                <p className="text-[11px] text-gray-400 font-medium">Reporting Office</p>
+                <p className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">Reporting Office</p>
               </div>
             </div>
           </div>
@@ -770,9 +831,9 @@ export default function LeadDetailPage() {
 
         {/* Right Column: Main Workspace */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col h-full min-h-[500px]">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col h-full min-h-[500px]">
             {/* Tabs Header */}
-            <div className="flex items-center gap-8 px-8 border-b border-gray-100">
+            <div className="flex items-center gap-8 px-8 border-b border-slate-100 dark:border-slate-800">
               {[
                 { id: 'timeline', label: 'Activity Timeline', icon: Clock },
                 { id: 'notes', label: 'Lead Notes', icon: StickyNote },
@@ -784,7 +845,7 @@ export default function LeadDetailPage() {
                   className={`flex items-center gap-2 py-5 text-sm font-bold border-b-2 transition-all ${
                     activeTab === tab.id 
                     ? "border-brand-blue text-brand-blue" 
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                    : "border-transparent text-slate-450 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
                   }`}
                 >
                   <tab.icon className="h-4 w-4" />
@@ -805,30 +866,30 @@ export default function LeadDetailPage() {
                     className="space-y-8"
                   >
                     {lead.activities.length === 0 ? (
-                      <div className="text-center py-10 text-gray-400">
+                      <div className="text-center py-10 text-slate-400 dark:text-slate-550">
                         <Clock className="h-10 w-10 mx-auto mb-3 opacity-20" />
                         <p className="text-sm font-medium">No activity recorded yet.</p>
                       </div>
                     ) : (
-                      <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+                      <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
                         {lead.activities.map((activity, idx) => (
                           <div key={activity.id} className="relative">
-                            <div className={`absolute -left-6 top-1 h-3 w-3 rounded-full border-2 border-white ${
-                              idx === 0 ? 'bg-brand-blue scale-125' : 'bg-gray-300'
+                            <div className={`absolute -left-6 top-1 h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 ${
+                              idx === 0 ? 'bg-brand-blue scale-125' : 'bg-slate-350 dark:bg-slate-700'
                             }`} />
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-bold text-gray-900">{activity.title}</h4>
-                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
+                                <h4 className="text-sm font-semibold text-slate-850 dark:text-slate-100">{activity.title}</h4>
+                                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                   {new Date(activity.createdAt).toLocaleString()}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-600 leading-relaxed">{activity.description}</p>
+                              <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-medium">{activity.description}</p>
                               <div className="flex items-center gap-1.5 mt-2">
-                                <div className="h-4 w-4 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-2 w-2 text-gray-500" />
+                                <div className="h-4 w-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                  <User className="h-2 w-2 text-slate-500 dark:text-slate-400" />
                                 </div>
-                                <span className="text-[11px] font-bold text-gray-500">By {activity.performedBy.name}</span>
+                                <span className="text-[11px] font-semibold text-slate-550 dark:text-slate-400">By {activity.performedBy.name}</span>
                               </div>
                             </div>
                           </div>
@@ -850,17 +911,17 @@ export default function LeadDetailPage() {
                     {!isAddingNote ? (
                       <button
                         onClick={() => setIsAddingNote(true)}
-                        className="w-full py-3 px-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all font-bold text-sm flex items-center justify-center gap-2 bg-gray-50/50 hover:bg-white"
+                        className="w-full py-3 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 dark:text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-all font-bold text-sm flex items-center justify-center gap-2 bg-gray-50/50"
                       >
                         <Plus className="h-4 w-4" />
                         Add Note
                       </button>
                     ) : (
-                      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+                      <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
                         <textarea
                           rows={3}
                           disabled={isUploading}
-                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none disabled:opacity-60"
+                          className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-slate-850 dark:text-white leading-relaxed font-medium text-sm resize-none disabled:opacity-60"
                           placeholder="Type important details about this prospect..."
                           value={newNoteText}
                           onChange={(e) => setNewNoteText(e.target.value)}
@@ -884,18 +945,18 @@ export default function LeadDetailPage() {
                               type="button"
                               onClick={() => document.getElementById("lead-note-file-input")?.click()}
                               disabled={isUploading || isRecording}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-brand-blue hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-semibold disabled:opacity-50"
                             >
-                              <Paperclip className="h-3.5 w-3.5" />
+                              <Paperclip className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                               Attach Files
                             </button>
                             <button
                               type="button"
                               onClick={() => setIsRecordModalOpen(true)}
                               disabled={isUploading}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-brand-blue hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-semibold disabled:opacity-50"
                             >
-                              <Mic className="h-3.5 w-3.5" />
+                              <Mic className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                               Voice Note
                             </button>
                           </div>
@@ -904,13 +965,13 @@ export default function LeadDetailPage() {
                           {pendingAttachments.length > 0 && (
                             <div className="flex flex-wrap gap-2 pt-1">
                               {pendingAttachments.map((file, idx) => (
-                                <div key={idx} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 text-xs text-slate-600 font-medium">
-                                  <FileIcon className="h-3.5 w-3.5 text-slate-400" />
+                                <div key={idx} className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-600 dark:text-slate-350 font-medium">
+                                  <FileIcon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                                   <span className="truncate max-w-[150px]">{file.name}</span>
                                   <button
                                     type="button"
                                     onClick={() => setPendingAttachments(prev => prev.filter((_, i) => i !== idx))}
-                                    className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600"
+                                    className="p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -919,7 +980,7 @@ export default function LeadDetailPage() {
                             </div>
                           )}
                         </div>
-
+ 
                         <div className="flex justify-end gap-3 pt-2">
                           <button
                             type="button"
@@ -929,7 +990,7 @@ export default function LeadDetailPage() {
                               setNewNoteText("");
                               setPendingAttachments([]);
                             }}
-                            className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                            className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-50"
                           >
                             Cancel
                           </button>
@@ -937,7 +998,7 @@ export default function LeadDetailPage() {
                             type="button"
                             disabled={isUploading || !newNoteText.trim()}
                             onClick={handleSaveNote}
-                            className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center"
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center"
                           >
                             {isUploading ? (
                               <>
@@ -951,18 +1012,18 @@ export default function LeadDetailPage() {
                         </div>
                       </div>
                     )}
-
+ 
                     {/* Notes Feed */}
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
                       {parsedNotes.length === 0 ? (
-                        <div className="text-center py-10 text-slate-400 text-sm bg-gray-50 rounded-2xl border border-dashed border-gray-100">
-                          <StickyNote className="h-8 w-8 mx-auto mb-2 text-gray-300 opacity-50" />
+                        <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl border border-dashed border-slate-150 dark:border-slate-800">
+                          <StickyNote className="h-8 w-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
                           No notes added yet.
                         </div>
                       ) : (
                         parsedNotes.map((note) => (
-                          <div key={note.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-slate-200 transition-colors">
-                            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
+                          <div key={note.id} className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850/60 rounded-2xl p-4 shadow-sm hover:border-slate-200 dark:hover:border-slate-800 transition-colors">
+                            <p className="text-sm text-slate-750 dark:text-slate-200 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
                             
                             {/* Attachments Section */}
                             {note.attachments && note.attachments.length > 0 && (
@@ -972,10 +1033,10 @@ export default function LeadDetailPage() {
                                 ))}
                               </div>
                             )}
-
-                            <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+ 
+                            <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 dark:text-slate-550 font-semibold uppercase tracking-wider">
                               <span className="flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
                                 {note.authorName || 'System'}
                               </span>
                               <span>{formatDate(note.createdAt)}</span>
@@ -996,19 +1057,19 @@ export default function LeadDetailPage() {
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-bold text-gray-900">Pending Follow-ups</h3>
+                      <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Pending Follow-ups</h3>
                       <button 
                         onClick={() => setIsTaskModalOpen(true)}
-                        className="flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:underline"
+                        className="flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:underline transition-all"
                       >
                         <Plus className="h-3 w-3" />
                         Add New Task
                       </button>
                     </div>
                     {lead.tasks.length === 0 ? (
-                      <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <CheckSquare className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm font-medium text-gray-400">No pending tasks for this lead.</p>
+                      <div className="text-center py-10 bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl border border-dashed border-slate-150 dark:border-slate-800">
+                        <CheckSquare className="h-8 w-8 mx-auto mb-2 text-slate-350 dark:text-slate-600" />
+                        <p className="text-sm font-medium text-slate-400 dark:text-slate-550">No pending tasks for this lead.</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -1040,53 +1101,51 @@ export default function LeadDetailPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Task Modal */}
+      </div>      {/* Task Modal */}
       {isTaskModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm p-4">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100"
+            className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800"
           >
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-xl font-bold text-gray-900">Add Follow-up Task</h3>
-              <button onClick={() => setIsTaskModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors text-lg">✕</button>
+            <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/20">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add Follow-up Task</h3>
+              <button onClick={() => setIsTaskModalOpen(false)} className="text-slate-400 dark:text-slate-550 hover:text-slate-600 dark:hover:text-slate-400 transition-colors text-lg">✕</button>
             </div>
             <form onSubmit={handleAddTask} className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Task Title *</label>
+                <label className="text-[11px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Task Title *</label>
                 <input 
                   type="text" 
                   required 
-                  className="w-full rounded-2xl border-gray-200 focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
                   placeholder="e.g. Call for requirement update"
                   value={newTask.title}
                   onChange={(e) => setNewTask({...newTask, title: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description</label>
+                <label className="text-[11px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Description</label>
                 <textarea 
-                  className="w-full rounded-2xl border-gray-200 focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium h-24" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium h-24 resize-none" 
                   placeholder="Additional details..."
                   value={newTask.description}
                   onChange={(e) => setNewTask({...newTask, description: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Due Date</label>
+                <label className="text-[11px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Due Date</label>
                 <input 
                   type="date" 
-                  className="w-full rounded-2xl border-gray-200 focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
                   value={newTask.dueDate}
                   onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
                 />
               </div>
               <div className="pt-4 flex justify-end gap-4">
-                <button type="button" className="btn btn-ghost px-6" onClick={() => setIsTaskModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary px-8 shadow-lg shadow-brand-blue/20" disabled={isTaskSubmitting}>
+                <button type="button" className="btn btn-ghost px-6 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setIsTaskModalOpen(false)}>Cancel</button>
+                <button type="submit" className="bg-brand-blue hover:bg-brand-blue/90 text-white px-8 py-3 rounded-2xl text-sm font-semibold shadow-lg shadow-brand-blue/20" disabled={isTaskSubmitting}>
                   {isTaskSubmitting ? "Saving..." : "Create Task"}
                 </button>
               </div>
@@ -1110,25 +1169,25 @@ export default function LeadDetailPage() {
 
       {/* Voice Record Modal */}
       {isRecordModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
-            <h3 className="text-lg font-bold text-slate-800 mb-6">Record Voice Note</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-6 w-full max-w-sm text-center">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Record Voice Note</h3>
             
             <div className="flex flex-col items-center justify-center mb-8">
               {isRecording ? (
                 <>
-                  <div className="h-20 w-20 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-                    <Mic className="h-10 w-10 text-red-600" />
+                  <div className="h-20 w-20 bg-red-50 dark:bg-red-950/30 border border-red-105 dark:border-red-900/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                    <Mic className="h-10 w-10 text-red-600 dark:text-red-400" />
                   </div>
-                  <p className="text-red-600 font-bold text-sm animate-pulse mb-1">Recording in progress...</p>
-                  <p className="text-slate-500 font-mono text-xl font-semibold">{formatDuration(recordingDuration)}</p>
+                  <p className="text-red-650 dark:text-red-400 font-semibold text-sm animate-pulse mb-1">Recording in progress...</p>
+                  <p className="text-slate-655 dark:text-slate-350 font-mono text-xl font-semibold">{formatDuration(recordingDuration)}</p>
                 </>
               ) : (
                 <>
-                  <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                    <Mic className="h-10 w-10 text-slate-400" />
+                  <div className="h-20 w-20 bg-slate-50 dark:bg-slate-850 border border-slate-100 dark:border-slate-800 rounded-full flex items-center justify-center mb-4">
+                    <Mic className="h-10 w-10 text-slate-400 dark:text-slate-500" />
                   </div>
-                  <p className="text-slate-500 font-medium text-sm">Ready to record</p>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Ready to record</p>
                 </>
               )}
             </div>
@@ -1138,13 +1197,13 @@ export default function LeadDetailPage() {
                 <>
                   <button 
                     onClick={() => setIsRecordModalOpen(false)}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={startRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-brand-blue hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-brand-blue hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all"
                   >
                     Start Recording
                   </button>
@@ -1153,13 +1212,13 @@ export default function LeadDetailPage() {
                 <>
                   <button 
                     onClick={cancelRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={stopRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-red-655 hover:bg-red-750 dark:bg-red-600 dark:hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2"
                   >
                     <Square className="h-4 w-4 fill-current" />
                     Stop & Save
@@ -1168,6 +1227,144 @@ export default function LeadDetailPage() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 my-8 animate-in fade-in zoom-in duration-200"
+          >
+            <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/20">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Lead Profile</h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)} 
+                className="text-slate-450 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-350 transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditProfileSubmit} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">First Name *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Last Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Alternate Phone</label>
+                  <input 
+                    type="tel" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.alternatePhone}
+                    onChange={(e) => setEditForm({...editForm, alternatePhone: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Email Address</label>
+                  <input 
+                    type="email" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Company</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.company}
+                    onChange={(e) => setEditForm({...editForm, company: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Designation</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.designation}
+                    onChange={(e) => setEditForm({...editForm, designation: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Source</label>
+                  <select 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.source}
+                    onChange={(e) => setEditForm({...editForm, source: e.target.value})}
+                  >
+                    <option value="WEBSITE" className="dark:bg-slate-900">WEBSITE</option>
+                    <option value="REFERRAL" className="dark:bg-slate-900">REFERRAL</option>
+                    <option value="SOCIAL_MEDIA" className="dark:bg-slate-900">SOCIAL_MEDIA</option>
+                    <option value="COLD_CALL" className="dark:bg-slate-900">COLD_CALL</option>
+                    <option value="OTHER" className="dark:bg-slate-900">OTHER</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Budget (INR)</label>
+                  <input 
+                    type="number" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.budget}
+                    onChange={(e) => setEditForm({...editForm, budget: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+                <button 
+                  type="button" 
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={isSavingEdit}
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSavingEdit}
+                  className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-brand-blue/20 transition-all flex items-center justify-center min-w-[120px]"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
         </div>
       )}
     </div>

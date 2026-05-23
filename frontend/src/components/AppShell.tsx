@@ -24,9 +24,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       "MANAGER",
       "AGENT",
     ]}>
-      <div className="flex min-h-screen w-full bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <div className="flex h-screen w-full bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-hidden">
         <Sidebar />
-        <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
+        <div className="flex h-screen flex-1 flex-col overflow-hidden">
           <TopNav />
           <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 p-6 transition-colors duration-300">{children}</main>
         </div>

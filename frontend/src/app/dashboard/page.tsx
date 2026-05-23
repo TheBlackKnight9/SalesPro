@@ -184,14 +184,14 @@ export default function DashboardPage() {
     const deficitText = dashboardData.deficitText || "";
 
     return (
-      <div className="space-y-6 pb-8 bg-[#f8f9fa] -m-6 p-6 min-h-screen">
+      <div className="space-y-6 pb-8 bg-[#f8f9fa] dark:bg-slate-950 -m-6 p-6 min-h-screen">
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
               Enterprise Super Admin Panel
             </h1>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Multi-office corporate architecture metrics and organizational goals.
             </p>
           </div>
@@ -207,76 +207,76 @@ export default function DashboardPage() {
 
         {/* 1. Global KPI Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Revenue</p>
-            <p className="text-xl font-extrabold text-slate-800 mt-1">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Revenue</p>
+            <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {formatIndianCurrency(adminKpis.totalRevenue)}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Cumulative Accepted volume ({formatIndianCurrency(adminKpis.totalRevenue, true)})
             </p>
           </div>
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Leads Global</p>
-            <p className="text-xl font-extrabold text-slate-800 mt-1">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Leads Global</p>
+            <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.totalLeadsGlobal}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">Active operational leads globally</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active operational leads globally</p>
           </div>
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Offices</p>
-            <p className="text-xl font-extrabold text-slate-800 mt-1">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Active Offices</p>
+            <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.activeOffices}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">Unique active location segments</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Unique active location segments</p>
           </div>
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Accounts Active</p>
-            <p className="text-xl font-extrabold text-slate-800 mt-1">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Accounts Active</p>
+            <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.totalAccountsActive}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">Registered active workspace users</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Registered active workspace users</p>
           </div>
         </div>
 
         {/* 2. Regional Office Performance Row */}
         <div>
-          <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Regional Performance Grid</h2>
+          <h2 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Regional Performance Grid</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {regionalPerformance.map((office: any) => (
-              <div key={office.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div key={office.id} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-3">
-                    <span className="text-sm font-bold text-slate-800">{office.name}</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">{office.name}</span>
                     <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
                       office.status === "On Target" 
-                        ? "bg-emerald-50 text-emerald-700" 
-                        : "bg-rose-50 text-rose-700"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400" 
+                        : "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400"
                     }`}>
                       {office.status}
                     </span>
                   </div>
-                  <div className="space-y-1.5 text-[11px] font-medium text-slate-600 mb-4">
+                  <div className="space-y-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-4">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Revenue</span>
-                      <span className="font-semibold text-slate-800">{formatIndianCurrency(office.revenue, true)}</span>
+                      <span className="text-slate-400 dark:text-slate-500">Revenue</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{formatIndianCurrency(office.revenue, true)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Leads</span>
-                      <span className="font-semibold text-slate-800">{office.leads}</span>
+                      <span className="text-slate-400 dark:text-slate-500">Leads</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{office.leads}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Conv. Rate</span>
-                      <span className="font-bold text-indigo-600">{office.conversionRate}%</span>
+                      <span className="text-slate-400 dark:text-slate-500">Conv. Rate</span>
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400">{office.conversionRate}%</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1">
+                  <div className="flex justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500 mb-1">
                     <span>Target: {formatIndianCurrency(office.target, true)}</span>
                     <span>{office.progressPercent}%</span>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-500 ${
                       office.status === "On Target" ? "bg-emerald-500" : "bg-rose-500"
                     }`} style={{ width: `${office.progressPercent}%` }} />
@@ -290,15 +290,15 @@ export default function DashboardPage() {
         {/* 3. Charts Row: Cross-Office Revenue Trend & Conversion Efficiency */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Trend LineChart (2/3 width) */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm lg:col-span-2">
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Cross-Office Revenue Trend</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
+            <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Cross-Office Revenue Trend</h3>
             <div className="w-full overflow-hidden">
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={trendData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => formatIndianCurrency(v, true)} />
-                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: any) => [formatIndianCurrency(Number(v)), "Revenue"]} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} formatter={(v: any) => [formatIndianCurrency(Number(v)), "Revenue"]} />
                   <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                   {regionalPerformance.map((office: any, idx: number) => {
                     const key = office.name.replace(" Office", "");
@@ -321,15 +321,15 @@ export default function DashboardPage() {
           </div>
 
           {/* Branch Conversion Efficiency BarChart (1/3 width) */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Branch Conversion Efficiency</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Branch Conversion Efficiency</h3>
             <div className="w-full overflow-hidden">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={regionalPerformance} margin={{ top: 10, right: 10, left: 20, bottom: 5 }}>
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
                   <YAxis type="category" dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => v.replace(" Office", "")} />
-                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: any) => [`${v}%`, "Conversion Rate"]} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} formatter={(v: any) => [`${v}%`, "Conversion Rate"]} />
                   <Bar dataKey="conversionRate" radius={[0, 4, 4, 0]} barSize={16}>
                     {regionalPerformance.map((entry: any, index: number) => {
                       const colors = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#25D366"];
@@ -345,52 +345,52 @@ export default function DashboardPage() {
         {/* 4. Bottom Grid: Top Agents Leaderboard & Goal Progress Organization Block */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Top Agents Cross-Office Leaderboard Matrix */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Top Agents Leaderboard</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Top Agents Leaderboard</h3>
             {topAgents.length > 0 ? (
               <div className="space-y-3">
                 {topAgents.map((agent: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between border-b border-slate-100 pb-2.5 last:border-0 last:pb-0">
+                  <div key={idx} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 last:border-0 last:pb-0">
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold text-slate-400 w-4">{idx + 1}</span>
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 font-semibold flex items-center justify-center text-xs text-slate-700">
+                      <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 w-4">{idx + 1}</span>
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 font-semibold flex items-center justify-center text-xs text-slate-700 dark:text-slate-300">
                         {agent.name?.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-slate-800">{agent.name}</span>
-                          <span className="bg-blue-50 text-blue-600 text-[9px] font-medium px-1.5 py-0.2 rounded">
+                          <span className="text-xs font-semibold text-slate-800 dark:text-white">{agent.name}</span>
+                          <span className="bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 text-[9px] font-medium px-1.5 py-0.2 rounded">
                             {agent.officeName}
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-medium">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                           {agent.conversionRate}% conv
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-slate-800">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                       {formatIndianCurrency(agent.revenue, true)}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-[11px] text-slate-400 text-center py-6">No active agents found</div>
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No active agents found</div>
             )}
           </div>
 
           {/* Goal Progress & Organization Totals Block */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
             <div>
-              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Goal Progress & Global Totals</h3>
+              <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Goal Progress & Global Totals</h3>
               <div className="space-y-3">
                 {regionalPerformance.map((office: any) => (
                   <div key={office.id} className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-medium text-slate-600">
+                    <div className="flex justify-between text-[11px] font-medium text-slate-600 dark:text-slate-300">
                       <span>{office.name}</span>
-                      <span className="font-bold text-slate-700">{formatIndianCurrency(office.revenue, true)} / {formatIndianCurrency(office.target, true)}</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">{formatIndianCurrency(office.revenue, true)} / {formatIndianCurrency(office.target, true)}</span>
                     </div>
-                    <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-500 ${
                         office.status === "On Target" ? "bg-emerald-500" : "bg-rose-500"
                       }`} style={{ width: `${office.progressPercent}%` }} />
@@ -401,17 +401,17 @@ export default function DashboardPage() {
             </div>
 
             {/* Master Organization Summary Block */}
-            <div className="mt-6 border-t border-slate-100 pt-4">
-              <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+            <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="flex justify-between text-xs font-bold text-slate-800 dark:text-white mb-1">
                 <span>Organisation total</span>
                 <span>
                   {formatIndianCurrency(adminKpis.totalRevenue, true)} / {formatIndianCurrency(companyQuota, true)} • {quotaProgressPercent}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${quotaProgressPercent}%` }} />
               </div>
-              <p className="text-[11px] text-slate-400 font-medium italic mt-2">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium italic mt-2">
                 9 working days left • {deficitText}
               </p>
             </div>
@@ -419,8 +419,8 @@ export default function DashboardPage() {
         </div>
 
         {/* 5. Consolidated Global Lead Source Distribution Matrix */}
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Global Lead Source Distribution</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+          <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Global Lead Source Distribution</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div className="h-[120px] w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -437,21 +437,21 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px' }} />
+                  <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="space-y-1.5">
               {leadSources.map((source: any, index: number) => (
-                <div key={index} className="flex justify-between items-center text-xs font-medium text-slate-600">
+                <div key={index} className="flex justify-between items-center text-xs font-medium text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: source.color || '#cbd5e1' }} />
                     <span className="capitalize">{source.name.toLowerCase().replace("_", " ")}</span>
                   </div>
-                  <div className="flex items-center gap-1 flex-1 px-4 text-slate-200">
-                    <span className="border-b border-dashed border-slate-200 flex-1 h-3" />
+                  <div className="flex items-center gap-1 flex-1 px-4 text-slate-200 dark:text-slate-800">
+                    <span className="border-b border-dashed border-slate-200 dark:border-slate-800 flex-1 h-3" />
                   </div>
-                  <span className="font-bold text-slate-800">{source.percentage || `${source.value}%`}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{source.percentage || `${source.value}%`}</span>
                 </div>
               ))}
             </div>
@@ -477,14 +477,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8 bg-[#f8f9fa] dark:bg-slate-950 -m-6 p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
             Welcome back, {user?.name || "User"}
           </h1>
-          <p className="mt-1 text-sm leading-snug text-slate-500">
+          <p className="mt-1 text-sm leading-snug text-slate-500 dark:text-slate-400">
             {isManager 
               ? "Team performance analytics and management overview." 
               : "Here's your personal lead & activity performance tracker."}
@@ -504,22 +504,22 @@ export default function DashboardPage() {
         <div className="animate-pulse space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-24" />
+              <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm h-24" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-56" />
+              <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm h-56" />
             ))}
           </div>
         </div>
       ) : fetchError ? (
-        <div className="bg-white border border-red-200 rounded-xl p-6 shadow-sm text-center">
-          <p className="text-sm font-medium text-red-600 mb-2">Failed to load dashboard data</p>
-          <p className="text-xs text-slate-500 mb-4">{fetchError}</p>
+        <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/50 rounded-xl p-6 shadow-sm text-center">
+          <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Failed to load dashboard data</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{fetchError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 underline"
           >
             Retry
           </button>
@@ -528,34 +528,34 @@ export default function DashboardPage() {
         <>
           {/* KPI Cards — shared by all roles */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Link href="/dashboard/leads" className="block bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
+            <Link href="/dashboard/leads" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <div>
-                <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">New Leads</p>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">New Leads</p>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800">{kpis.newLeads ?? 0}</span>
+                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.newLeads ?? 0}</span>
                 </div>
               </div>
             </Link>
-            <Link href="/dashboard/leads?status=CONTACTED,QUALIFIED" className="block bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
+            <Link href="/dashboard/leads?status=CONTACTED,QUALIFIED" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <div>
-                <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Hot Leads</p>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Hot Leads</p>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800">{kpis.hotLeads ?? 0}</span>
+                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.hotLeads ?? 0}</span>
                 </div>
               </div>
             </Link>
-            <Link href="/dashboard/customers" className="block bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
+            <Link href="/dashboard/customers" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <div>
-                <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Converted</p>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Converted</p>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800">{kpis.converted ?? 0}</span>
+                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.converted ?? 0}</span>
                 </div>
               </div>
             </Link>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
-              <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Pipeline Value</p>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Pipeline Value</p>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl font-extrabold text-slate-800">{formatINR(totalPipelineValue)}</span>
+                <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{formatINR(totalPipelineValue)}</span>
               </div>
             </div>
           </div>
@@ -566,50 +566,50 @@ export default function DashboardPage() {
           {isManager ? (
             <div className="space-y-4">
               {/* ── 1. Agent Leaderboard (Full Span) ──────────────────── */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <Users className="h-3.5 w-3.5 text-slate-400" />
-                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Agent Leaderboard</h3>
+                  <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Agent Leaderboard</h3>
                 </div>
                 {agentLeaderboard.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-slate-100">
-                          <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">#</th>
-                          <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Agent</th>
-                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Active Leads</th>
-                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Converted</th>
-                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2 pr-4">Pipeline Value</th>
-                          <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Status</th>
+                        <tr className="border-b border-slate-100 dark:border-slate-800">
+                          <th className="text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 pr-4">#</th>
+                          <th className="text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 pr-4">Agent</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 pr-4">Active Leads</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 pr-4">Converted</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 pr-4">Pipeline Value</th>
+                          <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {agentLeaderboard.map((agent: any, idx: number) => (
-                          <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                          <tr key={idx} className="border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                             <td className="py-2.5 pr-4">
                               <span className={`text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center ${
-                                idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-100 text-slate-600' : idx === 2 ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400'
+                                idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' : idx === 2 ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                               }`}>
                                 {idx + 1}
                               </span>
                             </td>
                             <td className="py-2.5 pr-4">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[9px] font-bold shrink-0">
+                                <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 flex items-center justify-center text-[9px] font-bold shrink-0">
                                   {agent.name?.substring(0, 2).toUpperCase()}
                                 </div>
-                                <span className="text-xs font-semibold text-slate-800 truncate">{agent.name}</span>
+                                <span className="text-xs font-semibold text-slate-800 dark:text-white truncate">{agent.name}</span>
                               </div>
                             </td>
-                            <td className="py-2.5 pr-4 text-right text-xs font-semibold text-slate-700">{agent.activeLeads}</td>
-                            <td className="py-2.5 pr-4 text-right text-xs font-semibold text-emerald-600">{agent.convertedLeads}</td>
-                            <td className="py-2.5 pr-4 text-right text-xs font-bold text-slate-800">{formatINR(agent.pipelineValue)}</td>
+                            <td className="py-2.5 pr-4 text-right text-xs font-semibold text-slate-700 dark:text-slate-300">{agent.activeLeads}</td>
+                            <td className="py-2.5 pr-4 text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">{agent.convertedLeads}</td>
+                            <td className="py-2.5 pr-4 text-right text-xs font-bold text-slate-800 dark:text-slate-200">{formatINR(agent.pipelineValue)}</td>
                             <td className="py-2.5 text-right">
                               {agent.needsReview ? (
-                                <span className="text-[11px] bg-amber-50 text-amber-600 rounded-full px-2 py-0.5 font-medium whitespace-nowrap">⚠️ Needs Review</span>
+                                <span className="text-[11px] bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-full px-2 py-0.5 font-medium whitespace-nowrap">⚠️ Needs Review</span>
                               ) : (
-                                <span className="text-[11px] bg-emerald-50 text-emerald-600 rounded-full px-2 py-0.5 font-medium">✓ On Track</span>
+                                <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-full px-2 py-0.5 font-medium">✓ On Track</span>
                               )}
                             </td>
                           </tr>
@@ -618,16 +618,16 @@ export default function DashboardPage() {
                     </table>
                   </div>
                 ) : (
-                  <div className="text-[11px] text-slate-400 text-center py-6">No agents found</div>
+                  <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No agents found</div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* ── 2. Management Action Alerts ─────────────────────── */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                    <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Action Alerts</h3>
+                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Action Alerts</h3>
                   </div>
                   <div className="space-y-2">
                     {managementAlerts.length > 0 ? managementAlerts.map((alert: any, idx: number) => (
@@ -635,14 +635,14 @@ export default function DashboardPage() {
                         key={idx}
                         className={`p-2.5 rounded-lg border text-[11px] font-medium leading-snug ${
                           alert.severity === "danger"
-                            ? "bg-rose-50 border-rose-100 text-rose-700"
-                            : "bg-amber-50 border-amber-100 text-amber-700"
+                            ? "bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-400"
+                            : "bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/50 text-amber-700 dark:text-amber-400"
                         }`}
                       >
                         {alert.text}
                       </div>
                     )) : (
-                      <div className="text-[11px] text-slate-400 text-center py-6">
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">
                         <span className="text-emerald-500 font-semibold">✓</span> No urgent alerts
                       </div>
                     )}
@@ -650,10 +650,10 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── 3. Pipeline Value vs Stage (BarChart) ──────────── */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
                   <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="h-3.5 w-3.5 text-slate-400" />
-                    <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Pipeline Value by Stage</h3>
+                    <BarChart3 className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Pipeline Value by Stage</h3>
                   </div>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={pipelineByStage} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -661,7 +661,7 @@ export default function DashboardPage() {
                       <XAxis dataKey="name" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                       <YAxis fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v >= 100000 ? `${(v/100000).toFixed(0)}L` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                       <Tooltip
-                        contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                        contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }}
                         formatter={(value: any) => [formatINR(Number(value)), "Pipeline"]}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={36}>
@@ -674,72 +674,72 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── 4. Strategic Lead Source Pipeline ────────────────── */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Source Pipeline</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Lead Source Pipeline</h3>
                   {sourcePipeline.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-slate-100">
-                            <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Source</th>
-                            <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Leads</th>
-                            <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">Value</th>
+                          <tr className="border-b border-slate-100 dark:border-slate-800">
+                            <th className="text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2">Source</th>
+                            <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2">Leads</th>
+                            <th className="text-right text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2">Value</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sourcePipeline.map((src: any, idx: number) => (
-                            <tr key={idx} className="border-b border-slate-50 last:border-0">
-                              <td className="py-2 text-[11px] font-medium text-slate-700">{src.source}</td>
-                              <td className="py-2 text-right text-[11px] font-semibold text-slate-600">{src.count}</td>
-                              <td className="py-2 text-right text-[11px] font-bold text-slate-800">{formatINR(src.value)}</td>
+                            <tr key={idx} className="border-b border-slate-50 dark:border-slate-800 last:border-0">
+                              <td className="py-2 text-[11px] font-medium text-slate-700 dark:text-slate-300">{src.source}</td>
+                              <td className="py-2 text-right text-[11px] font-semibold text-slate-600 dark:text-slate-400">{src.count}</td>
+                              <td className="py-2 text-right text-[11px] font-bold text-slate-800 dark:text-slate-200">{formatINR(src.value)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-400 text-center py-6">No source data available</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No source data available</div>
                   )}
                 </div>
 
                 {/* ── 5. Agent Task Completion Matrix ──────────────────── */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2">
-                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Agent Task Completion</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
+                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Agent Task Completion</h3>
                   {agentTaskMatrix.length > 0 ? (
                     <div className="space-y-3">
                       {agentTaskMatrix.map((agent: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[9px] font-bold shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-[9px] font-bold shrink-0">
                             {agent.name?.substring(0, 2).toUpperCase()}
                           </div>
-                          <span className="text-[11px] font-medium text-slate-700 w-24 shrink-0 truncate">{agent.name}</span>
-                          <div className="flex-grow h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                          <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 w-24 shrink-0 truncate">{agent.name}</span>
+                          <div className="flex-grow h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                             <div
                               className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                               style={{ width: `${agent.percentage}%` }}
                             />
                           </div>
-                          <span className="text-[11px] font-semibold text-slate-500 shrink-0 w-16 text-right">
-                            {agent.completed}/{agent.total} <span className="text-slate-400">({agent.percentage}%)</span>
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0 w-16 text-right">
+                            {agent.completed}/{agent.total} <span className="text-slate-400 dark:text-slate-500">({agent.percentage}%)</span>
                           </span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-400 text-center py-6">No task data available</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No task data available</div>
                   )}
                 </div>
               </div>
 
               {/* ── Quick Actions Footer Bar ──────────────────────────── */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-wrap items-center justify-center gap-3">
-                <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
+              <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-center gap-3">
+                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
                   📊 Generate Pipeline Report
                 </button>
-                <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
+                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
                   🧠 Review Overdue Tasks
                 </button>
-                <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
+                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
                   🔄 Reassign Stagnant Leads
                 </button>
               </div>
@@ -750,9 +750,9 @@ export default function DashboardPage() {
             /* ═══════════════════════════════════════════════════════════ */
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* 1. Stage Breakdown */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
                 <div>
-                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
+                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
                   <div className="space-y-2.5">
                     {stageBreakdown.length > 0 ? stageBreakdown.map((item: any, idx: number) => {
                       const label = item.stage || item.name || "Unknown";
@@ -760,27 +760,27 @@ export default function DashboardPage() {
                       const percentage = item.percentage ?? 0;
                       return (
                         <div key={idx} className="flex items-center gap-3">
-                          <span className="text-[11px] font-medium text-slate-600 w-20 shrink-0 truncate">
+                          <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 w-20 shrink-0 truncate">
                             {formatEnum(label)}
                           </span>
-                          <div className="flex-grow h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="flex-grow h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                             <div className={`h-full rounded-full ${item.color || 'bg-slate-400'}`} style={{ width: `${percentage}%` }} />
                           </div>
-                          <span className="text-[11px] font-bold text-slate-700 shrink-0 w-6 text-right">{count}</span>
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 shrink-0 w-6 text-right">{count}</span>
                         </div>
                       );
                     }) : (
-                      <div className="text-[11px] text-slate-400">No stage data available</div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500">No stage data available</div>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* 2. Weekly Funnel Trend */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Weekly Funnel Trend</h3>
-                  <div className="flex gap-2 text-[9px] font-semibold text-slate-400">
+                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Weekly Funnel Trend</h3>
+                  <div className="flex gap-2 text-[9px] font-semibold text-slate-400 dark:text-slate-500">
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> New</span>
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Contacted</span>
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Quotes</span>
@@ -794,7 +794,7 @@ export default function DashboardPage() {
                         <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                         <YAxis fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                        <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
                         <Line type="monotone" dataKey="New" stroke="#3B82F6" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                         <Line type="monotone" dataKey="Contacted" stroke="#6366F1" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                         <Line type="monotone" dataKey="Quotes" stroke="#F97316" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
@@ -802,46 +802,46 @@ export default function DashboardPage() {
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="flex items-center justify-center h-[160px] text-[11px] text-slate-400">No trend data available</div>
+                    <div className="flex items-center justify-center h-[160px] text-[11px] text-slate-400 dark:text-slate-500">No trend data available</div>
                   )}
                 </div>
               </div>
 
               {/* 3. Hot Leads to Action */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Hot Leads to Action</h3>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Hot Leads to Action</h3>
                 <div className="space-y-2.5">
                   {hotLeadsList.length > 0 ? hotLeadsList.map((lead: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors bg-slate-50/50">
+                    <div key={idx} className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-colors bg-slate-50/50 dark:bg-slate-800/40">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 text-[11px] bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold shrink-0">
+                        <div className="w-7 h-7 text-[11px] bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 rounded-full flex items-center justify-center font-bold shrink-0">
                           {lead.initials || lead.name?.substring(0, 2).toUpperCase() || 'NA'}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-[11px] font-semibold text-slate-800 truncate">{lead.name}</span>
-                          <span className="text-[11px] text-slate-400 font-medium truncate">{lead.subtext}</span>
+                          <span className="text-[11px] font-semibold text-slate-800 dark:text-white truncate">{lead.name}</span>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">{lead.subtext}</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <span className={`text-[9px] px-1.5 rounded-full font-medium tracking-tight ${getStatusBadgeStyles(lead.status)}`}>
                           {formatEnum(lead.status)}
                         </span>
-                        <span className="text-[11px] font-bold text-slate-700">{lead.value}</span>
+                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lead.value}</span>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-[11px] text-slate-400">No hot leads available</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500">No hot leads available</div>
                   )}
                 </div>
               </div>
 
               {/* 4. Today's Tasks */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Today's Tasks</h3>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Today's Tasks</h3>
                 <div className="space-y-2">
                   {todaysTasks.length > 0 ? todaysTasks.map((task: any, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 p-2 rounded border border-slate-100">
-                      <div className="mt-0.5 w-3.5 h-3.5 rounded-sm border border-slate-300 flex-shrink-0 bg-white flex items-center justify-center">
+                    <div key={idx} className="flex items-start gap-2 p-2 rounded border border-slate-100 dark:border-slate-800">
+                      <div className="mt-0.5 w-3.5 h-3.5 rounded-sm border border-slate-300 dark:border-slate-700 flex-shrink-0 bg-white dark:bg-slate-800 flex items-center justify-center">
                         {task.status?.toUpperCase() === "COMPLETED" && (
                           <span className="w-2 h-2 bg-emerald-500 rounded-sm" />
                         )}
@@ -849,33 +849,33 @@ export default function DashboardPage() {
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className={`text-[11px] font-semibold leading-tight truncate ${
-                            task.status?.toUpperCase() === "COMPLETED" ? "line-through text-slate-400" : "text-slate-700"
+                            task.status?.toUpperCase() === "COMPLETED" ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
                           }`}>
                             {task.title}
                           </span>
                           <span className={`text-[9px] px-1 rounded shrink-0 font-medium ${
                             task.status?.toUpperCase() === "COMPLETED" 
-                              ? "bg-emerald-50 text-emerald-600" 
-                              : "bg-slate-100 text-slate-600"
+                              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400" 
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                           }`}>
                             {formatEnum(task.status)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] text-slate-400 font-medium">{task.time}</span>
-                          <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 rounded">{formatEnum(task.type) || 'Task'}</span>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">{task.time}</span>
+                          <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 rounded">{formatEnum(task.type) || 'Task'}</span>
                         </div>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-[11px] text-slate-400">No tasks for today</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500">No tasks for today</div>
                   )}
                 </div>
               </div>
 
               {/* 5. Lead Sources */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Lead Sources</h3>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Lead Sources</h3>
                 <div className="flex flex-col justify-between h-[calc(100%-1.5rem)]">
                   {leadSources.length > 0 ? (
                     <>
@@ -894,42 +894,42 @@ export default function DashboardPage() {
                                 <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
                               ))}
                             </Pie>
-                            <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px' }} />
+                            <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
                       <div className="w-full mt-2 space-y-1">
                         {leadSources.map((source: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center text-[11px] font-medium text-slate-600">
+                          <div key={index} className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: source.color || '#cbd5e1' }} />
                               <span>{formatEnum(source.name)}</span>
                             </div>
-                            <span className="font-bold text-slate-700 shrink-0">{source.percentage || `${source.value}%`}</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-200 shrink-0">{source.percentage || `${source.value}%`}</span>
                           </div>
                         ))}
                       </div>
                     </>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-[11px] text-slate-400">No source data available</div>
+                    <div className="flex items-center justify-center h-full text-[11px] text-slate-400 dark:text-slate-500">No source data available</div>
                   )}
                 </div>
               </div>
 
               {/* 6. Activity Feed */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-[11px] font-bold text-slate-500 tracking-wider mb-4 uppercase">Recent Activities</h3>
-                <div className="border-l border-slate-200 ml-1 pl-3.5 space-y-4 py-1 relative">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Recent Activities</h3>
+                <div className="border-l border-slate-200 dark:border-slate-800 ml-1 pl-3.5 space-y-4 py-1 relative">
                   {recentActivities.length > 0 ? recentActivities.map((activity: any, idx: number) => (
                     <div key={idx} className="relative">
-                      <span className={`absolute top-1.5 left-[-18px] w-2 h-2 rounded-full ${activity.color || 'bg-slate-400'} ring-4 ring-white z-10`} />
+                      <span className={`absolute top-1.5 left-[-18px] w-2 h-2 rounded-full ${activity.color || 'bg-slate-400'} ring-4 ring-white dark:ring-slate-900 z-10`} />
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] text-slate-700 font-medium leading-tight">{activity.text}</span>
-                        <span className="text-[9px] text-slate-400 font-semibold mt-0.5">{activity.time}</span>
+                        <span className="text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-tight">{activity.text}</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">{activity.time}</span>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-[11px] text-slate-400">No recent activity</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500">No recent activity</div>
                   )}
                 </div>
               </div>

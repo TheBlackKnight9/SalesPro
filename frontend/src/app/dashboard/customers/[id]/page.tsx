@@ -107,8 +107,8 @@ function AttachmentCard({ att }: { att: Attachment }) {
 
   if (loading) {
     return (
-      <div className="border border-slate-200 bg-slate-50 rounded-xl h-24 w-full flex items-center justify-center">
-        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
+      <div className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl h-24 w-full flex items-center justify-center">
+        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">Loading Attachment...</span>
       </div>
     );
   }
@@ -119,7 +119,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
   const isVideo = att.type.startsWith("video/") || att.type.includes("video") || /\.(mp4|mov|avi|mkv)$/.test(name);
 
   return (
-    <div className="border border-slate-200 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow transition-shadow group relative h-24">
+    <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow group relative h-24">
       {isImage ? (
         <a 
           href={viewUrl} 
@@ -135,7 +135,7 @@ function AttachmentCard({ att }: { att: Attachment }) {
         </a>
       ) : isAudio ? (
         <div className="p-2.5 flex flex-col justify-between h-full">
-          <span className="text-[11px] font-bold text-slate-400 truncate uppercase tracking-wider">{att.name}</span>
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 truncate uppercase tracking-wider">{att.name}</span>
           <audio src={viewUrl} controls className="w-full mt-1 h-8 max-w-full" />
         </div>
       ) : isVideo ? (
@@ -147,14 +147,14 @@ function AttachmentCard({ att }: { att: Attachment }) {
           href={viewUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-3 flex items-center gap-2.5 h-full hover:bg-slate-50 transition-colors"
+          className="p-3 flex items-center gap-2.5 h-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
         >
-          <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-            <FileIcon className="h-5 w-5 text-slate-400" />
+          <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-slate-800">
+            <FileIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-700 truncate">{att.name}</p>
-            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{att.name}</p>
+            <p className="text-[11px] text-slate-450 dark:text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Download File</p>
           </div>
         </a>
       )}
@@ -179,6 +179,58 @@ export default function CustomerDetailsPage() {
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Edit Profile modal and form states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    company: "",
+    designation: "",
+    gstNumber: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: ""
+  });
+
+  const handleOpenEditModal = () => {
+    if (!customer) return;
+    setEditForm({
+      firstName: customer.firstName || "",
+      lastName: customer.lastName || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      company: customer.company || "",
+      designation: customer.designation || "",
+      gstNumber: (customer as any).gstNumber || "",
+      address: (customer as any).address || "",
+      city: (customer as any).city || "",
+      state: (customer as any).state || "",
+      pincode: (customer as any).pincode || ""
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customer) return;
+    setIsSavingEdit(true);
+    try {
+      const updatedData = await apiClient.put<CustomerDetail>(`/customers/${id}`, editForm);
+      setCustomer(updatedData);
+      setIsEditModalOpen(false);
+      router.refresh();
+    } catch (error: any) {
+      console.error("Failed to update customer profile:", error);
+      alert(error.message || "Failed to update profile.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const [recordingDuration, setRecordingDuration] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -395,8 +447,8 @@ export default function CustomerDetailsPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 border-4 border-brand-blue/10 border-t-brand-blue rounded-full animate-spin" />
-          <p className="text-sm font-medium text-gray-500">Loading profile...</p>
+          <div className="h-10 w-10 border-4 border-brand-blue/10 border-t-brand-blue rounded-full animate-spin shadow-sm" />
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 animate-pulse">Loading profile...</p>
         </div>
       </div>
     );
@@ -405,7 +457,7 @@ export default function CustomerDetailsPage() {
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <p className="text-lg font-semibold text-gray-900">Customer not found</p>
+        <p className="text-lg font-semibold text-slate-800 dark:text-white">Customer not found</p>
         <Button onClick={() => router.push("/dashboard/customers")} variant="secondary">
           Back to Customers
         </Button>
@@ -414,34 +466,34 @@ export default function CustomerDetailsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/dashboard/customers")}
-            className="p-2.5 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+            <ArrowLeft className="h-5 w-5 text-slate-500 dark:text-slate-400" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-medium text-slate-900 dark:text-white tracking-tight">
               {customer.firstName} {customer.lastName || ''}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Customer ID: {customer.id.slice(-8)}</span>
-              <span className="h-1 w-1 rounded-full bg-gray-300" />
-              <span className="text-xs font-medium text-gray-500">Joined {new Date(customer.createdAt).toLocaleDateString()}</span>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-widest">Customer ID: {customer.id.slice(-8)}</span>
+              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Joined {new Date(customer.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl px-5 py-3 shadow-sm">
+        <div className="flex items-center gap-3 bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 dark:border-brand-blue/20 rounded-2xl px-5 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)] shrink-0">
           <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
             <IndianRupee className="h-6 w-6 text-brand-blue" />
           </div>
           <div>
             <p className="text-[11px] font-bold text-brand-blue uppercase tracking-widest">Total Revenue</p>
-            <p className="text-xl font-bold text-gray-900 tracking-tight">₹{Number(customer.totalRevenue).toLocaleString('en-IN')}</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">₹{Number(customer.totalRevenue).toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
@@ -449,86 +501,84 @@ export default function CustomerDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Profile Card */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6 space-y-6">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden p-6 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gray-50 rounded-xl">
-                <User className="h-5 w-5 text-gray-400" />
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <User className="h-5 w-5 text-slate-400" />
               </div>
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Profile Information</h2>
+              <h2 className="text-sm font-semibold text-slate-850 dark:text-white uppercase tracking-wider">Profile Information</h2>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Company</label>
-                <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <Building2 className="h-4 w-4 text-gray-300" />
+                <label className="text-[11px] text-slate-450 dark:text-slate-550 font-semibold uppercase tracking-wider">Company</label>
+                <div className="flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                  <Building2 className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   {customer.company || "Individual Client"}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Phone</label>
-                <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <Phone className="h-4 w-4 text-gray-300" />
+                <label className="text-[11px] text-slate-450 dark:text-slate-550 font-semibold uppercase tracking-wider">Phone</label>
+                <div className="flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                  <Phone className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   {customer.phone}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Email</label>
-                <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <Mail className="h-4 w-4 text-gray-300" />
+                <label className="text-[11px] text-slate-450 dark:text-slate-550 font-semibold uppercase tracking-wider">Email</label>
+                <div className="flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                  <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   {customer.email || "No email provided"}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Assigned Office</label>
-                <div className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <Building2 className="h-4 w-4 text-gray-300" />
+                <label className="text-[11px] text-slate-450 dark:text-slate-550 font-semibold uppercase tracking-wider">Assigned Office</label>
+                <div className="flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                  <Building2 className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   {customer.office?.name || "Global Office"}
                 </div>
               </div>
 
               {customer.conversionNote && (
-                <div className="space-y-1 pt-4 border-t border-gray-50">
-                  <label className="text-[11px] font-bold text-brand-blue uppercase tracking-widest">Conversion Note</label>
-                  <p className="text-xs font-medium text-gray-600 leading-relaxed italic">
+                <div className="space-y-1 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <label className="text-[11px] text-brand-blue uppercase tracking-widest">Conversion Note</label>
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
                     "{customer.conversionNote}"
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="pt-6 border-t border-gray-50">
-              <Button className="w-full" variant="secondary" onClick={() => alert("Edit functionality coming soon!")}>
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
+              <Button className="w-full text-xs h-9" variant="secondary" onClick={handleOpenEditModal}>
                 Edit Profile
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Right Column: Tabs & Workspace */}
+        </div>        {/* Right Column: Tabs & Workspace */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full min-h-[500px]">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden flex flex-col h-full min-h-[500px]">
             {/* Tab Bar */}
-            <div className="flex border-b border-gray-100 px-6">
+            <div className="flex border-b border-slate-100 dark:border-slate-800 px-6">
               <button 
                 onClick={() => setActiveTab("history")}
-                className={`py-4 px-2 text-sm font-bold border-b-2 transition-all ${
+                className={`py-4 px-2 text-sm font-semibold border-b-2 transition-all ${
                   activeTab === "history" 
                     ? "border-brand-blue text-brand-blue" 
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                    : "border-transparent text-slate-450 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
                 }`}
               >
                 Purchase History
               </button>
               <button 
                 onClick={() => setActiveTab("notes")}
-                className={`py-4 px-2 ml-8 text-sm font-bold border-b-2 transition-all ${
+                className={`py-4 px-2 ml-8 text-sm font-semibold border-b-2 transition-all ${
                   activeTab === "notes" 
                     ? "border-brand-blue text-brand-blue" 
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                    : "border-transparent text-slate-455 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-355"
                 }`}
               >
                 Client Notes
@@ -540,33 +590,33 @@ export default function CustomerDetailsPage() {
               {activeTab === "history" ? (
                 <div className="space-y-6">
                   {customer.quotations.length === 0 && customer.invoices.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-3">
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-550 space-y-3">
                       <History className="h-10 w-10 opacity-20" />
                       <p className="text-sm font-medium">No transaction history found</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {customer.quotations.map((q) => (
-                        <div key={q.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-50 bg-gray-50/30 hover:border-brand-blue/20 transition-all group">
+                        <div key={q.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-850 bg-slate-50/20 dark:bg-slate-950/20 hover:border-brand-blue/20 transition-all group">
                           <div className="flex items-center gap-4">
-                            <div className="p-2 bg-white rounded-lg shadow-sm">
-                              <FileText className="h-5 w-5 text-gray-400" />
+                            <div className="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border dark:border-slate-800">
+                              <FileText className="h-5 w-5 text-slate-400 dark:text-slate-550" />
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">Quotation #{q.id.slice(-6)}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{new Date(q.createdAt).toLocaleDateString()}</p>
+                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-tight">Quotation #{q.id.slice(-6)}</p>
+                              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{new Date(q.createdAt).toLocaleDateString()}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-6">
                             <div className="text-right">
-                              <p className="text-sm font-bold text-gray-900">₹{Number(q.totalAmount).toLocaleString('en-IN')}</p>
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                                q.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-600" : "bg-orange-100 text-orange-600"
+                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">₹{Number(q.totalAmount).toLocaleString('en-IN')}</p>
+                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase mt-1 inline-block ${
+                                q.status === "ACCEPTED" ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-450" : "bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-450"
                               }`}>
                                 {q.status}
                               </span>
                             </div>
-                            <button className="p-1.5 rounded-lg text-gray-300 hover:text-brand-blue hover:bg-brand-blue/5 transition-all">
+                            <button className="p-1.5 rounded-lg text-slate-300 dark:text-slate-655 hover:text-brand-blue dark:hover:text-brand-blue/90 hover:bg-brand-blue/5 transition-all">
                               <ExternalLink className="h-4 w-4" />
                             </button>
                           </div>
@@ -581,17 +631,17 @@ export default function CustomerDetailsPage() {
                   {!isAddingNote ? (
                     <button
                       onClick={() => setIsAddingNote(true)}
-                      className="w-full py-3 px-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all font-bold text-sm flex items-center justify-center gap-2 bg-gray-50/50 hover:bg-white"
+                      className="w-full py-3 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 dark:text-slate-400 hover:text-brand-blue hover:border-brand-blue/30 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-all font-semibold text-sm flex items-center justify-center gap-2 bg-gray-50/50"
                     >
                       <Plus className="h-4 w-4" />
                       Add Note
                     </button>
                   ) : (
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
                       <textarea
                         rows={3}
                         disabled={isSavingNotes}
-                        className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-gray-700 leading-relaxed font-medium text-sm resize-none disabled:opacity-60"
+                        className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all outline-none text-slate-850 dark:text-white leading-relaxed font-medium text-sm resize-none disabled:opacity-60"
                         placeholder="Type important details about this client..."
                         value={newNoteText}
                         onChange={(e) => setNewNoteText(e.target.value)}
@@ -615,18 +665,18 @@ export default function CustomerDetailsPage() {
                             type="button"
                             onClick={() => document.getElementById("customer-note-file-input")?.click()}
                             disabled={isSavingNotes || isRecording}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-brand-blue hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-semibold disabled:opacity-50"
                           >
-                            <Paperclip className="h-3.5 w-3.5" />
+                            <Paperclip className="h-3.5 w-3.5 text-slate-400 dark:text-slate-550" />
                             Attach Files
                           </button>
                           <button
                             type="button"
                             onClick={() => setIsRecordModalOpen(true)}
                             disabled={isSavingNotes}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 hover:text-brand-blue hover:bg-gray-50 transition-colors text-xs font-bold disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-brand-blue hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-semibold disabled:opacity-50"
                           >
-                            <Mic className="h-3.5 w-3.5" />
+                            <Mic className="h-3.5 w-3.5 text-slate-400 dark:text-slate-550" />
                             Voice Note
                           </button>
                         </div>
@@ -635,13 +685,13 @@ export default function CustomerDetailsPage() {
                         {pendingAttachments.length > 0 && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {pendingAttachments.map((file, idx) => (
-                              <div key={idx} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 text-xs text-slate-600 font-medium">
-                                <FileIcon className="h-3.5 w-3.5 text-slate-400" />
+                              <div key={idx} className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-600 dark:text-slate-350 font-medium">
+                                <FileIcon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                                 <span className="truncate max-w-[150px]">{file.name}</span>
                                 <button
                                   type="button"
                                   onClick={() => setPendingAttachments(prev => prev.filter((_, i) => i !== idx))}
-                                  className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600"
+                                  className="p-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-655"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
@@ -660,7 +710,7 @@ export default function CustomerDetailsPage() {
                             setNewNoteText("");
                             setPendingAttachments([]);
                           }}
-                          className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                          className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-455 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -668,7 +718,7 @@ export default function CustomerDetailsPage() {
                           type="button"
                           disabled={isSavingNotes || !newNoteText.trim()}
                           onClick={handleSaveNote}
-                          className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/25 transition-all flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center"
+                          className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center"
                         >
                           {isSavingNotes ? (
                             <>
@@ -686,14 +736,14 @@ export default function CustomerDetailsPage() {
                   {/* Notes Feed */}
                   <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
                     {parsedNotes.length === 0 ? (
-                      <div className="text-center py-10 text-slate-400 text-sm bg-gray-50 rounded-2xl border border-dashed border-gray-100">
-                        <StickyNote className="h-8 w-8 mx-auto mb-2 text-gray-300 opacity-50" />
+                      <div className="text-center py-10 text-slate-400 dark:text-slate-550 text-sm bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl border border-dashed border-slate-150 dark:border-slate-800">
+                        <StickyNote className="h-8 w-8 mx-auto mb-2 text-slate-300 dark:text-slate-655" />
                         No notes added yet.
                       </div>
                     ) : (
                       parsedNotes.map((note) => (
-                        <div key={note.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-slate-200 transition-colors">
-                          <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
+                        <div key={note.id} className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850/60 rounded-2xl p-4 shadow-sm hover:border-slate-200 dark:hover:border-slate-800 transition-colors">
+                          <p className="text-sm text-slate-750 dark:text-slate-200 whitespace-pre-wrap leading-relaxed font-medium">{note.text}</p>
                           
                           {/* Attachments Section */}
                           {note.attachments && note.attachments.length > 0 && (
@@ -704,9 +754,9 @@ export default function CustomerDetailsPage() {
                             </div>
                           )}
 
-                          <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                          <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 dark:text-slate-550 font-semibold uppercase tracking-wider">
                             <span className="flex items-center gap-1">
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
                               {note.authorName || 'System'}
                             </span>
                             <span>{formatDate(note.createdAt)}</span>
@@ -724,25 +774,25 @@ export default function CustomerDetailsPage() {
 
       {/* Voice Record Modal */}
       {isRecordModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
-            <h3 className="text-lg font-bold text-slate-800 mb-6">Record Voice Note</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-6 w-full max-w-sm text-center">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Record Voice Note</h3>
             
             <div className="flex flex-col items-center justify-center mb-8">
               {isRecording ? (
                 <>
-                  <div className="h-20 w-20 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-                    <Mic className="h-10 w-10 text-red-600" />
+                  <div className="h-20 w-20 bg-red-50 dark:bg-red-950/30 border border-red-105 dark:border-red-900/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                    <Mic className="h-10 w-10 text-red-600 dark:text-red-400" />
                   </div>
-                  <p className="text-red-600 font-bold text-sm animate-pulse mb-1">Recording in progress...</p>
-                  <p className="text-slate-500 font-mono text-xl font-semibold">{formatDuration(recordingDuration)}</p>
+                  <p className="text-red-600 dark:text-red-400 font-semibold text-sm animate-pulse mb-1">Recording in progress...</p>
+                  <p className="text-slate-655 dark:text-slate-350 font-mono text-xl font-semibold">{formatDuration(recordingDuration)}</p>
                 </>
               ) : (
                 <>
-                  <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                    <Mic className="h-10 w-10 text-slate-400" />
+                  <div className="h-20 w-20 bg-slate-50 dark:bg-slate-850 border border-slate-100 dark:border-slate-800 rounded-full flex items-center justify-center mb-4">
+                    <Mic className="h-10 w-10 text-slate-400 dark:text-slate-500" />
                   </div>
-                  <p className="text-slate-500 font-medium text-sm">Ready to record</p>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Ready to record</p>
                 </>
               )}
             </div>
@@ -752,13 +802,13 @@ export default function CustomerDetailsPage() {
                 <>
                   <button 
                     onClick={() => setIsRecordModalOpen(false)}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={startRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-brand-blue hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-brand-blue hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 transition-all"
                   >
                     Start Recording
                   </button>
@@ -767,13 +817,13 @@ export default function CustomerDetailsPage() {
                 <>
                   <button 
                     onClick={cancelRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={stopRecording}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2"
                   >
                     <Square className="h-4 w-4 fill-current" />
                     Stop & Save
@@ -781,6 +831,160 @@ export default function CustomerDetailsPage() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Customer Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 my-8 animate-in fade-in zoom-in duration-200">
+            <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/20">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Customer Profile</h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)} 
+                className="text-slate-450 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-350 transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditProfileSubmit} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">First Name *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">Last Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Email Address</label>
+                  <input 
+                    type="email" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Company</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.company}
+                    onChange={(e) => setEditForm({...editForm, company: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">Designation</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.designation}
+                    onChange={(e) => setEditForm({...editForm, designation: e.target.value})}
+                  />
+                </div>
+
+                {/* Billing details heading separator */}
+                <div className="sm:col-span-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <h4 className="text-xs font-semibold text-brand-blue uppercase tracking-wider">Billing & Tax Details</h4>
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">GST Number</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium uppercase placeholder:normal-case" 
+                    placeholder="e.g. 07AAAAA1111A1Z1"
+                    value={editForm.gstNumber}
+                    onChange={(e) => setEditForm({...editForm, gstNumber: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Billing Address</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({...editForm, address: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">City</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.city}
+                    onChange={(e) => setEditForm({...editForm, city: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">State</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.state}
+                    onChange={(e) => setEditForm({...editForm, state: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Pincode</label>
+                  <input 
+                    type="text" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    value={editForm.pincode}
+                    onChange={(e) => setEditForm({...editForm, pincode: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+                <button 
+                  type="button" 
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={isSavingEdit}
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSavingEdit}
+                  className="bg-brand-blue hover:bg-brand-blue/90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-brand-blue/20 transition-all flex items-center justify-center min-w-[120px]"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

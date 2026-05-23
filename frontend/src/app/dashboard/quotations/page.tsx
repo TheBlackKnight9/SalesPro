@@ -118,7 +118,7 @@ export default function QuotationsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto w-full space-y-4 px-4 py-2">
       <Toaster position="bottom-right" reverseOrder={false} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -135,23 +135,23 @@ export default function QuotationsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
         <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
           <input 
             type="text" 
             placeholder="Search quotes..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue dark:text-white transition-all outline-none"
+            className="w-full h-9 pl-9 pr-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs focus:ring-1 focus:ring-brand-blue/25 focus:border-brand-blue dark:text-white transition-all outline-none"
           />
         </div>
         <div className="relative w-full sm:w-auto" ref={dropdownRef}>
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="btn btn-secondary w-full sm:w-auto dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 flex items-center justify-center"
+            className="inline-flex h-9 items-center justify-center px-3.5 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 w-full sm:w-auto dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
           >
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className="mr-1.5 h-3.5 w-3.5" />
             {selectedStatus ? `Status: ${selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase()}` : "Filters"}
           </button>
           
@@ -193,17 +193,17 @@ export default function QuotationsPage() {
       </div>
 
       {/* Table Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 dark:bg-slate-800/50">
+            <thead className="bg-gray-50/30 dark:bg-slate-800/30 border-b border-gray-200 dark:border-slate-800">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Quote #</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Client</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Amount</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Expiry</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                <th className="w-[15%] px-4 py-[8.5px] text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Quote #</th>
+                <th className="w-[30%] px-4 py-[8.5px] text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Client</th>
+                <th className="w-[20%] px-4 py-[8.5px] text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Amount</th>
+                <th className="w-[12%] px-4 py-[8.5px] text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="w-[13%] px-4 py-[8.5px] text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Expiry</th>
+                <th className="w-[10%] px-4 py-[8.5px] text-right text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -222,34 +222,34 @@ export default function QuotationsPage() {
               ) : (
                 finalDisplayData.map((q) => (
                   <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-gray-900 dark:text-white">{q.quotationNumber}</span>
+                    <td className="px-4 py-[7px]">
+                      <span className="text-[14.5px] font-medium text-gray-900 dark:text-white">{q.quotationNumber}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-[7px]">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 dark:text-slate-200">
+                        <span className="text-[14.5px] font-medium text-gray-900 dark:text-slate-200">
                           {q.customer 
                             ? `${q.customer.firstName} ${q.customer.lastName || ''}` 
                             : q.lead 
                               ? `${q.lead.firstName} ${q.lead.lastName || ''}` 
                               : "N/A"}
                         </span>
-                        <span className="text-[11px] text-gray-400 dark:text-slate-500 font-bold uppercase">
+                        <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium uppercase mt-0.5">
                           {q.customer?.company || q.lead?.company || 'Personal'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-extrabold text-gray-900 dark:text-white">₹{Number(q.totalAmount).toLocaleString('en-IN')}</span>
+                    <td className="px-4 py-[7px]">
+                      <span className="text-[13px] font-semibold text-gray-900 dark:text-white">₹{Number(q.totalAmount).toLocaleString('en-IN')}</span>
                     </td>
-                    <td className="px-6 py-4">{getStatusBadge(q.status)}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                        {q.validUntil ? new Date(q.validUntil).toLocaleDateString() : 'No expiry'}
+                    <td className="px-4 py-[7px]">{getStatusBadge(q.status)}</td>
+                    <td className="px-4 py-[7px]">
+                      <span className="text-[11px] font-medium text-gray-400 dark:text-slate-400">
+                        {q.validUntil ? new Date(q.validUntil).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'No expiry'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-3">
+                    <td className="px-4 py-[7px] text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <select 
                           value={q.status}
                           onChange={async (e) => {
@@ -297,7 +297,7 @@ export default function QuotationsPage() {
                               toast.error(err.message || "Failed to update status");
                             }
                           }}
-                          className="bg-slate-50 dark:bg-slate-800 border-none text-[11px] font-bold rounded-lg px-2 py-1 focus:ring-1 focus:ring-brand-blue/20 outline-none cursor-pointer transition-all uppercase tracking-wider"
+                          className="bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700 text-[10px] font-semibold rounded px-1.5 py-0.5 focus:ring-1 focus:ring-brand-blue/20 outline-none cursor-pointer transition-all uppercase tracking-wider h-6 flex items-center"
                         >
                           <option value="DRAFT">Draft</option>
                           <option value="SENT">Sent</option>
@@ -305,17 +305,17 @@ export default function QuotationsPage() {
                           <option value="REJECTED">Rejected</option>
                         </select>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
                           <button 
                             onClick={() => handleDownload(q.id, q.quotationNumber)}
-                            className="p-1.5 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-all"
+                            className="p-1 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded transition-all"
                             title="Download PDF"
                           >
                             <Download className="h-3.5 w-3.5" />
                           </button>
                           <button 
                             onClick={() => handleOpenQuickView(q)}
-                            className="p-1.5 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-all"
+                            className="p-1 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 rounded transition-all"
                             title="Quick View"
                           >
                             <Eye className="h-3.5 w-3.5" />

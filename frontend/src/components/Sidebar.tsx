@@ -39,7 +39,7 @@ export default function Sidebar() {
   );
 
   return (
-    <aside className="flex h-screen w-[156px] flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 transition-colors duration-300">
+    <aside className="flex h-screen w-[187px] flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 transition-colors duration-300 sticky top-0 shrink-0">
       <div className="flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-slate-800 px-6">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">SalesPro</p>

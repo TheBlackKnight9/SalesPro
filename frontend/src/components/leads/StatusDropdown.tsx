@@ -35,9 +35,9 @@ export default function StatusDropdown({ leadId, currentStatus, onStatusChange, 
 
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <Menu.Button className={`inline-flex items-center gap-1.5 font-bold rounded-full transition-all hover:ring-2 hover:ring-offset-1 hover:ring-gray-200 ${statusConfig.color} ${size === "sm" ? "px-2.5 py-1 text-xs" : "px-4 py-2 text-sm"}`}>
+      <Menu.Button className={`inline-flex items-center rounded-full transition-all hover:ring-2 hover:ring-offset-1 hover:ring-gray-200 ${statusConfig.color} ${size === "sm" ? "h-6 px-2 text-[10px] font-bold gap-1" : "h-8 px-3 text-xs font-semibold gap-1.5"}`}>
         {statusConfig.label}
-        <ChevronDown className={size === "sm" ? "h-3 w-3" : "h-4 w-4"} />
+        <ChevronDown className={size === "sm" ? "h-2.5 w-2.5" : "h-3.5 w-3.5"} />
       </Menu.Button>
       <Transition
         as={Fragment}

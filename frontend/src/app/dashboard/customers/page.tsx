@@ -90,12 +90,12 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto w-full space-y-4 px-4 py-2">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Customers</h1>
-          <p className="mt-1 text-sm text-gray-500 leading-snug">View and manage your converted clients.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Customers</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400 leading-snug">View and manage your converted clients.</p>
         </div>
         {/* Add Customer button removed */}
       </div>
@@ -107,9 +107,9 @@ export default function CustomersPage() {
       />
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
         <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
           <input 
             type="text" 
             placeholder="Search name, company, email..." 
@@ -121,19 +121,19 @@ export default function CustomersPage() {
               else params.delete("search");
               router.replace(`${pathname}?${params.toString()}`);
             }}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 border-gray-200 rounded-xl text-sm transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue"
+            className="w-full h-9 pl-9 pr-3 bg-gray-50/50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 dark:text-white rounded-lg text-xs transition-all focus:bg-white dark:focus:bg-slate-950 focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
           />
         </div>
         
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {/* Date Filter */}
           <Menu as="div" className="relative flex-1 sm:flex-none">
-            <Menu.Button className="flex w-full items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-400" />
+            <Menu.Button className="flex w-full h-9 items-center justify-between gap-1.5 px-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-gray-400" />
                 {DATE_FILTERS.find(f => f.id === activeDateFilter)?.label}
               </div>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
             </Menu.Button>
             <Transition
               as={Fragment}
@@ -144,7 +144,7 @@ export default function CustomersPage() {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-xl shadow-xl border border-gray-100 ring-1 ring-black/5 focus:outline-none z-10">
+              <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 ring-1 ring-black/5 focus:outline-none z-10">
                 <div className="p-1">
                   {DATE_FILTERS.map((filter) => (
                     <Menu.Item key={filter.id}>
@@ -152,7 +152,9 @@ export default function CustomersPage() {
                         <button
                           onClick={() => updateFilters("date", filter.id)}
                           className={`${
-                            active || activeDateFilter === filter.id ? 'bg-brand-blue/5 text-brand-blue' : 'text-gray-700'
+                            active || activeDateFilter === filter.id 
+                              ? 'bg-brand-blue/5 dark:bg-brand-blue/10 text-brand-blue' 
+                              : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/50'
                           } flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors`}
                         >
                           {filter.label}
@@ -167,12 +169,12 @@ export default function CustomersPage() {
 
           {/* Revenue Filter */}
           <Menu as="div" className="relative flex-1 sm:flex-none">
-            <Menu.Button className="flex w-full items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-2">
-                <IndianRupee className="h-4 w-4 text-gray-400" />
+            <Menu.Button className="flex w-full h-9 items-center justify-between gap-1.5 px-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <div className="flex items-center gap-1.5">
+                <IndianRupee className="h-3.5 w-3.5 text-gray-400" />
                 {REVENUE_FILTERS.find(f => f.id === activeRevenueFilter)?.label}
               </div>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
             </Menu.Button>
             <Transition
               as={Fragment}
@@ -183,7 +185,7 @@ export default function CustomersPage() {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-xl shadow-xl border border-gray-100 ring-1 ring-black/5 focus:outline-none z-10">
+              <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 ring-1 ring-black/5 focus:outline-none z-10">
                 <div className="p-1">
                   {REVENUE_FILTERS.map((filter) => (
                     <Menu.Item key={filter.id}>
@@ -191,7 +193,9 @@ export default function CustomersPage() {
                         <button
                           onClick={() => updateFilters("revenue", filter.id)}
                           className={`${
-                            active || activeRevenueFilter === filter.id ? 'bg-brand-blue/5 text-brand-blue' : 'text-gray-700'
+                            active || activeRevenueFilter === filter.id 
+                              ? 'bg-brand-blue/5 dark:bg-brand-blue/10 text-brand-blue' 
+                              : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/50'
                           } flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors`}
                         >
                           {filter.label}
@@ -207,17 +211,17 @@ export default function CustomersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
+            <thead className="bg-gray-50/30 dark:bg-slate-800/30 border-b border-gray-200 dark:border-slate-800">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Name</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Company</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Contact</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Revenue</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Date Added</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 text-right">Actions</th>
+                <th className="w-[30%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Name</th>
+                <th className="w-[20%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Company</th>
+                <th className="w-[20%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Contact</th>
+                <th className="w-[15%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Revenue</th>
+                <th className="w-[15%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400">Date Added</th>
+                <th className="w-[10%] px-4 py-[8.5px] text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-800 bg-white dark:bg-slate-900">
@@ -245,37 +249,37 @@ export default function CustomersPage() {
               ) : (
                 customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-xs">
+                    <td className="px-4 py-[7px]">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-7 w-7 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-[10px] flex-shrink-0">
                           {customer.firstName[0]}{customer.lastName?.[0] || ''}
                         </div>
-                        <span className="font-semibold text-gray-900 dark:text-white tracking-tight">
+                        <span className="text-[14.5px] font-medium text-gray-900 dark:text-white tracking-tight">
                           {customer.firstName} {customer.lastName || ''}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-300 font-medium">
+                    <td className="px-4 py-[7px] text-[13px] text-gray-600 dark:text-slate-300 font-medium">
                       {customer.company || "Individual"}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">{customer.phone}</span>
-                        <span className="text-xs text-gray-400 dark:text-slate-400">{customer.email || "No email"}</span>
+                    <td className="px-4 py-[7px]">
+                      <div className="flex flex-col gap-0.5 text-[11px] text-gray-400 dark:text-slate-500">
+                        <span>{customer.phone}</span>
+                        {customer.email && <span className="truncate max-w-[150px]">{customer.email}</span>}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-bold tracking-tight">
+                    <td className="px-4 py-[7px]">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-tight">
                         ₹{Number(customer.totalRevenue).toLocaleString('en-IN')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400 font-medium">
+                    <td className="px-4 py-[7px] text-[11px] text-gray-400 dark:text-slate-500 font-medium">
                       {new Date(customer.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-[7px] text-right">
                       <button 
                         onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
-                        className="text-sm font-bold text-brand-blue hover:text-brand-blue/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-brand-blue/5"
+                        className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold text-brand-blue hover:text-white hover:bg-brand-blue border border-transparent hover:border-brand-blue/20 transition-all"
                       >
                         Details
                       </button>
