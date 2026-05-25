@@ -15,53 +15,28 @@ function formatEnum(val?: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// ISO week number utility
-function getISOWeekNumber(d: Date): number {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  return weekNo;
-}
-
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = req.user?.organizationId;
-    if (!orgId) {
-      return res.status(400).json({ success: false, message: "Organization ID is missing." });
-    }
-    const role = req.user?.role;
-    const userId = req.user?.userId;
+    const leadWhereClause: any = {};
+    const customerWhereClause: any = { isActive: true };
+    const quotationWhereClause: any = { status: { in: ["DRAFT", "SENT", "ACCEPTED"] } };
 
-    const leadWhereClause: any = { organizationId: orgId };
-    
-    if (role === UserRole.AGENT && userId) {
+    if (req.user?.role === UserRole.AGENT) {
+      const userId = req.user.userId;
       leadWhereClause.agentId = userId;
-    } else if (role === UserRole.MANAGER && req.user?.officeId) {
+      customerWhereClause.lead = { agentId: userId };
+      quotationWhereClause.createdById = userId;
+    } else if (req.user?.role === UserRole.MANAGER && req.user.officeId) {
       const officeId = req.user.officeId;
       leadWhereClause.officeId = officeId;
+      customerWhereClause.officeId = officeId;
+      quotationWhereClause.createdBy = { officeId: officeId };
     }
-
-    const customerWhereClause: any = {
-      isActive: true,
-      lead: leadWhereClause
-    };
-
-    const quotationWhereClause: any = {
-      organizationId: orgId,
-      status: { in: ["DRAFT", "SENT", "ACCEPTED"] },
-      OR: [
-        { lead: leadWhereClause },
-        { customer: { lead: leadWhereClause } }
-      ]
-    };
 
     const totalLeads = await prisma.lead.count({ where: leadWhereClause });
     const activeCustomers = await prisma.customer.count({ where: customerWhereClause });
     const quotations = await prisma.quotation.findMany({
-      where: quotationWhereClause,
-      select: { totalAmount: true }
+      where: quotationWhereClause
     });
     
     let pipelineValue = 0;
@@ -69,135 +44,725 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
       pipelineValue += Number(q.totalAmount || 0);
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: { totalLeads, activeCustomers, pipelineValue, conversionRate: "0%" }
     });
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
 export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = req.user?.organizationId;
-    if (!orgId) {
-      return res.status(400).json({ success: false, message: "Organization ID is missing." });
-    }
+    const now = new Date();
     const role = req.user?.role;
     const userId = req.user?.userId;
-    const officeId = req.user?.officeId;
 
-    // Formulate Strict Role-Based Query Constraints (RBAC Isolation)
-    const roleFilters: any = { organizationId: orgId };
-    if (role === UserRole.AGENT && userId) {
-      roleFilters.agentId = userId;
-    } else if (role === UserRole.MANAGER && officeId) {
-      roleFilters.officeId = officeId;
+    if (role === UserRole.SUPER_ADMIN) {
+      // 1. Fetch all active offices
+      const offices = await prisma.office.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, city: true, state: true, monthlyTarget: true }
+      });
+
+      // 2. Global KPIs
+      const globalRevenueSum = await prisma.quotation.aggregate({
+        where: { status: "ACCEPTED" },
+        _sum: { totalAmount: true }
+      });
+      const totalRevenue = Number(globalRevenueSum._sum.totalAmount || 0);
+      const totalLeadsGlobal = await prisma.lead.count();
+      const activeOffices = offices.length;
+      const totalAccountsActive = await prisma.user.count({ where: { isActive: true } });
+
+      // 3. Regional Performance Grid
+      const regionalPerformance = await Promise.all(offices.map(async (office) => {
+        const acceptedQuotes = await prisma.quotation.findMany({
+          where: {
+            status: "ACCEPTED",
+            createdBy: { officeId: office.id }
+          },
+          select: { totalAmount: true }
+        });
+        const officeRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        const officeLeadsCount = await prisma.lead.count({ where: { officeId: office.id } });
+        const wonLeadsCount = await prisma.lead.count({ where: { officeId: office.id, status: "WON" } });
+        const conversionRate = officeLeadsCount > 0 
+          ? Number(((wonLeadsCount / officeLeadsCount) * 100).toFixed(1))
+          : 0;
+
+        const target = office.monthlyTarget || 5000000;
+
+        const progressPercent = Math.min(Math.round((officeRevenue / target) * 100), 100);
+        const status = officeRevenue >= target * 0.75 ? "On Target" : "Behind";
+
+        return {
+          id: office.id,
+          name: office.name,
+          status,
+          revenue: officeRevenue,
+          leads: officeLeadsCount,
+          conversionRate,
+          target,
+          progressPercent
+        };
+      }));
+
+      // 4. Trend Data over the past 6 calendar months
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+
+      const trendQuotations = await prisma.quotation.findMany({
+        where: {
+          status: "ACCEPTED",
+          createdAt: { gte: sixMonthsAgo }
+        },
+        select: {
+          totalAmount: true,
+          createdAt: true,
+          createdBy: {
+            select: {
+              office: { select: { name: true } }
+            }
+          }
+        }
+      });
+
+      const monthsList: { key: string; name: string }[] = [];
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        monthsList.push({
+          key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+          name: monthNames[d.getMonth()]
+        });
+      }
+
+      const trendData = monthsList.map(m => {
+        const item: any = { name: m.name };
+        offices.forEach(o => {
+          const key = o.name.replace(" Office", "");
+          item[key] = 0;
+        });
+        return item;
+      });
+
+      trendQuotations.forEach(q => {
+        const qDate = new Date(q.createdAt);
+        const qKey = `${qDate.getFullYear()}-${String(qDate.getMonth() + 1).padStart(2, "0")}`;
+        const monthItem = trendData.find((t, idx) => monthsList[idx].key === qKey);
+        if (monthItem && q.createdBy?.office) {
+          const key = q.createdBy.office.name.replace(" Office", "");
+          monthItem[key] = Number(monthItem[key] || 0) + Number(q.totalAmount || 0);
+        }
+      });
+
+      // 5. Top Agents Leaderboard Matrix
+      const allUsers = await prisma.user.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, office: { select: { name: true } } }
+      });
+
+      const agentLeaderboard = await Promise.all(allUsers.map(async (u) => {
+        const acceptedQuotes = await prisma.quotation.aggregate({
+          where: { status: "ACCEPTED", createdById: u.id },
+          _sum: { totalAmount: true }
+        });
+        const revenue = Number(acceptedQuotes._sum.totalAmount || 0);
+        const totalLeads = await prisma.lead.count({ where: { agentId: u.id } });
+        const wonLeads = await prisma.lead.count({ where: { agentId: u.id, status: "WON" } });
+        const conversionRate = totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
+
+        return {
+          name: u.name,
+          officeName: u.office?.name ? u.office.name.replace(" Office", "") : "HQ",
+          conversionRate,
+          revenue
+        };
+      }));
+
+      agentLeaderboard.sort((a, b) => b.revenue - a.revenue);
+      const topAgents = agentLeaderboard.slice(0, 5);
+
+      // 6. Global Lead Source Distribution
+      const leadSourceGroup = await prisma.lead.groupBy({
+        by: ["source"],
+        _count: { id: true }
+      });
+      const sourceColors = {
+        WEBSITE: "#6366F1",
+        REFERRAL: "#10B981",
+        SOCIAL_MEDIA: "#F59E0B",
+        WALK_IN: "#EC4899",
+        WHATSAPP: "#25D366",
+        MANUAL: "#64748B",
+        OTHER: "#94A3B8"
+      };
+      const totalLeadsCount = await prisma.lead.count();
+      const leadSources = leadSourceGroup.map(g => {
+        const percentage = totalLeadsCount > 0 ? Math.round((g._count.id / totalLeadsCount) * 100) : 0;
+        return {
+          name: g.source,
+          value: g._count.id,
+          percentage: `${percentage}%`,
+          color: (sourceColors as any)[g.source] || "#94A3B8"
+        };
+      }).sort((a, b) => b.value - a.value);
+
+      // 7. Deficit Calculations
+      const companyQuota = 20000000; // ₹2Cr
+      const quotaProgressPercent = Math.min(Math.round((totalRevenue / companyQuota) * 100), 100);
+      const deficit = Math.max(companyQuota - totalRevenue, 0);
+
+      let deficitText = "";
+      if (deficit <= 0) {
+        deficitText = "Organization goal achieved!";
+      } else {
+        if (deficit >= 10000000) {
+          deficitText = `need ₹${(deficit / 10000000).toFixed(2)}Cr more to hit org goal`;
+        } else if (deficit >= 100000) {
+          deficitText = `need ₹${(deficit / 100000).toFixed(1)}L more to hit org goal`;
+        } else {
+          deficitText = `need ₹${deficit.toLocaleString('en-IN')} more to hit org goal`;
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          isSuperAdmin: true,
+          kpis: {
+            totalRevenue,
+            totalLeadsGlobal,
+            activeOffices,
+            totalAccountsActive
+          },
+          regionalPerformance,
+          trendData,
+          topAgents,
+          leadSources,
+          companyQuota,
+          quotaProgressPercent,
+          deficitText
+        }
+      });
     }
 
-    // Fetch KPI Summary Metrics Counts Parallelly
-    const [newLeads, contactedLeads, qualifiedLeads, negotiationLeads, convertedCustomers, lostLeads, proposalSentLeads] = await Promise.all([
-      prisma.lead.count({ where: { ...roleFilters, status: "NEW" } }),
-      prisma.lead.count({ where: { ...roleFilters, status: "CONTACTED" } }),
-      prisma.lead.count({ where: { ...roleFilters, status: "QUALIFIED" } }),
-      prisma.lead.count({ where: { ...roleFilters, status: "NEGOTIATION" } }),
-      prisma.customer.count({ where: { lead: roleFilters } }), // Sync with live customer database rows count
-      prisma.lead.count({ where: { ...roleFilters, status: "LOST" } }),
-      prisma.lead.count({ where: { ...roleFilters, status: "PROPOSAL_SENT" } }),
-    ]);
-
-    // Calculate aggregated pipeline value cleanly
-    const quotations = await prisma.quotation.findMany({
-      where: { lead: { ...roleFilters }, status: { in: ["DRAFT", "SENT", "ACCEPTED"] } },
-      select: { totalAmount: true },
-    });
-    const pipelineSum = quotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
-
-    // Helpers for ISO Week lookback (6 Weeks Window)
-    const subWeeks = (date: Date, n: number) => {
-      const d = new Date(date);
-      d.setDate(d.getDate() - n * 7);
-      return d;
-    };
-
-    const startOfISOWeek = (date: Date) => {
-      const d = new Date(date);
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(d.setDate(diff));
-      monday.setHours(0, 0, 0, 0);
-      return monday;
-    };
-
-    const currentPoint = new Date();
-    const timelineWeeks = Array.from({ length: 6 }).map((_, idx) => {
-      const targetDate = subWeeks(currentPoint, 5 - idx);
-      const weekNumber = getISOWeekNumber(targetDate);
-      return {
-        weekNumber,
-        label: `Wk ${weekNumber}`,
-        start: startOfISOWeek(targetDate),
-        end: new Date(startOfISOWeek(targetDate).getTime() + 7 * 24 * 60 * 60 * 1000 - 1),
-        New: 0,
-        Interested: 0,
-        QuoteSent: 0,
-        Converted: 0,
-      };
-    });
-
-    // Fetch leads within our calendar lookback timeframe
-    const baseLeadsTimeline = await prisma.lead.findMany({
-      where: {
-        ...roleFilters,
-        createdAt: { gte: timelineWeeks[0].start, lte: timelineWeeks[5].end },
-      },
-      select: { status: true, createdAt: true },
-    });
-
-    // Map rows into real calendar week baskets explicitly matching chart keys
-    baseLeadsTimeline.forEach((lead) => {
-      const leadWeek = getISOWeekNumber(new Date(lead.createdAt));
-      const targetBasket = timelineWeeks.find((w) => w.weekNumber === leadWeek);
+    // Dynamic base clauses based on UserRole
+    const leadWhereClause: any = {};
+    const taskWhereClause: any = {};
+    const activityWhereClause: any = {};
+    const quotationWhereClause: any = { status: { in: ["DRAFT", "SENT", "ACCEPTED"] } };
+    
+    if (role === UserRole.AGENT && userId) {
+      // Agents only see data related to their own assignment
+      leadWhereClause.agentId = userId;
       
-      if (targetBasket) {
-        const stage = lead.status?.toUpperCase();
-        if (stage === "NEW") targetBasket.New++;
-        else if (stage === "CONTACTED" || stage === "QUALIFIED") targetBasket.Interested++;
-        else if (stage === "PROPOSAL_SENT" || stage === "NEGOTIATION") targetBasket.QuoteSent++;
-        else if (stage === "WON" || stage === "CONVERTED") targetBasket.Converted++;
+      taskWhereClause.OR = [
+        { assignedToId: userId },
+        { createdById: userId }
+      ];
+      
+      activityWhereClause.OR = [
+        { performedById: userId },
+        { lead: { agentId: userId } },
+        { customer: { lead: { agentId: userId } } }
+      ];
+      
+      quotationWhereClause.createdById = userId;
+    } else if (role === UserRole.MANAGER && req.user?.officeId) {
+      const officeId = req.user.officeId;
+      leadWhereClause.officeId = officeId;
+      taskWhereClause.assignedTo = { officeId: officeId };
+      activityWhereClause.OR = [
+        { lead: { officeId: officeId } },
+        { customer: { officeId: officeId } }
+      ];
+      quotationWhereClause.createdBy = { officeId: officeId };
+    }
+    
+    const baseWhereClause = leadWhereClause;
+    console.log("Database executing role-based filter:", JSON.stringify(baseWhereClause));
+
+    // KPIs
+    const newLeads = await prisma.lead.count({ where: { status: "NEW", ...leadWhereClause } });
+    const hotLeads = await prisma.lead.count({ where: { status: { in: ["CONTACTED", "QUALIFIED"] }, ...leadWhereClause } });
+    const converted = await prisma.lead.count({ where: { status: "WON", ...leadWhereClause } });
+    
+    const quotations = await prisma.quotation.findMany({
+      where: quotationWhereClause
+    });
+    let pipelineValue = 0;
+    quotations.forEach(q => { pipelineValue += Number(q.totalAmount || 0); });
+
+    const totalLeads = await prisma.lead.count({ where: leadWhereClause });
+
+    // Stage Breakdown: mapped exactly to the specified CRM workflow
+    const stages = ["NEW", "CONTACTED", "QUALIFIED", "QUOTE_SENT", "NEGOTIATION", "CONVERTED", "LOST"];
+    
+    const stageToDbStatus = (stage: string): string => {
+      switch (stage) {
+        case "NEW": return "NEW";
+        case "CONTACTED": return "CONTACTED";
+        case "QUALIFIED": return "QUALIFIED";
+        case "QUOTE_SENT": return "PROPOSAL_SENT";
+        case "NEGOTIATION": return "NEGOTIATION";
+        case "CONVERTED": return "WON";
+        case "LOST": return "LOST";
+        default: return stage;
       }
+    };
+
+    const stageColors = (stage: string): string => {
+      switch (stage) {
+        case "NEW": return "bg-blue-500";
+        case "CONTACTED": return "bg-indigo-500";
+        case "QUALIFIED": return "bg-purple-500";
+        case "QUOTE_SENT": return "bg-amber-500";
+        case "NEGOTIATION": return "bg-orange-500";
+        case "CONVERTED": return "bg-emerald-500";
+        case "LOST": return "bg-rose-500";
+        default: return "bg-slate-500";
+      }
+    };
+
+    const stageBreakdown = await Promise.all(stages.map(async (stageName) => {
+      let count = 0;
+      if (stageName === "QUOTE_SENT") {
+        count = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            quotations: {
+              some: {
+                status: "SENT"
+              }
+            }
+          }
+        });
+      } else if (stageName === "CONVERTED") {
+        const customerWhereClause: any = {};
+        if (role === UserRole.AGENT && userId) {
+          customerWhereClause.lead = { agentId: userId };
+        } else if (role === UserRole.MANAGER && req.user?.officeId) {
+          customerWhereClause.officeId = req.user.officeId;
+        }
+        count = await prisma.customer.count({
+          where: customerWhereClause
+        });
+      } else {
+        const dbStatus = stageToDbStatus(stageName);
+        count = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: dbStatus as any
+          }
+        });
+      }
+      return {
+        name: formatEnum(stageName),
+        count,
+        percentage: 0, // computed dynamically below
+        color: stageColors(stageName),
+        dropoff: "0%"
+      };
+    }));
+
+    const totalItems = stageBreakdown.reduce((sum, item) => sum + item.count, 0);
+    stageBreakdown.forEach(item => {
+      item.percentage = totalItems > 0 ? Math.round((item.count / totalItems) * 100) : 0;
     });
 
-    // Clean payload response structure
-    const payload = {
-      kpis: {
-        newLeads: newLeads,
-        hotLeads: contactedLeads + qualifiedLeads,
-        converted: convertedCustomers,
-        pipelineValue: pipelineSum,
-      },
-      stageBreakdown: {
-        New: newLeads,
-        Interested: contactedLeads,
-        Qualified: qualifiedLeads,
-        QuoteSent: proposalSentLeads,
-        Negotiation: negotiationLeads,
-        Converted: convertedCustomers,
-      },
-      funnelChartData: timelineWeeks.map((w) => ({
-        name: w.label,
-        New: w.New,
-        Interested: w.Interested,
-        QuoteSent: w.QuoteSent,
-        Converted: w.Converted,
-      })),
+    // Lead Sources
+    const sourceGroup = await prisma.lead.groupBy({
+      by: ['source'],
+      where: leadWhereClause,
+      _count: { id: true }
+    });
+    
+    const sourceColors = {
+      WHATSAPP: "#10B981",
+      WEBSITE: "#3B82F6",
+      REFERRAL: "#8B5CF6",
+      COLD_CALL: "#F59E0B",
+      SOCIAL_MEDIA: "#EC4899",
+      WALK_IN: "#6366F1",
+      MANUAL: "#64748B",
+      OTHER: "#94A3B8"
     };
+    
+    const leadSources = sourceGroup.map(s => {
+      const percentage = totalLeads > 0 ? Math.round((s._count.id / totalLeads) * 100) : 0;
+      return {
+        name: s.source,
+        value: s._count.id,
+        percentage: `${percentage}%`,
+        color: (sourceColors as any)[s.source] || "#94A3B8"
+      };
+    }).sort((a, b) => b.value - a.value);
+
+    // Hot Leads List
+    const hotLeadsData = await prisma.lead.findMany({
+      where: { 
+        priority: { in: ["HIGH", "URGENT"] }, 
+        status: { notIn: ["WON", "LOST", "ON_HOLD"] },
+        ...leadWhereClause 
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 4,
+      include: { quotations: { select: { totalAmount: true }, take: 1, orderBy: { createdAt: "desc" } } }
+    });
+    
+    const hotLeadsList = hotLeadsData.map(l => ({
+      name: `${l.firstName} ${l.lastName || ""}`.trim(),
+      initials: `${l.firstName.charAt(0)}${l.lastName ? l.lastName.charAt(0) : ""}`,
+      subtext: `Updated ${l.updatedAt.toLocaleDateString()}`,
+      status: l.status,
+      value: l.quotations.length > 0 ? `₹${l.quotations[0].totalAmount}` : "Pending"
+    }));
+
+    // Today's Tasks
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+    const tasks = await prisma.task.findMany({
+      where: { 
+        dueDate: { gte: startOfDay, lte: endOfDay },
+        ...taskWhereClause
+      },
+      orderBy: { dueDate: "asc" },
+      take: 5
+    });
+    
+    const todaysTasks = tasks.map(t => ({
+      title: t.title,
+      time: t.dueDate ? t.dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Today",
+      type: "Task",
+      status: t.status
+    }));
+
+    // Recent Activities
+    const activities = await prisma.activity.findMany({
+      where: activityWhereClause,
+      orderBy: { createdAt: "desc" },
+      take: 5
+    });
+    
+    const recentActivities = activities.map(a => ({
+      text: a.title,
+      time: a.createdAt.toLocaleDateString() === new Date().toLocaleDateString() 
+        ? a.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        : a.createdAt.toLocaleDateString(),
+      color: "bg-blue-500"
+    }));
+
+    // Weekly Trend dynamically computed from database records over the past 4 weeks
+    const weeklyTrend = [];
+    for (let i = 3; i >= 0; i--) {
+      const start = new Date();
+      start.setDate(now.getDate() - (i + 1) * 7);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setDate(now.getDate() - i * 7);
+      end.setHours(23, 59, 59, 999);
+
+      const wkName = `Wk ${4 - i}`;
+
+      const newCount = await prisma.lead.count({
+        where: {
+          ...leadWhereClause,
+          createdAt: { gte: start, lte: end }
+        }
+      });
+
+      const contactedCount = await prisma.lead.count({
+        where: {
+          ...leadWhereClause,
+          status: "CONTACTED",
+          createdAt: { gte: start, lte: end }
+        }
+      });
+
+      const quotesCount = await prisma.quotation.count({
+        where: {
+          ...quotationWhereClause,
+          createdAt: { gte: start, lte: end }
+        }
+      });
+
+      const convertedCount = await prisma.lead.count({
+        where: {
+          ...leadWhereClause,
+          status: "WON",
+          convertedAt: { gte: start, lte: end }
+        }
+      });
+
+      weeklyTrend.push({
+        name: wkName,
+        New: newCount,
+        Contacted: contactedCount,
+        Quotes: quotesCount,
+        Converted: convertedCount
+      });
+    }
+
+    // ── Manager/Admin-Only Analytics ─────────────────────────────────────
+    let managerData: any = null;
+    if (role !== UserRole.AGENT) {
+      // 1. Agent Leaderboard
+      const agents = await prisma.user.findMany({
+        where: { 
+          role: UserRole.AGENT, 
+          isActive: true,
+          ...(role === UserRole.MANAGER && req.user?.officeId && { officeId: req.user.officeId })
+        },
+        select: { id: true, name: true }
+      });
+
+      const agentLeaderboard = await Promise.all(agents.map(async (agent) => {
+        const activeLeads = await prisma.lead.count({
+          where: { agentId: agent.id, status: { notIn: ["WON", "LOST"] } }
+        });
+        const convertedLeads = await prisma.lead.count({
+          where: { agentId: agent.id, status: "WON" }
+        });
+        const agentQuotations = await prisma.quotation.findMany({
+          where: {
+            status: { in: ["DRAFT", "SENT", "ACCEPTED"] },
+            createdById: agent.id
+          },
+          select: { totalAmount: true }
+        });
+        const agentPipeline = agentQuotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        const needsReview = activeLeads > 10 && convertedLeads === 0;
+
+        return {
+          name: agent.name,
+          activeLeads,
+          convertedLeads,
+          pipelineValue: agentPipeline,
+          needsReview
+        };
+      }));
+
+      // Sort by pipeline value descending
+      agentLeaderboard.sort((a, b) => b.pipelineValue - a.pipelineValue);
+
+      // 2. Management Alerts
+      const managementAlerts: any[] = [];
+
+      // 2a. Stuck high-value deals: HIGH/URGENT priority still in NEW stage
+      const stuckDeals = await prisma.lead.findMany({
+        where: {
+          priority: { in: ["HIGH", "URGENT"] },
+          status: "NEW",
+          ...leadWhereClause
+        },
+        include: {
+          agent: { select: { name: true } },
+          quotations: {
+            where: { status: { in: ["DRAFT", "SENT", "ACCEPTED"] } },
+            select: { totalAmount: true }
+          }
+        },
+        take: 5
+      });
+      stuckDeals.forEach(deal => {
+        const name = `${deal.firstName} ${deal.lastName || ""}`.trim();
+        const dealBudget = deal.quotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        managementAlerts.push({
+          type: "stuck_deal",
+          text: `Lead ${name} (₹${Number(dealBudget).toLocaleString("en-IN")}) with HIGH priority is still in NEW stage`,
+          agent: deal.agent?.name || "Unassigned",
+          severity: "danger"
+        });
+      });
+
+      // 2b. Overdue tasks per agent
+      const overdueTasks = await prisma.task.groupBy({
+        by: ["assignedToId"],
+        where: {
+          status: { in: ["PENDING", "IN_PROGRESS"] },
+          dueDate: { lt: new Date() },
+          assignedToId: { not: null }
+        },
+        _count: { id: true }
+      });
+
+      for (const ot of overdueTasks) {
+        if (ot.assignedToId) {
+          const agentUser = await prisma.user.findUnique({
+            where: { id: ot.assignedToId },
+            select: { name: true }
+          });
+          managementAlerts.push({
+            type: "overdue_tasks",
+            text: `Agent ${agentUser?.name || "Unknown"} has ${ot._count.id} PENDING task${ot._count.id > 1 ? "s" : ""} past their due date`,
+            agent: agentUser?.name || "Unknown",
+            severity: "warning"
+          });
+        }
+      }
+
+      // 3. Pipeline Value by Stage (for BarChart) - Single optimized query & in-memory grouping
+      const allActiveQuotations = await prisma.quotation.findMany({
+        where: quotationWhereClause,
+        include: {
+          lead: { select: { status: true } },
+          customer: { include: { lead: { select: { status: true } } } }
+        }
+      });
+
+      const stageValues: Record<string, number> = {
+        "New": 0,
+        "Contacted": 0,
+        "Qualified": 0,
+        "Quote Sent": 0,
+        "Negotiation": 0,
+        "Won": 0
+      };
+
+      allActiveQuotations.forEach(q => {
+        const amount = Number(q.totalAmount || 0);
+        let leadStatus = q.lead?.status || q.customer?.lead?.status;
+        
+        if (!leadStatus) {
+          if (q.status === "ACCEPTED") {
+            leadStatus = "WON";
+          } else if (q.status === "SENT") {
+            leadStatus = "PROPOSAL_SENT";
+          } else {
+            leadStatus = "QUALIFIED";
+          }
+        }
+
+        switch (leadStatus) {
+          case "NEW":
+            stageValues["New"] += amount;
+            break;
+          case "CONTACTED":
+            stageValues["Contacted"] += amount;
+            break;
+          case "QUALIFIED":
+            stageValues["Qualified"] += amount;
+            break;
+          case "PROPOSAL_SENT":
+            stageValues["Quote Sent"] += amount;
+            break;
+          case "NEGOTIATION":
+            // Skipped: Negotiation pipeline value is calculated directly from lead budgets below
+            break;
+          case "WON":
+            stageValues["Won"] += amount;
+            break;
+          default:
+            if (q.status === "ACCEPTED") {
+              stageValues["Won"] += amount;
+            } else if (q.status === "SENT") {
+              stageValues["Quote Sent"] += amount;
+            } else {
+              stageValues["Qualified"] += amount;
+            }
+            break;
+        }
+      });
+
+      // Calculate negotiation pipeline value directly from the sum of Lead budgets in NEGOTIATION status
+      const negotiationLeads = await prisma.lead.findMany({
+        where: {
+          ...leadWhereClause,
+          status: "NEGOTIATION"
+        },
+        select: {
+          budget: true
+        }
+      });
+      stageValues["Negotiation"] = negotiationLeads.reduce((sum, l) => sum + Number(l.budget || 0), 0);
+
+      const pipelineByStage = [
+        { name: "New", value: stageValues["New"] },
+        { name: "Contacted", value: stageValues["Contacted"] },
+        { name: "Qualified", value: stageValues["Qualified"] },
+        { name: "Quote Sent", value: stageValues["Quote Sent"] },
+        { name: "Negotiation", value: stageValues["Negotiation"] },
+        { name: "Won", value: stageValues["Won"] }
+      ];
+
+      // 4. Source Pipeline (count + value per source)
+      const allSources = ["WEBSITE", "REFERRAL", "WHATSAPP", "COLD_CALL", "SOCIAL_MEDIA", "WALK_IN", "MANUAL", "OTHER"] as const;
+      const sourcePipeline = await Promise.all(allSources.map(async (source) => {
+        const leadsCount = await prisma.lead.count({
+          where: {
+            source: source as any,
+            ...leadWhereClause
+          }
+        });
+        const sourceQuotations = await prisma.quotation.findMany({
+          where: {
+            ...quotationWhereClause,
+            OR: [
+              {
+                lead: {
+                  source: source as any
+                }
+              },
+              {
+                customer: {
+                  lead: {
+                    source: source as any
+                  }
+                }
+              }
+            ]
+          },
+          select: { totalAmount: true }
+        });
+        const totalValue = sourceQuotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        return {
+          source: formatEnum(source),
+          count: leadsCount,
+          value: totalValue
+        };
+      }));
+      // Filter out sources with 0 leads, sort by value descending
+      const filteredSourcePipeline = sourcePipeline.filter(s => s.count > 0).sort((a, b) => b.value - a.value);
+
+      // 5. Agent Task Completion Matrix
+      const agentTaskMatrix = await Promise.all(agents.map(async (agent) => {
+        const totalTasks = await prisma.task.count({ where: { assignedToId: agent.id } });
+        const completedTasks = await prisma.task.count({
+          where: { assignedToId: agent.id, status: "COMPLETED" }
+        });
+        const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        return { name: agent.name, total: totalTasks, completed: completedTasks, percentage };
+      }));
+
+      managerData = {
+        agentLeaderboard,
+        managementAlerts,
+        pipelineByStage,
+        sourcePipeline: filteredSourcePipeline,
+        agentTaskMatrix
+      };
+    }
 
     return res.status(200).json({
       success: true,
-      data: payload
+      data: {
+        kpis: { newLeads, hotLeads, converted, pipelineValue },
+        stageBreakdown,
+        weeklyTrend,
+        hotLeadsList,
+        leadSources,
+        todaysTasks,
+        recentActivities,
+        ...(managerData ? { managerData } : {})
+      }
     });
   } catch (error) {
     console.error("Error fetching dashboard metrics:", error);
