@@ -29,9 +29,13 @@ export class OfficeService {
   ): Promise<{ data: object[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      organizationId: currentUser?.organizationId || null,
-    };
+    const where: any = {};
+
+    if (currentUser?.organizationId) {
+      where.organizationId = currentUser.organizationId;
+    } else if (currentUser?.role !== "SUPER_ADMIN") {
+      where.organizationId = null;
+    }
 
     if (search) {
       where.OR = [

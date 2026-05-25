@@ -565,7 +565,7 @@ export default function CustomerDetailsPage() {
             <div className="flex border-b border-slate-100 dark:border-slate-800 px-6">
               <button 
                 onClick={() => setActiveTab("history")}
-                className={`py-4 px-2 text-sm font-semibold border-b-2 transition-all ${
+                className={`no-hover py-4 px-2 text-sm font-semibold border-b-2 transition-all ${
                   activeTab === "history" 
                     ? "border-brand-blue text-brand-blue" 
                     : "border-transparent text-slate-450 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
@@ -575,7 +575,7 @@ export default function CustomerDetailsPage() {
               </button>
               <button 
                 onClick={() => setActiveTab("notes")}
-                className={`py-4 px-2 ml-8 text-sm font-semibold border-b-2 transition-all ${
+                className={`no-hover py-4 px-2 ml-8 text-sm font-semibold border-b-2 transition-all ${
                   activeTab === "notes" 
                     ? "border-brand-blue text-brand-blue" 
                     : "border-transparent text-slate-455 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-355"

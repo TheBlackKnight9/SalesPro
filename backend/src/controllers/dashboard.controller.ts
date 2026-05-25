@@ -15,8 +15,62 @@ function formatEnum(val?: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+async function ensureUserTenantScoping(user: any) {
+  if (!user) return;
+  
+  let orgId = user.organizationId;
+  if (!orgId) {
+    const fallbackUserRecord = await prisma.user.findUnique({
+      where: { email: user.email },
+      select: { organizationId: true }
+    });
+    if (fallbackUserRecord?.organizationId) {
+      orgId = fallbackUserRecord.organizationId;
+    }
+  }
+
+  // Safe Tenant Fallback
+  if (orgId) {
+    const officeCount = await prisma.office.count({ where: { organizationId: orgId } });
+    if (officeCount === 0) {
+      const defaultOrgOffices = await prisma.office.count({ where: { organizationId: 'default-org' } });
+      if (defaultOrgOffices > 0) {
+        orgId = 'default-org';
+        await prisma.user.update({
+          where: { id: user.userId },
+          data: { organizationId: 'default-org' }
+        });
+      }
+    }
+  } else {
+    const defaultOrg = await prisma.organization.findUnique({ where: { id: 'default-org' } });
+    if (defaultOrg) {
+      orgId = 'default-org';
+      await prisma.user.update({
+        where: { id: user.userId },
+        data: { organizationId: 'default-org' }
+      });
+    }
+  }
+
+  // Bind legacy null organizationId rows to the active resolved organizationId
+  if (orgId) {
+    await prisma.office.updateMany({
+      where: { organizationId: null },
+      data: { organizationId: orgId }
+    });
+    await prisma.user.updateMany({
+      where: { organizationId: null },
+      data: { organizationId: orgId }
+    });
+  }
+  
+  user.organizationId = orgId;
+}
+
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
+    await ensureUserTenantScoping(req.user);
     const leadWhereClause: any = {};
     const customerWhereClause: any = { isActive: true };
     const quotationWhereClause: any = { status: { in: ["DRAFT", "SENT", "ACCEPTED"] } };
@@ -56,6 +110,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
 
 export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
   try {
+    await ensureUserTenantScoping(req.user);
     const now = new Date();
     const role = req.user?.role;
     const userId = req.user?.userId;
@@ -459,56 +514,118 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       color: "bg-blue-500"
     }));
 
-    // Weekly Trend dynamically computed from database records over the past 4 weeks
+    // Helper function for ISO week calculation
+    const getISOWeekNumber = (d: Date): number => {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    };
+
+    // Weekly or Yearly Trend dynamically computed from database records
+    const weeksParam = parseInt(String(req.query.weeks)) || 4;
+    const viewType = String(req.query.viewType || "weeks");
     const weeklyTrend = [];
-    for (let i = 3; i >= 0; i--) {
-      const start = new Date();
-      start.setDate(now.getDate() - (i + 1) * 7);
-      start.setHours(0, 0, 0, 0);
 
-      const end = new Date();
-      end.setDate(now.getDate() - i * 7);
-      end.setHours(23, 59, 59, 999);
+    if (viewType === "years") {
+      const currentYear = now.getFullYear();
+      for (let i = 2; i >= 0; i--) {
+        const targetYear = currentYear - i;
+        
+        const start = new Date(targetYear, 0, 1, 0, 0, 0, 0);
+        const end = new Date(targetYear, 11, 31, 23, 59, 59, 999);
 
-      const wkName = `Wk ${4 - i}`;
+        const newCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            createdAt: { gte: start, lte: end }
+          }
+        });
 
-      const newCount = await prisma.lead.count({
-        where: {
-          ...leadWhereClause,
-          createdAt: { gte: start, lte: end }
-        }
-      });
+        const contactedCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: "CONTACTED",
+            createdAt: { gte: start, lte: end }
+          }
+        });
 
-      const contactedCount = await prisma.lead.count({
-        where: {
-          ...leadWhereClause,
-          status: "CONTACTED",
-          createdAt: { gte: start, lte: end }
-        }
-      });
+        const quotesCount = await prisma.quotation.count({
+          where: {
+            ...quotationWhereClause,
+            createdAt: { gte: start, lte: end }
+          }
+        });
 
-      const quotesCount = await prisma.quotation.count({
-        where: {
-          ...quotationWhereClause,
-          createdAt: { gte: start, lte: end }
-        }
-      });
+        const convertedCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: "WON",
+            convertedAt: { gte: start, lte: end }
+          }
+        });
 
-      const convertedCount = await prisma.lead.count({
-        where: {
-          ...leadWhereClause,
-          status: "WON",
-          convertedAt: { gte: start, lte: end }
-        }
-      });
+        weeklyTrend.push({
+          name: String(targetYear),
+          New: newCount,
+          Contacted: contactedCount,
+          Quotes: quotesCount,
+          Converted: convertedCount
+        });
+      }
+    } else {
+      for (let i = weeksParam - 1; i >= 0; i--) {
+        const start = new Date();
+        start.setDate(now.getDate() - (i + 1) * 7);
+        start.setHours(0, 0, 0, 0);
 
-      weeklyTrend.push({
-        name: wkName,
-        New: newCount,
-        Contacted: contactedCount,
-        Quotes: quotesCount,
-        Converted: convertedCount
-      });
+        const end = new Date();
+        end.setDate(now.getDate() - i * 7);
+        end.setHours(23, 59, 59, 999);
+
+        const targetDate = new Date();
+        targetDate.setDate(now.getDate() - i * 7);
+        const wkName = `Wk ${getISOWeekNumber(targetDate)}`;
+
+        const newCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            createdAt: { gte: start, lte: end }
+          }
+        });
+
+        const contactedCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: "CONTACTED",
+            createdAt: { gte: start, lte: end }
+          }
+        });
+
+        const quotesCount = await prisma.quotation.count({
+          where: {
+            ...quotationWhereClause,
+            createdAt: { gte: start, lte: end }
+          }
+        });
+
+        const convertedCount = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: "WON",
+            convertedAt: { gte: start, lte: end }
+          }
+        });
+
+        weeklyTrend.push({
+          name: wkName,
+          New: newCount,
+          Contacted: contactedCount,
+          Quotes: quotesCount,
+          Converted: convertedCount
+        });
+      }
     }
 
     // ── Manager/Admin-Only Analytics ─────────────────────────────────────

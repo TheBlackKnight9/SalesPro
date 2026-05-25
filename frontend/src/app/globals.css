@@ -419,7 +419,11 @@ button:active,
 .bg-slate-100.dark\:bg-slate-750 button:hover,
 .bg-slate-100.dark\:bg-slate-750 button:active,
 .bg-slate-100.dark\:bg-slate-700 button:hover,
-.bg-slate-100.dark\:bg-slate-700 button:active {
+.bg-slate-100.dark\:bg-slate-700 button:active,
+.no-hover:hover,
+.no-hover:active,
+.no-hover:focus,
+.no-hover:focus-visible {
   transform: none !important;
   box-shadow: none !important;
 }

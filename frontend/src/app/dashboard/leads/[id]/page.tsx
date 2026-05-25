@@ -842,7 +842,7 @@ export default function LeadDetailPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-5 text-sm font-bold border-b-2 transition-all ${
+                  className={`no-hover flex items-center gap-2 py-5 text-sm font-bold border-b-2 transition-all ${
                     activeTab === tab.id 
                     ? "border-brand-blue text-brand-blue" 
                     : "border-transparent text-slate-450 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"

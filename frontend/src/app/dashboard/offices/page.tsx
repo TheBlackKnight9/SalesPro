@@ -184,7 +184,7 @@ export default function OfficesPage() {
           offices.map((office) => (
             <div 
               key={office.id} 
-              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex justify-between items-start gap-2 mb-4">
@@ -193,11 +193,11 @@ export default function OfficesPage() {
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-1">{office.name}</h3>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">{office.city || "Branch Location"}</p>
+                      <h3 className="text-[15px] font-bold text-slate-800 dark:text-white line-clamp-1">{office.name}</h3>
+                      <p className="text-[13px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">{office.city || "Branch Location"}</p>
                     </div>
                   </div>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                  <span className={`text-[13px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
                     office.isActive 
                       ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50" 
                       : "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/50"
@@ -207,18 +207,18 @@ export default function OfficesPage() {
                 </div>
                 
                 <div className="space-y-2 mb-6">
-                  <div className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="flex items-start gap-2.5 text-[13px] text-slate-600 dark:text-slate-300">
                     <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-slate-400 dark:text-slate-500" />
                     <span className="line-clamp-2">{office.address || "No address provided"}</span>
                   </div>
                   {office.phone && (
-                    <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2.5 text-[13px] text-slate-600 dark:text-slate-300">
                       <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                       <span>{office.phone}</span>
                     </div>
                   )}
                   {office.email && (
-                    <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2.5 text-[13px] text-slate-600 dark:text-slate-300">
                       <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                       <span className="truncate">{office.email}</span>
                     </div>
@@ -228,18 +228,18 @@ export default function OfficesPage() {
 
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                 <div className="flex gap-4">
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-1 text-[13px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     <Users className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />
                     <span className="dark:text-slate-400">{office._count?.users || 0} Team</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-1 text-[13px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">₹</span>
                     <span className="dark:text-slate-400">Target: <strong className="text-slate-700 dark:text-slate-200">{formatIndianCurrency(office.monthlyTarget || 0, true)}</strong></span>
                   </div>
                 </div>
                 <button 
                   onClick={() => handleEditClick(office)}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+                  className="text-[13px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
                 >
                   Edit
                 </button>

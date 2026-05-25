@@ -1,13 +1,68 @@
 import { Response, NextFunction } from "express";
 import { OfficeService } from "../services/office.service";
 import { AuthRequest, AppError } from "../types/shared.types";
+import prisma from "../config/prisma";
 
 const officeService = new OfficeService();
+
+async function ensureUserTenantScoping(user: any) {
+  if (!user) return;
+  
+  let orgId = user.organizationId;
+  if (!orgId) {
+    const fallbackUserRecord = await prisma.user.findUnique({
+      where: { email: user.email },
+      select: { organizationId: true }
+    });
+    if (fallbackUserRecord?.organizationId) {
+      orgId = fallbackUserRecord.organizationId;
+    }
+  }
+
+  // Safe Tenant Fallback
+  if (orgId) {
+    const officeCount = await prisma.office.count({ where: { organizationId: orgId } });
+    if (officeCount === 0) {
+      const defaultOrgOffices = await prisma.office.count({ where: { organizationId: 'default-org' } });
+      if (defaultOrgOffices > 0) {
+        orgId = 'default-org';
+        await prisma.user.update({
+          where: { id: user.userId },
+          data: { organizationId: 'default-org' }
+        });
+      }
+    }
+  } else {
+    const defaultOrg = await prisma.organization.findUnique({ where: { id: 'default-org' } });
+    if (defaultOrg) {
+      orgId = 'default-org';
+      await prisma.user.update({
+        where: { id: user.userId },
+        data: { organizationId: 'default-org' }
+      });
+    }
+  }
+
+  // Bind legacy null organizationId rows to the active resolved organizationId
+  if (orgId) {
+    await prisma.office.updateMany({
+      where: { organizationId: null },
+      data: { organizationId: orgId }
+    });
+    await prisma.user.updateMany({
+      where: { organizationId: null },
+      data: { organizationId: orgId }
+    });
+  }
+  
+  user.organizationId = orgId;
+}
 
 export class OfficeController {
   // POST /api/offices
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      await ensureUserTenantScoping(req.user);
       const office = await officeService.create(req.body, req.user!);
       res.status(201).json({ success: true, message: "Office created.", data: office });
     } catch (err) { next(err); }
@@ -16,6 +71,7 @@ export class OfficeController {
   // GET /api/offices
   async findAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      await ensureUserTenantScoping(req.user);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string | undefined;

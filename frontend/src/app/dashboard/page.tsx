@@ -103,6 +103,8 @@ export default function DashboardPage() {
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [timeframeWeeks, setTimeframeWeeks] = useState(4);
+  const [timeframeType, setTimeframeType] = useState<"weeks" | "years">("weeks");
 
   const isManager = user?.role === "MANAGER" || user?.role === "SUPER_ADMIN";
 
@@ -129,7 +131,7 @@ export default function DashboardPage() {
         const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
         const timestamp = new Date().getTime();
 
-        const res = await fetch(`${baseURL}/dashboard/metrics?cb=${timestamp}`, {
+        const res = await fetch(`${baseURL}/dashboard/metrics?weeks=${timeframeWeeks}&viewType=${timeframeType}&cb=${timestamp}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -164,7 +166,7 @@ export default function DashboardPage() {
 
     fetchFreshMetrics();
     return () => { mounted = false; };
-  }, [isHydrated]);
+  }, [isHydrated, timeframeWeeks, timeframeType]);
 
   const kpis = dashboardData?.kpis || { newLeads: 0, hotLeads: 0, converted: 0, pipelineValue: 0 };
   const stageBreakdown = dashboardData?.stageBreakdown || [];
@@ -748,18 +750,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* ── Quick Actions Footer Bar ──────────────────────────── */}
-              <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-center gap-3">
-                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
-                  📊 Generate Pipeline Report
-                </button>
-                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
-                  🧠 Review Overdue Tasks
-                </button>
-                <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-1.5">
-                  🔄 Reassign Stagnant Leads
-                </button>
-              </div>
             </div>
           ) : (
             /* ═══════════════════════════════════════════════════════════ */
@@ -793,10 +783,33 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* 2. Weekly Funnel Trend */}
+              {/* 2. Weekly/Yearly Funnel Trend */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Weekly Funnel Trend</h3>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                      {timeframeType === "years" ? "Yearly Funnel Trend" : "Weekly Funnel Trend"}
+                    </h3>
+                    <select
+                      value={timeframeType}
+                      onChange={(e) => setTimeframeType(e.target.value as "weeks" | "years")}
+                      className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="weeks">Weeks</option>
+                      <option value="years">Years</option>
+                    </select>
+                    {timeframeType === "weeks" && (
+                      <select
+                        value={timeframeWeeks}
+                        onChange={(e) => setTimeframeWeeks(Number(e.target.value))}
+                        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      >
+                        <option value={4}>4 Weeks</option>
+                        <option value={8}>8 Weeks</option>
+                        <option value={12}>12 Weeks</option>
+                      </select>
+                    )}
+                  </div>
                   <div className="flex gap-2 text-[9px] font-semibold text-slate-400 dark:text-slate-500">
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> New</span>
                     <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Contacted</span>
