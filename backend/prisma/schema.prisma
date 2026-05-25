@@ -159,10 +159,13 @@ model Office {
   updatedAt     DateTime @updatedAt
 
   // Relations
+  organizationId String?
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
   users       User[]
   leads       Lead[]
   customers   Customer[]
 
+  @@index([organizationId])
   @@map("offices")
 }
 
@@ -748,6 +751,7 @@ model Organization {
   leads       Lead[]
   tasks       Task[]
   quotations  Quotation[]
+  offices     Office[]
 
   @@map("organizations")
 }

@@ -4,7 +4,7 @@ import { CreateOfficeDto, UpdateOfficeDto } from "../types/office.types";
 
 export class OfficeService {
   // ── Create Office ──────────────────────────
-  async create(dto: CreateOfficeDto) {
+  async create(dto: CreateOfficeDto, currentUser: any) {
     return prisma.office.create({
       data: {
         name: dto.name,
@@ -15,6 +15,7 @@ export class OfficeService {
         phone: dto.phone,
         email: dto.email,
         monthlyTarget: dto.monthlyTarget,
+        organizationId: currentUser.organizationId,
       },
     });
   }
@@ -23,18 +24,21 @@ export class OfficeService {
   async findAll(
     page = 1,
     limit = 10,
-    search?: string
+    search?: string,
+    currentUser?: any
   ): Promise<{ data: object[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { city: { contains: search, mode: "insensitive" as const } },
-          ],
-        }
-      : {};
+    const where: any = {
+      organizationId: currentUser?.organizationId || null,
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" as const } },
+        { city: { contains: search, mode: "insensitive" as const } },
+      ];
+    }
 
     const [offices, total] = await Promise.all([
       prisma.office.findMany({

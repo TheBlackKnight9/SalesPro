@@ -8,7 +8,7 @@ export class OfficeController {
   // POST /api/offices
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const office = await officeService.create(req.body);
+      const office = await officeService.create(req.body, req.user!);
       res.status(201).json({ success: true, message: "Office created.", data: office });
     } catch (err) { next(err); }
   }
@@ -20,7 +20,7 @@ export class OfficeController {
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string | undefined;
 
-      const result = await officeService.findAll(page, limit, search);
+      const result = await officeService.findAll(page, limit, search, req.user!);
       res.status(200).json({ success: true, message: "Offices fetched.", ...result });
     } catch (err) { next(err); }
   }

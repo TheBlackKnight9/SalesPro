@@ -23,7 +23,11 @@ export class CustomerService {
 
     console.log("Current User (Customers):", currentUser);
 
-    const where: any = {};
+    const where: any = {
+      lead: {
+        organizationId: currentUser.organizationId
+      }
+    };
 
     // STRICT RBAC LOGIC: Super Admin Bypass
     if (currentUser.role === "SUPER_ADMIN") {
@@ -38,7 +42,10 @@ export class CustomerService {
       where.officeId = currentUser.officeId;
     } else if (currentUser.role === "AGENT") {
       // Agent: Filter by original lead's agentId
-      where.lead = { agentId: currentUser.userId };
+      where.lead = {
+        organizationId: currentUser.organizationId,
+        agentId: currentUser.userId
+      };
     }
 
     console.log("[CustomerService] Final Where Clause:", JSON.stringify(where, null, 2));
@@ -175,6 +182,7 @@ export class CustomerService {
           designation: dto.designation,
           officeId: officeId,
           createdById: currentUser.userId,
+          organizationId: currentUser.organizationId,
           status: "WON",
           isConverted: true,
           convertedAt: new Date(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import { Plus, Search, Filter, LayoutList, LayoutGrid, Check, ChevronDown, User, Calendar, ExternalLink, X, Phone, Mail, Building, Globe, Loader2 } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Menu, Transition, Dialog } from "@headlessui/react";
@@ -137,7 +137,6 @@ export default function LeadsPage() {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="max-w-6xl mx-auto w-full space-y-4 px-4 py-2">

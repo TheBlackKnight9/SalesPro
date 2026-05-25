@@ -5,14 +5,20 @@ import bcrypt from "bcryptjs";
 // Prevent multiple Prisma instances in hot-reload Next.js dev server
 let prisma: PrismaClient;
 
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
-} else {
-  if (!(global as any).prisma) {
-    (global as any).prisma = new PrismaClient();
+function getPrisma() {
+  if (!prisma) {
+    if (process.env.NODE_ENV === "production") {
+      prisma = new PrismaClient();
+    } else {
+      if (!(global as any).prisma) {
+        (global as any).prisma = new PrismaClient();
+      }
+      prisma = (global as any).prisma;
+    }
   }
-  prisma = (global as any).prisma;
+  return prisma;
 }
+
 
 export async function POST(request: Request) {
   try {
@@ -28,7 +34,8 @@ export async function POST(request: Request) {
     // Ensure bcrypt hashing runs before the transaction
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const prismaInstance = getPrisma();
+    const result = await prismaInstance.$transaction(async (tx) => {
       // Step 1: Create the isolated corporate workspace
       const newOrg = await tx.organization.create({
         data: {

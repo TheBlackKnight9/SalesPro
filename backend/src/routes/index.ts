@@ -10,6 +10,7 @@ import customerRoutes from "./customer.routes";
 import taskRoutes from "./task.routes";
 import debugRoutes from "./debug.routes";
 import teamRoutes from "./team.routes";
+import reportRoutes from "./report.routes";
 
 const router = Router();
 
@@ -33,6 +34,7 @@ router.use("/quotations", quotationRoutes);
 router.use("/customers", customerRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/team", teamRoutes);
+router.use("/reports", reportRoutes);
 router.use("/debug", debugRoutes);
 
 export default router;
