@@ -29,20 +29,8 @@ async function ensureUserTenantScoping(user: any) {
     }
   }
 
-  // Safe Tenant Fallback
-  if (orgId) {
-    const officeCount = await prisma.office.count({ where: { organizationId: orgId } });
-    if (officeCount === 0) {
-      const defaultOrgOffices = await prisma.office.count({ where: { organizationId: 'default-org' } });
-      if (defaultOrgOffices > 0) {
-        orgId = 'default-org';
-        await prisma.user.update({
-          where: { id: user.userId },
-          data: { organizationId: 'default-org' }
-        });
-      }
-    }
-  } else {
+  // Safe Tenant Fallback: Only fall back if they have no organizationId at all
+  if (!orgId) {
     const defaultOrg = await prisma.organization.findUnique({ where: { id: 'default-org' } });
     if (defaultOrg) {
       orgId = 'default-org';
@@ -111,39 +99,46 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
 export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
   try {
     await ensureUserTenantScoping(req.user);
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+    const { role, userId, organizationId } = req.user;
     const now = new Date();
-    const role = req.user?.role;
-    const userId = req.user?.userId;
 
     if (role === UserRole.SUPER_ADMIN) {
-      // 1. Fetch all active offices
+      // 1. Fetch all active offices for the user's organization
       const offices = await prisma.office.findMany({
-        where: { isActive: true },
+        where: { isActive: true, organizationId },
         select: { id: true, name: true, city: true, state: true, monthlyTarget: true }
       });
 
-      // 2. Global KPIs
+      // 2. Global KPIs (Scoped by organizationId)
       const globalRevenueSum = await prisma.quotation.aggregate({
-        where: { status: "ACCEPTED" },
+        where: { status: "ACCEPTED", organizationId },
         _sum: { totalAmount: true }
       });
       const totalRevenue = Number(globalRevenueSum._sum.totalAmount || 0);
-      const totalLeadsGlobal = await prisma.lead.count();
+      const totalLeadsGlobal = await prisma.lead.count({
+        where: { organizationId }
+      });
       const activeOffices = offices.length;
-      const totalAccountsActive = await prisma.user.count({ where: { isActive: true } });
+      const totalAccountsActive = await prisma.user.count({
+        where: { isActive: true, organizationId }
+      });
 
       // 3. Regional Performance Grid
       const regionalPerformance = await Promise.all(offices.map(async (office) => {
         const acceptedQuotes = await prisma.quotation.findMany({
           where: {
             status: "ACCEPTED",
-            createdBy: { officeId: office.id }
+            createdBy: { officeId: office.id },
+            organizationId
           },
           select: { totalAmount: true }
         });
         const officeRevenue = acceptedQuotes.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
-        const officeLeadsCount = await prisma.lead.count({ where: { officeId: office.id } });
-        const wonLeadsCount = await prisma.lead.count({ where: { officeId: office.id, status: "WON" } });
+        const officeLeadsCount = await prisma.lead.count({ where: { officeId: office.id, organizationId } });
+        const wonLeadsCount = await prisma.lead.count({ where: { officeId: office.id, status: "WON", organizationId } });
         const conversionRate = officeLeadsCount > 0 
           ? Number(((wonLeadsCount / officeLeadsCount) * 100).toFixed(1))
           : 0;
@@ -174,7 +169,8 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       const trendQuotations = await prisma.quotation.findMany({
         where: {
           status: "ACCEPTED",
-          createdAt: { gte: sixMonthsAgo }
+          createdAt: { gte: sixMonthsAgo },
+          organizationId
         },
         select: {
           totalAmount: true,
@@ -219,18 +215,18 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
 
       // 5. Top Agents Leaderboard Matrix
       const allUsers = await prisma.user.findMany({
-        where: { isActive: true },
+        where: { isActive: true, organizationId },
         select: { id: true, name: true, office: { select: { name: true } } }
       });
 
       const agentLeaderboard = await Promise.all(allUsers.map(async (u) => {
         const acceptedQuotes = await prisma.quotation.aggregate({
-          where: { status: "ACCEPTED", createdById: u.id },
+          where: { status: "ACCEPTED", createdById: u.id, organizationId },
           _sum: { totalAmount: true }
         });
         const revenue = Number(acceptedQuotes._sum.totalAmount || 0);
-        const totalLeads = await prisma.lead.count({ where: { agentId: u.id } });
-        const wonLeads = await prisma.lead.count({ where: { agentId: u.id, status: "WON" } });
+        const totalLeads = await prisma.lead.count({ where: { agentId: u.id, organizationId } });
+        const wonLeads = await prisma.lead.count({ where: { agentId: u.id, status: "WON", organizationId } });
         const conversionRate = totalLeads > 0 ? Number(((wonLeads / totalLeads) * 100).toFixed(1)) : 0;
 
         return {
@@ -247,6 +243,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       // 6. Global Lead Source Distribution
       const leadSourceGroup = await prisma.lead.groupBy({
         by: ["source"],
+        where: { organizationId },
         _count: { id: true }
       });
       const sourceColors = {
@@ -258,7 +255,9 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
         MANUAL: "#64748B",
         OTHER: "#94A3B8"
       };
-      const totalLeadsCount = await prisma.lead.count();
+      const totalLeadsCount = await prisma.lead.count({
+        where: { organizationId }
+      });
       const leadSources = leadSourceGroup.map(g => {
         const percentage = totalLeadsCount > 0 ? Math.round((g._count.id / totalLeadsCount) * 100) : 0;
         return {

@@ -19,20 +19,8 @@ async function ensureUserTenantScoping(user: any) {
     }
   }
 
-  // Safe Tenant Fallback
-  if (orgId) {
-    const officeCount = await prisma.office.count({ where: { organizationId: orgId } });
-    if (officeCount === 0) {
-      const defaultOrgOffices = await prisma.office.count({ where: { organizationId: 'default-org' } });
-      if (defaultOrgOffices > 0) {
-        orgId = 'default-org';
-        await prisma.user.update({
-          where: { id: user.userId },
-          data: { organizationId: 'default-org' }
-        });
-      }
-    }
-  } else {
+  // Safe Tenant Fallback: Only fall back if they have no organizationId at all
+  if (!orgId) {
     const defaultOrg = await prisma.organization.findUnique({ where: { id: 'default-org' } });
     if (defaultOrg) {
       orgId = 'default-org';

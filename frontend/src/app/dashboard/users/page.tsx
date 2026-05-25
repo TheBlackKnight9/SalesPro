@@ -654,7 +654,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowOldPassword(!showOldPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showOldPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
@@ -673,7 +673,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
@@ -695,7 +695,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
