@@ -11,6 +11,7 @@ export interface JwtPayload {
   email: string;
   role: UserRole;
   officeId: string | null;
+  organizationId: string | null;
 }
 
 // ── Authenticated Request ────────────────────

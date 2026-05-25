@@ -856,7 +856,7 @@ export default function CustomerDetailsPage() {
                   <input 
                     type="text" 
                     required 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.firstName}
                     onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
                   />
@@ -865,7 +865,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">Last Name</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.lastName}
                     onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
                   />
@@ -875,7 +875,7 @@ export default function CustomerDetailsPage() {
                   <input 
                     type="tel" 
                     required 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.phone}
                     onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
                   />
@@ -884,7 +884,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Email Address</label>
                   <input 
                     type="email" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.email}
                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                   />
@@ -893,7 +893,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Company</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.company}
                     onChange={(e) => setEditForm({...editForm, company: e.target.value})}
                   />
@@ -902,7 +902,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">Designation</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.designation}
                     onChange={(e) => setEditForm({...editForm, designation: e.target.value})}
                   />
@@ -917,7 +917,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">GST Number</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium uppercase placeholder:normal-case" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium uppercase placeholder:normal-case" 
                     placeholder="e.g. 07AAAAA1111A1Z1"
                     value={editForm.gstNumber}
                     onChange={(e) => setEditForm({...editForm, gstNumber: e.target.value})}
@@ -927,7 +927,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Billing Address</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.address}
                     onChange={(e) => setEditForm({...editForm, address: e.target.value})}
                   />
@@ -936,7 +936,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">City</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.city}
                     onChange={(e) => setEditForm({...editForm, city: e.target.value})}
                   />
@@ -945,7 +945,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-555 uppercase tracking-wider">State</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.state}
                     onChange={(e) => setEditForm({...editForm, state: e.target.value})}
                   />
@@ -954,7 +954,7 @@ export default function CustomerDetailsPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Pincode</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.pincode}
                     onChange={(e) => setEditForm({...editForm, pincode: e.target.value})}
                   />

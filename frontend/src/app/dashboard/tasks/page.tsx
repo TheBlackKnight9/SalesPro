@@ -87,27 +87,27 @@ export default function TasksPage() {
         <div
           className={`${
             t.visible ? 'animate-enter' : 'animate-leave'
-          } max-w-[350px] w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] pointer-events-auto flex ring-1 ring-black/5 rounded-[20px] p-4`}
+          } max-w-[265px] w-full bg-slate-900/95 border border-white/10 shadow-2xl rounded-xl pointer-events-auto flex items-center p-2 backdrop-blur`}
         >
           <div className="flex-1 w-0 flex items-center">
-            <div className="flex-shrink-0 pt-0.5">
-              <div className="h-10 w-10 bg-emerald-50 rounded-[14px] flex items-center justify-center">
-                <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+            <div className="flex-shrink-0">
+              <div className="h-7 w-7 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               </div>
             </div>
-            <div className="ml-4 flex-1">
-              <p className="text-sm font-bold text-gray-900">Task Updated</p>
-              <p className="mt-0.5 text-xs font-medium text-gray-500">
-                Status successfully changed to {newStatus.replace('_', ' ')}.
+            <div className="ml-2 flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-emerald-100 truncate">Task Updated</p>
+              <p className="mt-0.5 text-[10.5px] font-semibold text-slate-400 truncate">
+                Status changed to {newStatus.replace('_', ' ')}.
               </p>
             </div>
           </div>
-          <div className="ml-4 flex-shrink-0 flex">
+          <div className="ml-2 flex-shrink-0 flex">
             <button
               onClick={() => toast.dismiss(t.id)}
-              className="h-8 w-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors"
+              className="p-1 rounded-md text-white/40 hover:text-white hover:bg-white/5 transition-all focus:outline-none"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -315,7 +315,7 @@ export default function TasksPage() {
   return (
     <div className="max-w-6xl mx-auto w-full space-y-4 px-4 py-2 pb-12">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Mission Control</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-slate-400 font-medium">Coordinate, assign, and execute your sales agenda.</p>

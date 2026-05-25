@@ -22,6 +22,18 @@ interface ConvertLeadModalProps {
   leadName: string;
 }
 
+function shortenQuoteNumber(num: string): string {
+  if (!num) return "";
+  const parts = num.split("-");
+  if (parts.length >= 4) {
+    return `${parts.slice(0, 4).join("-")}...`;
+  }
+  if (num.length > 15) {
+    return `${num.substring(0, 15)}...`;
+  }
+  return num;
+}
+
 export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, leadName }: ConvertLeadModalProps) {
   const { showToast } = useToast();
   const [quotes, setQuotes] = useState<Quotation[]>([]);
@@ -149,7 +161,9 @@ export default function ConvertLeadModal({ isOpen, onClose, onSuccess, leadId, l
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-gray-900 dark:text-white uppercase">{quote.quotationNumber}</p>
+                              <p className="text-sm font-bold text-gray-900 dark:text-white uppercase" title={quote.quotationNumber}>
+                                {shortenQuoteNumber(quote.quotationNumber)}
+                              </p>
                               <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter ${
                                 quote.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"
                               }`}>

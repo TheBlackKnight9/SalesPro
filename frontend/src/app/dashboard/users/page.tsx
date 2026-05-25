@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { apiClient } from "@/lib/api";
-import { Loader2, Plus, Search, Filter, Upload, RefreshCcw, UserCircle2, ShieldCheck, Building2, Mail, Phone, Trash2, RotateCcw, Pencil, Save } from "lucide-react";
+import { Loader2, Plus, Search, Filter, Upload, RefreshCcw, UserCircle2, ShieldCheck, Building2, Mail, Phone, Trash2, RotateCcw, Pencil, Save, Eye, EyeOff } from "lucide-react";
 import { useUser, useUserRole } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -23,6 +23,7 @@ interface UserRecord {
   avatarUrl?: string | null;
   office?: { id: string; name: string } | null;
   createdAt?: string;
+  plainPassword?: string | null;
 }
 
 interface UserFormState {
@@ -30,6 +31,7 @@ interface UserFormState {
   email: string;
   phone: string;
   password: string;
+  oldPassword?: string;
   role: "SUPER_ADMIN" | "MANAGER" | "AGENT";
   officeId: string;
   avatarUrl: string;
@@ -41,6 +43,7 @@ const initialFormState: UserFormState = {
   email: "",
   phone: "",
   password: "",
+  oldPassword: "",
   role: "AGENT",
   officeId: "",
   avatarUrl: "",
@@ -66,6 +69,8 @@ export default function UsersPage() {
   const [form, setForm] = useState<UserFormState>(initialFormState);
   const [error, setError] = useState("");
   const [importing, setImporting] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   // ── Role Guard ──────────────────────────────
   useEffect(() => {
@@ -139,6 +144,8 @@ export default function UsersPage() {
       role: "AGENT",
     });
     setError("");
+    setShowOldPassword(false);
+    setShowNewPassword(false);
     setIsModalOpen(true);
   };
 
@@ -151,12 +158,15 @@ export default function UsersPage() {
       email: user.email,
       phone: user.phone || "",
       password: "",
+      oldPassword: user.plainPassword || "",
       role: user.role,
       officeId: user.office?.id || "",
       avatarUrl: user.avatarUrl || "",
       isActive: user.isActive,
     });
     setError("");
+    setShowOldPassword(false);
+    setShowNewPassword(false);
     setIsModalOpen(true);
   };
 
@@ -192,6 +202,7 @@ export default function UsersPage() {
           avatarUrl: form.avatarUrl || undefined,
           isActive: form.isActive,
           officeId: role === "MANAGER" ? currentUser?.officeId : (requiresOffice ? form.officeId : undefined),
+          ...(form.password.trim() !== "" && { password: form.password }),
         });
         showToast("User updated successfully.", "success");
       } else {
@@ -532,100 +543,191 @@ export default function UsersPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[#07111f] p-6 text-white shadow-2xl"
+            className="w-full max-w-2xl rounded-xl border border-white/10 bg-[#07111f] p-6 text-white shadow-2xl"
           >
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">{editingUser ? "Edit Profile" : "Onboard user"}</p>
-                <h2 className="mt-1 text-2xl font-semibold">{editingUser ? editingUser.name : "New Team Member"}</h2>
+                <h2 className="mt-1 text-xl font-semibold">{editingUser ? editingUser.name : "New Team Member"}</h2>
               </div>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="text-sm text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="text-sm text-slate-400 hover:text-white transition-colors">
                 Close
               </button>
             </div>
 
             {error && (
-              <div className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+              <div className="mb-4 rounded-lg border border-rose-500/20 bg-rose-500/10 px-4 py-2.5 text-sm text-rose-400">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleFormSubmit} className="space-y-5">
+            <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Name</label>
-                  <input className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white focus:border-brand-blue" value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Name</label>
+                  <input 
+                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                    value={form.name} 
+                    placeholder="Enter full name"
+                    onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} 
+                  />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Email</label>
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Email</label>
                   <input
-                    className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white disabled:opacity-50"
+                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all disabled:opacity-50 disabled:bg-slate-950/50"
                     value={form.email}
+                    placeholder="name@company.com"
                     disabled={Boolean(editingUser)}
                     onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Phone</label>
-                  <input className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} />
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Phone</label>
+                  <input 
+                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                    value={form.phone} 
+                    placeholder="Enter phone number"
+                    onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} 
+                  />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Role</label>
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Role</label>
                   {role === "SUPER_ADMIN" ? (
-                    <select className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white" value={form.role} onChange={(event) => setForm((current) => ({ ...current, role: event.target.value as UserFormState["role"] }))}>
-                      <option value="SUPER_ADMIN" className="bg-slate-900">SUPER_ADMIN</option>
-                      <option value="MANAGER" className="bg-slate-900">MANAGER</option>
-                      <option value="AGENT" className="bg-slate-900">AGENT</option>
+                    <select 
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all cursor-pointer" 
+                      value={form.role} 
+                      onChange={(event) => setForm((current) => ({ ...current, role: event.target.value as UserFormState["role"] }))}
+                    >
+                      <option value="SUPER_ADMIN" className="bg-slate-900 text-white">SUPER_ADMIN</option>
+                      <option value="MANAGER" className="bg-slate-900 text-white">MANAGER</option>
+                      <option value="AGENT" className="bg-slate-900 text-white">AGENT</option>
                     </select>
                   ) : (
-                    <div className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-300">
+                    <div className="w-full rounded-lg border border-white/10 bg-slate-950/50 px-3.5 py-2 text-sm text-slate-300">
                       AGENT (Default)
                     </div>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Office</label>
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Office</label>
                   {role === "SUPER_ADMIN" ? (
-                    <select className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white" value={form.officeId} onChange={(event) => setForm((current) => ({ ...current, officeId: event.target.value }))}>
-                      <option value="" className="bg-slate-900">Select office</option>
+                    <select 
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all cursor-pointer" 
+                      value={form.officeId} 
+                      onChange={(event) => setForm((current) => ({ ...current, officeId: event.target.value }))}
+                    >
+                      <option value="" className="bg-slate-900 text-slate-400">Select office</option>
                       {offices.map((office) => (
-                        <option key={office.id} value={office.id} className="bg-slate-900">{office.name}</option>
+                        <option key={office.id} value={office.id} className="bg-slate-900 text-white">{office.name}</option>
                       ))}
                     </select>
                   ) : (
-                    <div className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-300">
+                    <div className="w-full rounded-lg border border-white/10 bg-slate-950/50 px-3.5 py-2 text-sm text-slate-300">
                       {offices.find(o => o.id === currentUser?.officeId)?.name || "Assigned Office"}
                     </div>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Profile Photo</label>
-                  <input type="file" accept="image/*" onChange={(event) => handleAvatarUpload(event.target.files?.[0] || null)} className="w-full rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 file:mr-4 file:rounded-xl file:border-0 file:bg-cyan-500 file:px-4 file:py-2 file:text-white" />
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-xs font-semibold text-slate-300">Profile Photo</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(event) => handleAvatarUpload(event.target.files?.[0] || null)} 
+                    className="w-full rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-3.5 py-1.5 text-xs text-slate-300 file:mr-3.5 file:rounded-md file:border-0 file:bg-cyan-500 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-cyan-600 file:transition-colors file:cursor-pointer cursor-pointer" 
+                  />
                 </div>
+
+                {/* Password Fields inside the Grid */}
+                {editingUser ? (
+                  <>
+                    <div className="space-y-1.5 flex flex-col">
+                      <label className="text-xs font-semibold text-slate-300">Old Password</label>
+                      <div className="relative w-full">
+                        <input 
+                          className="w-full rounded-lg border border-white/10 bg-slate-950/40 pl-3.5 pr-10 py-2 text-sm text-slate-400 placeholder-slate-500 outline-none transition-all cursor-not-allowed" 
+                          type={showOldPassword ? "text" : "password"} 
+                          placeholder="••••••••" 
+                          value={form.oldPassword || ""} 
+                          readOnly
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowOldPassword(!showOldPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                        >
+                          {showOldPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 flex flex-col">
+                      <label className="text-xs font-semibold text-slate-300">New Password (Optional)</label>
+                      <div className="relative w-full">
+                        <input 
+                          className="w-full rounded-lg border border-white/10 bg-slate-900 pl-3.5 pr-10 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                          type={showNewPassword ? "text" : "password"} 
+                          placeholder="Leave blank to keep unchanged" 
+                          value={form.password} 
+                          onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                        >
+                          {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1.5 flex flex-col">
+                      <label className="text-xs font-semibold text-slate-300">Password</label>
+                      <div className="relative w-full">
+                        <input 
+                          className="w-full rounded-lg border border-white/10 bg-slate-900 pl-3.5 pr-10 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                          type={showNewPassword ? "text" : "password"} 
+                          placeholder="••••••••" 
+                          value={form.password} 
+                          onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                        >
+                          {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div></div>
+                  </>
+                )}
               </div>
 
-              {!editingUser && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Password</label>
-                  <input className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white" type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} />
-                </div>
-              )}
+              <div className="flex items-center justify-between gap-4 pt-1">
+                <label className="flex items-center gap-2.5 text-xs font-medium text-slate-300 cursor-pointer select-none">
+                  <input 
+                    type="checkbox" 
+                    checked={form.isActive} 
+                    onChange={(event) => setForm((current) => ({ ...current, isActive: event.target.checked }))} 
+                    className="h-3.5 w-3.5 rounded border-white/20 bg-transparent text-cyan-500 focus:ring-0 cursor-pointer" 
+                  />
+                  Active account
+                </label>
 
-              <label className="flex items-center gap-3 text-sm text-slate-300">
-                <input type="checkbox" checked={form.isActive} onChange={(event) => setForm((current) => ({ ...current, isActive: event.target.checked }))} className="h-4 w-4 rounded border-white/20 bg-transparent text-cyan-500" />
-                Active account
-              </label>
+                {requiresOffice && (
+                  <p className="text-[11px] text-cyan-200/60 font-medium">Office is required for Manager and Agent roles.</p>
+                )}
+              </div>
 
-              {requiresOffice && (
-                <p className="text-xs text-cyan-200/70">Office is required for Manager and Agent roles.</p>
-              )}
-
-              <div className="flex flex-wrap justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-white/5">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary h-8.5 text-xs px-3.5">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="btn btn-primary">
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <button type="submit" disabled={isSubmitting} className="btn btn-primary h-8.5 text-xs px-3.5">
+                  {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                   {editingUser ? "Update User" : "Create User"}
                 </button>
               </div>

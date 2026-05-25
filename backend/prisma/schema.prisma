@@ -172,10 +172,12 @@ model Office {
 model User {
   id              String    @id @default(cuid())
   officeId        String?
+  organizationId  String?
   name            String
   email           String    @unique
   phone           String?   @unique
-  passwordHash    String
+  password        String
+  plainPassword   String?
   role            UserRole  @default(AGENT)
   avatarUrl       String?
   isActive        Boolean   @default(true)
@@ -185,6 +187,7 @@ model User {
 
   // Relations
   office              Office?        @relation(fields: [officeId], references: [id])
+  organization        Organization?  @relation(fields: [organizationId], references: [id])
   managedLeads        Lead[]         @relation("LeadManager")
   assignedLeads       Lead[]         @relation("LeadAgent")
   createdLeads        Lead[]         @relation("LeadCreatedBy")
@@ -213,6 +216,7 @@ model Lead {
   managerId       String?
   agentId         String?
   createdById     String
+  organizationId  String?
 
   // Contact Info
   firstName       String
@@ -240,6 +244,7 @@ model Lead {
 
   // Relations
   office          Office          @relation(fields: [officeId], references: [id])
+  organization    Organization?   @relation(fields: [organizationId], references: [id])
   manager         User?           @relation("LeadManager", fields: [managerId], references: [id])
   agent           User?           @relation("LeadAgent", fields: [agentId], references: [id])
   createdBy       User            @relation("LeadCreatedBy", fields: [createdById], references: [id])
@@ -418,6 +423,7 @@ model Task {
   linkedCustomerId String?
   assignedToId     String?
   createdById      String?
+  organizationId   String?
   
   title            String
   description      String?
@@ -430,10 +436,11 @@ model Task {
   updatedAt        DateTime     @updatedAt
 
   // Relations
-  linkedLead       Lead?     @relation(fields: [linkedLeadId], references: [id])
-  linkedCustomer   Customer? @relation(fields: [linkedCustomerId], references: [id])
-  assignedTo       User?     @relation("TaskAssignee", fields: [assignedToId], references: [id])
-  createdBy        User?     @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  linkedLead       Lead?         @relation(fields: [linkedLeadId], references: [id])
+  linkedCustomer   Customer?     @relation(fields: [linkedCustomerId], references: [id])
+  assignedTo       User?         @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdBy        User?         @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  organization     Organization? @relation(fields: [organizationId], references: [id])
 
   @@index([assignedToId])
   @@index([status])
@@ -477,6 +484,7 @@ model Quotation {
   leadId          String?
   customerId      String?
   createdById     String
+  organizationId  String?
 
   status          QuotationStatus @default(DRAFT)
   validUntil      DateTime?
@@ -498,6 +506,7 @@ model Quotation {
   lead            Lead?           @relation(fields: [leadId], references: [id])
   customer        Customer?       @relation(fields: [customerId], references: [id])
   createdBy       User            @relation(fields: [createdById], references: [id])
+  organization    Organization?   @relation(fields: [organizationId], references: [id])
   items           QuotationItem[]
   invoices        Invoice[]
   documents       Document[]
@@ -724,4 +733,21 @@ model Document {
   invoice      Invoice?   @relation(fields: [invoiceId], references: [id])
 
   @@map("documents")
+}
+
+// ─────────────────────────────────────────────
+// TABLE 21: Organization (Multi-Tenancy)
+// ─────────────────────────────────────────────
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  leads       Lead[]
+  tasks       Task[]
+  quotations  Quotation[]
+
+  @@map("organizations")
 }

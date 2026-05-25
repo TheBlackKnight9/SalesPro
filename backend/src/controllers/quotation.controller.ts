@@ -39,7 +39,7 @@ export class QuotationController {
       if (!req.user) throw new AppError("Not authenticated.", 401);
       
       const id = String(req.params.id);
-      const quote = await quotationService.findById(id);
+      const quote = await quotationService.findById(id, req.user);
       res.status(200).json({ success: true, message: "Quotation fetched.", data: quote });
     } catch (err) { next(err); }
   }
@@ -66,7 +66,7 @@ export class QuotationController {
       const id = String(req.params.id);
       
       // Ensure quotation exists before generating
-      const quote = await quotationService.findById(id);
+      const quote = await quotationService.findById(id, req.user);
 
       const pdfBuffer = await quotationService.generatePdf(id);
 

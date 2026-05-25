@@ -62,6 +62,7 @@ export default function CustomersPage() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
+      params.append("limit", "1000");
       if (debouncedSearch) params.append("search", debouncedSearch);
       if (activeDateFilter !== "all") params.append("dateRange", activeDateFilter);
       if (activeRevenueFilter !== "all") params.append("revenueRange", activeRevenueFilter);

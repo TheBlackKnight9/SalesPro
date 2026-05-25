@@ -351,3 +351,97 @@
   .empty-state { @apply flex flex-col items-center justify-center gap-3 py-16 text-center; color: var(--color-text-muted); }
   .empty-state-icon { @apply w-12 h-12 opacity-40; }
 }
+
+/* =============================================================================
+   Premium Animated Hover Effects (Borders, Glows, and Lifts)
+   ============================================================================= */
+
+/* 1. Interactive Cards & Widgets (Dashboard Cards, Tables, etc.) */
+.card,
+[class*="rounded-xl"][class*="border"][class*="shadow-sm"],
+[class*="rounded-3xl"][class*="border"] {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.card:hover,
+[class*="rounded-xl"][class*="border"][class*="shadow-sm"]:hover,
+[class*="rounded-3xl"][class*="border"]:hover {
+  transform: translateY(-3px) scale(1.005);
+  border-color: rgba(26, 86, 219, 0.5) !important; /* Premium brand blue border highlight */
+  box-shadow: 0 12px 24px -10px rgba(26, 86, 219, 0.2), 
+              0 4px 12px -5px rgba(26, 86, 219, 0.15) !important;
+}
+
+/* Dark mode specific highlight */
+.dark .card:hover,
+.dark [class*="rounded-xl"][class*="border"][class*="shadow-sm"]:hover,
+.dark [class*="rounded-3xl"][class*="border"]:hover {
+  border-color: rgba(99, 102, 241, 0.6) !important; /* Indigo glow in dark mode */
+  box-shadow: 0 12px 24px -10px rgba(99, 102, 241, 0.35), 
+              0 0 15px -3px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* 2. All Buttons (Scales gently + active glow + border shift) */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+[role="button"] {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:hover,
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover,
+[role="button"]:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 0 12px rgba(26, 86, 219, 0.45);
+}
+
+button:active,
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-danger:active,
+[role="button"]:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Exclude segmented control/tab buttons from hover lift and glow */
+.bg-slate-100 button:hover,
+.bg-slate-100 button:active,
+.bg-slate-100.dark\:bg-slate-800 button:hover,
+.bg-slate-100.dark\:bg-slate-800 button:active,
+.bg-slate-100.dark\:bg-slate-750 button:hover,
+.bg-slate-100.dark\:bg-slate-750 button:active,
+.bg-slate-100.dark\:bg-slate-700 button:hover,
+.bg-slate-100.dark\:bg-slate-700 button:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 3. Progress Bars (Stage breakdown progress bars) */
+.flex-grow.h-1\.5.rounded-full {
+  overflow: visible !important; /* Allow glow of hover and scale to not get clipped */
+}
+
+.flex-grow.h-1\.5.rounded-full div {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  cursor: pointer;
+}
+
+.flex-grow.h-1\.5.rounded-full:hover div {
+  transform: scaleY(1.8) scaleX(1.01);
+  filter: brightness(1.2) drop-shadow(0 0 6px currentColor);
+}
+
+/* 4. Chart Hover Highlights */
+.recharts-bar-rectangle:hover,
+.recharts-line:hover {
+  filter: brightness(1.15) drop-shadow(0 0 8px rgba(26, 86, 219, 0.4));
+  transition: all 0.2s ease;
+}

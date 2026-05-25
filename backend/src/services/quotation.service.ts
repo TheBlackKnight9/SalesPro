@@ -48,6 +48,7 @@ export class QuotationService {
           leadId: dto.leadId,
           customerId: dto.customerId,
           createdById: currentUser.userId,
+          organizationId: currentUser.organizationId,
           validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
           notes: dto.notes,
           termsConditions: dto.termsConditions,
@@ -107,7 +108,9 @@ export class QuotationService {
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      organizationId: currentUser.organizationId,
+    };
 
     // RBAC Filtering: Super Admin Bypass
     if (currentUser.role === "SUPER_ADMIN") {
@@ -289,7 +292,7 @@ export class QuotationService {
   }
 
   // ── Get Single Quotation ────────────────────
-  async findById(id: string) {
+  async findById(id: string, currentUser?: JwtPayload) {
     const quote = await prisma.quotation.findUnique({
       where: { id },
       include: {
@@ -314,6 +317,11 @@ export class QuotationService {
     });
 
     if (!quote) throw new AppError("Quotation not found.", 404);
+
+    if (currentUser && quote.organizationId !== currentUser.organizationId) {
+      throw new AppError("Access denied: This quotation belongs to another organization.", 403);
+    }
+
     return quote;
   }
 

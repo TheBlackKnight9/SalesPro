@@ -303,13 +303,13 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     const totalLeads = await prisma.lead.count({ where: leadWhereClause });
 
     // Stage Breakdown: mapped exactly to the specified CRM workflow
-    const stages = ["NEW", "CONTACTED", "INTERESTED", "QUOTE_SENT", "NEGOTIATION", "CONVERTED", "LOST"];
+    const stages = ["NEW", "CONTACTED", "QUALIFIED", "QUOTE_SENT", "NEGOTIATION", "CONVERTED", "LOST"];
     
     const stageToDbStatus = (stage: string): string => {
       switch (stage) {
         case "NEW": return "NEW";
         case "CONTACTED": return "CONTACTED";
-        case "INTERESTED": return "QUALIFIED";
+        case "QUALIFIED": return "QUALIFIED";
         case "QUOTE_SENT": return "PROPOSAL_SENT";
         case "NEGOTIATION": return "NEGOTIATION";
         case "CONVERTED": return "WON";
@@ -322,7 +322,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       switch (stage) {
         case "NEW": return "bg-blue-500";
         case "CONTACTED": return "bg-indigo-500";
-        case "INTERESTED": return "bg-purple-500";
+        case "QUALIFIED": return "bg-purple-500";
         case "QUOTE_SENT": return "bg-amber-500";
         case "NEGOTIATION": return "bg-orange-500";
         case "CONVERTED": return "bg-emerald-500";
@@ -332,22 +332,50 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     };
 
     const stageBreakdown = await Promise.all(stages.map(async (stageName) => {
-      const dbStatus = stageToDbStatus(stageName);
-      const count = await prisma.lead.count({
-        where: {
-          ...leadWhereClause,
-          status: dbStatus as any
+      let count = 0;
+      if (stageName === "QUOTE_SENT") {
+        count = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            quotations: {
+              some: {
+                status: "SENT"
+              }
+            }
+          }
+        });
+      } else if (stageName === "CONVERTED") {
+        const customerWhereClause: any = {};
+        if (role === UserRole.AGENT && userId) {
+          customerWhereClause.lead = { agentId: userId };
+        } else if (role === UserRole.MANAGER && req.user?.officeId) {
+          customerWhereClause.officeId = req.user.officeId;
         }
-      });
-      const percentage = totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0;
+        count = await prisma.customer.count({
+          where: customerWhereClause
+        });
+      } else {
+        const dbStatus = stageToDbStatus(stageName);
+        count = await prisma.lead.count({
+          where: {
+            ...leadWhereClause,
+            status: dbStatus as any
+          }
+        });
+      }
       return {
         name: formatEnum(stageName),
         count,
-        percentage,
+        percentage: 0, // computed dynamically below
         color: stageColors(stageName),
         dropoff: "0%"
       };
     }));
+
+    const totalItems = stageBreakdown.reduce((sum, item) => sum + item.count, 0);
+    stageBreakdown.forEach(item => {
+      item.percentage = totalItems > 0 ? Math.round((item.count / totalItems) * 100) : 0;
+    });
 
     // Lead Sources
     const sourceGroup = await prisma.lead.groupBy({
@@ -488,7 +516,11 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     if (role !== UserRole.AGENT) {
       // 1. Agent Leaderboard
       const agents = await prisma.user.findMany({
-        where: { role: UserRole.AGENT, isActive: true },
+        where: { 
+          role: UserRole.AGENT, 
+          isActive: true,
+          ...(role === UserRole.MANAGER && req.user?.officeId && { officeId: req.user.officeId })
+        },
         select: { id: true, name: true }
       });
 
@@ -590,7 +622,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
         "New": 0,
         "Contacted": 0,
         "Qualified": 0,
-        "Proposal Sent": 0,
+        "Quote Sent": 0,
         "Negotiation": 0,
         "Won": 0
       };
@@ -620,10 +652,10 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
             stageValues["Qualified"] += amount;
             break;
           case "PROPOSAL_SENT":
-            stageValues["Proposal Sent"] += amount;
+            stageValues["Quote Sent"] += amount;
             break;
           case "NEGOTIATION":
-            stageValues["Negotiation"] += amount;
+            // Skipped: Negotiation pipeline value is calculated directly from lead budgets below
             break;
           case "WON":
             stageValues["Won"] += amount;
@@ -632,7 +664,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
             if (q.status === "ACCEPTED") {
               stageValues["Won"] += amount;
             } else if (q.status === "SENT") {
-              stageValues["Proposal Sent"] += amount;
+              stageValues["Quote Sent"] += amount;
             } else {
               stageValues["Qualified"] += amount;
             }
@@ -640,11 +672,23 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
         }
       });
 
+      // Calculate negotiation pipeline value directly from the sum of Lead budgets in NEGOTIATION status
+      const negotiationLeads = await prisma.lead.findMany({
+        where: {
+          ...leadWhereClause,
+          status: "NEGOTIATION"
+        },
+        select: {
+          budget: true
+        }
+      });
+      stageValues["Negotiation"] = negotiationLeads.reduce((sum, l) => sum + Number(l.budget || 0), 0);
+
       const pipelineByStage = [
         { name: "New", value: stageValues["New"] },
         { name: "Contacted", value: stageValues["Contacted"] },
         { name: "Qualified", value: stageValues["Qualified"] },
-        { name: "Proposal Sent", value: stageValues["Proposal Sent"] },
+        { name: "Quote Sent", value: stageValues["Quote Sent"] },
         { name: "Negotiation", value: stageValues["Negotiation"] },
         { name: "Won", value: stageValues["Won"] }
       ];

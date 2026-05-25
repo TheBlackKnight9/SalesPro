@@ -1119,7 +1119,7 @@ export default function LeadDetailPage() {
                 <input 
                   type="text" 
                   required 
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
                   placeholder="e.g. Call for requirement update"
                   value={newTask.title}
                   onChange={(e) => setNewTask({...newTask, title: e.target.value})}
@@ -1128,7 +1128,7 @@ export default function LeadDetailPage() {
               <div className="space-y-2">
                 <label className="text-[11px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Description</label>
                 <textarea 
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium h-24 resize-none" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium h-24 resize-none" 
                   placeholder="Additional details..."
                   value={newTask.description}
                   onChange={(e) => setNewTask({...newTask, description: e.target.value})}
@@ -1138,7 +1138,7 @@ export default function LeadDetailPage() {
                 <label className="text-[11px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Due Date</label>
                 <input 
                   type="date" 
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue transition-all py-3 px-4 font-medium" 
                   value={newTask.dueDate}
                   onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
                 />
@@ -1274,7 +1274,7 @@ export default function LeadDetailPage() {
                   <input 
                     type="tel" 
                     required 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.phone}
                     onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
                   />
@@ -1283,7 +1283,7 @@ export default function LeadDetailPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Alternate Phone</label>
                   <input 
                     type="tel" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.alternatePhone}
                     onChange={(e) => setEditForm({...editForm, alternatePhone: e.target.value})}
                   />
@@ -1292,7 +1292,7 @@ export default function LeadDetailPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Email Address</label>
                   <input 
                     type="email" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.email}
                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                   />
@@ -1301,7 +1301,7 @@ export default function LeadDetailPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-500 uppercase tracking-wider">Company</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.company}
                     onChange={(e) => setEditForm({...editForm, company: e.target.value})}
                   />
@@ -1310,7 +1310,7 @@ export default function LeadDetailPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Designation</label>
                   <input 
                     type="text" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.designation}
                     onChange={(e) => setEditForm({...editForm, designation: e.target.value})}
                   />
@@ -1333,7 +1333,7 @@ export default function LeadDetailPage() {
                   <label className="text-[11px] font-semibold text-slate-455 dark:text-slate-550 uppercase tracking-wider">Budget (INR)</label>
                   <input 
                     type="number" 
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all py-2.5 px-3.5 text-sm font-medium" 
                     value={editForm.budget}
                     onChange={(e) => setEditForm({...editForm, budget: e.target.value})}
                   />

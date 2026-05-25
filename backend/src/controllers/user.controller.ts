@@ -26,7 +26,10 @@ export class UserController {
         }
       }
 
-      const user = await userService.create(req.body);
+      const user = await userService.create({
+        ...req.body,
+        organizationId: currentUser.organizationId || undefined,
+      });
       res.status(201).json({ success: true, message: "User created.", data: user });
     } catch (err) { next(err); }
   }

@@ -23,6 +23,7 @@ export class TaskService {
         priority: dto.priority || "MEDIUM",
         assignedToId: dto.assignedToId || creator.userId,
         createdById: creator.userId,
+        organizationId: creator.organizationId,
         linkedLeadId: dto.linkedLeadId,
         linkedCustomerId: dto.linkedCustomerId,
         status: "PENDING",
@@ -52,7 +53,9 @@ export class TaskService {
 
   // ── Get All Tasks (RBAC) ────────────────────
   async findAll(currentUser: JwtPayload) {
-    const where: any = {};
+    const where: any = {
+      organizationId: currentUser.organizationId,
+    };
 
     // RBAC Filtering
     if (currentUser.role === "AGENT") {
@@ -61,7 +64,6 @@ export class TaskService {
       // Manager sees tasks assigned to users in their office
       where.assignedTo = { officeId: currentUser.officeId };
     }
-    // SUPER_ADMIN sees all (where remains {})
 
     return prisma.task.findMany({
       where,
@@ -82,6 +84,10 @@ export class TaskService {
     const task = await prisma.task.findUnique({ where: { id } });
     if (!task) throw new AppError("Task not found.", 404);
 
+    if (task.organizationId !== currentUser.organizationId) {
+      throw new AppError("Access denied: This task belongs to another organization.", 403);
+    }
+
     // Permission Check: Agents can only update their own tasks
     if (currentUser.role === "AGENT" && task.assignedToId !== currentUser.userId) {
       throw new AppError("Permission denied: You can only update tasks assigned to you.", 403);
@@ -100,6 +106,10 @@ export class TaskService {
   async delete(id: string, currentUser: JwtPayload) {
     const task = await prisma.task.findUnique({ where: { id } });
     if (!task) throw new AppError("Task not found.", 404);
+
+    if (task.organizationId !== currentUser.organizationId) {
+      throw new AppError("Access denied: This task belongs to another organization.", 403);
+    }
 
     // Permission Check: Agents can only delete their own tasks
     if (currentUser.role === "AGENT" && task.assignedToId !== currentUser.userId) {

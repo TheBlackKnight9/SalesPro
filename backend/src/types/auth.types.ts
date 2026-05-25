@@ -16,6 +16,15 @@ export interface SignupDto {
   phone: string;
   role: UserRole;
   officeId?: string;
+  organizationId?: string;
+}
+
+export interface RegisterOrganizationDto {
+  companyName: string;
+  ownerName: string;
+  email: string;
+  password: string;
+  phone?: string;
 }
 
 export interface LoginResponse {
@@ -26,6 +35,7 @@ export interface LoginResponse {
     email: string;
     role: string;
     officeId: string | null;
+    organizationId: string | null;
     avatarUrl: string | null;
   };
 }

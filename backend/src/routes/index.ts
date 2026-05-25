@@ -9,6 +9,7 @@ import quotationRoutes from "./quotation.routes";
 import customerRoutes from "./customer.routes";
 import taskRoutes from "./task.routes";
 import debugRoutes from "./debug.routes";
+import teamRoutes from "./team.routes";
 
 const router = Router();
 
@@ -31,6 +32,7 @@ router.use("/whatsapp", whatsappRoutes);
 router.use("/quotations", quotationRoutes);
 router.use("/customers", customerRoutes);
 router.use("/tasks", taskRoutes);
+router.use("/team", teamRoutes);
 router.use("/debug", debugRoutes);
 
 export default router;

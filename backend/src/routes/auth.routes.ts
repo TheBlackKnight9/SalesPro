@@ -8,6 +8,7 @@ const ctrl = new AuthController();
 // Public
 router.post("/login", ctrl.login.bind(ctrl));
 router.post("/signup", ctrl.signup.bind(ctrl));
+router.post("/register", ctrl.signup.bind(ctrl));
 
 // Protected
 router.get("/profile", authenticate, ctrl.getProfile.bind(ctrl));

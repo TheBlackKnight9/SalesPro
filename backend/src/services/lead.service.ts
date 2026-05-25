@@ -34,6 +34,7 @@ export class LeadService {
       data: {
         officeId: officeId as string,
         createdById: createdBy.userId,
+        organizationId: createdBy.organizationId,
         managerId: dto.managerId || null,
         agentId: agentId || null,
         firstName: dto.firstName,
@@ -91,6 +92,7 @@ export class LeadService {
 
     const where: any = {
       isConverted: false,
+      organizationId: currentUser.organizationId,
     };
 
     // STRICT RBAC LOGIC: Super Admin Bypass
@@ -214,6 +216,10 @@ export class LeadService {
     });
 
     if (!lead) throw new AppError("Lead not found.", 404);
+
+    if (lead.organizationId !== currentUser.organizationId) {
+      throw new AppError("Access denied: This lead belongs to another organization.", 403);
+    }
 
     // Agents can only view their own leads
     if (
@@ -407,7 +413,11 @@ export class LeadService {
     const agentFilter =
       currentUser.role === "AGENT" ? { agentId: currentUser.userId } : {};
 
-    const where: any = { isConverted: false, ...agentFilter };
+    const where: any = {
+      isConverted: false,
+      organizationId: currentUser.organizationId,
+      ...agentFilter
+    };
     if (officeId) {
       where.officeId = officeId;
     }

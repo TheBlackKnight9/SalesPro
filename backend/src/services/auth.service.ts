@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma";
 import { AppError } from "../types/shared.types";
-import { LoginDto, LoginResponse, SignupDto, UpdateProfileDto } from "../types/auth.types";
+import { LoginDto, LoginResponse, SignupDto, UpdateProfileDto, RegisterOrganizationDto } from "../types/auth.types";
 import { UserRole } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-change-in-prod";
@@ -65,10 +65,11 @@ export class AuthService {
       data: {
         name,
         email: normalizedEmail,
-        passwordHash,
+        password: passwordHash,
         phone,
         role,
         officeId: resolvedOfficeId,
+        organizationId: dto.organizationId || null,
         isActive: true, // Default to active
       },
     });
@@ -80,6 +81,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         officeId: user.officeId,
+        organizationId: user.organizationId,
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
@@ -93,7 +95,74 @@ export class AuthService {
         email: user.email,
         role: user.role,
         officeId: user.officeId,
+        organizationId: user.organizationId,
         avatarUrl: user.avatarUrl,
+      },
+    };
+  }
+
+  // ── Register Organization (Public Signup) ────
+  async registerOrganization(dto: RegisterOrganizationDto): Promise<LoginResponse> {
+    const { companyName, ownerName, email, password, phone } = dto;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // 1. Check if email exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+    if (existingUser) {
+      throw new AppError("Email is already registered.", 400);
+    }
+
+    // 2. Hash password
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // 3. Execute inside a transaction context
+    const result = await prisma.$transaction(async (tx) => {
+      // Step 1: Create the isolated corporate workspace
+      const newOrg = await tx.organization.create({
+        data: {
+          name: companyName, // e.g., "Pratik's Agency"
+        },
+      });
+
+      // Step 2: Create the owner profile explicitly tied to the new workspace
+      const newUser = await tx.user.create({
+        data: {
+          name: ownerName,
+          email: email.toLowerCase().trim(),
+          password: passwordHash, // Ensure bcrypt/argon2 hashing runs before this
+          role: 'SUPER_ADMIN',      // Explicitly set their role as the global account owner
+          organizationId: newOrg.id, // Tie them directly to their brand-new isolated workspace
+        },
+      });
+
+      return { newOrg, newUser };
+    });
+
+    // 4. Generate token with organizationId
+    const token = jwt.sign(
+      {
+        userId: result.newUser.id,
+        email: result.newUser.email,
+        role: result.newUser.role,
+        officeId: result.newUser.officeId,
+        organizationId: result.newUser.organizationId,
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
+    );
+
+    return {
+      token,
+      user: {
+        id: result.newUser.id,
+        name: result.newUser.name,
+        email: result.newUser.email,
+        role: result.newUser.role as any,
+        officeId: result.newUser.officeId,
+        organizationId: result.newUser.organizationId,
+        avatarUrl: result.newUser.avatarUrl,
       },
     };
   }
@@ -114,8 +183,9 @@ export class AuthService {
         email: true,
         role: true,
         officeId: true,
+        organizationId: true,
         avatarUrl: true,
-        passwordHash: true,
+        password: true,
         isActive: true,
       },
     });
@@ -128,7 +198,7 @@ export class AuthService {
       throw new AppError("Your account has been deactivated. Contact admin.", 403);
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new AppError("Invalid email or password.", 401);
     }
@@ -145,6 +215,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         officeId: user.officeId,
+        organizationId: user.organizationId,
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
@@ -158,6 +229,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         officeId: user.officeId,
+        organizationId: user.organizationId,
         avatarUrl: user.avatarUrl,
       },
     };
@@ -236,18 +308,18 @@ export class AuthService {
   ): Promise<void> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { passwordHash: true },
+      select: { password: true },
     });
 
     if (!user) throw new AppError("User not found.", 404);
 
-    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) throw new AppError("Current password is incorrect.", 400);
 
     const newHash = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({
       where: { id: userId },
-      data: { passwordHash: newHash },
+      data: { password: newHash },
     });
   }
 

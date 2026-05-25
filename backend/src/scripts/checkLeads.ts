@@ -1,15 +1,18 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from "../config/prisma";
 
-async function checkLeads() {
+async function main() {
   const leads = await prisma.lead.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    select: { id: true, firstName: true, phone: true, createdAt: true }
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      status: true,
+      office: { select: { name: true } },
+      agent: { select: { name: true } }
+    }
   });
-  console.log(JSON.stringify(leads, null, 2));
+  console.log("ALL LEADS IN DB:");
+  console.table(leads);
 }
 
-checkLeads()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+main().catch(err => console.error(err));

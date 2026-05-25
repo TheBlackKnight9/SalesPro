@@ -10,6 +10,7 @@ import { useAuthStore, useIsAuthenticated, useIsHydrated } from "@/store/useAuth
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const user = useAuthStore((state) => state.user);
   const isAuthenticated = useIsAuthenticated();
   const isHydrated = useIsHydrated();
 
@@ -20,11 +21,18 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const getRedirectTarget = (role?: string) => {
+    if (role === "SUPER_ADMIN") return "/dashboard/offices";
+    if (role === "MANAGER") return "/dashboard/reports";
+    if (role === "AGENT") return "/dashboard/tasks";
+    return "/dashboard";
+  };
+
   useEffect(() => {
-    if (isHydrated && isAuthenticated) {
-      router.replace("/dashboard");
+    if (isHydrated && isAuthenticated && user) {
+      router.replace(getRedirectTarget(user.role));
     }
-  }, [isHydrated, isAuthenticated, router]);
+  }, [isHydrated, isAuthenticated, user, router]);
 
   const validate = () => {
     if (!identifier.trim()) return "Email or mobile number is required.";
@@ -51,9 +59,9 @@ export default function LoginPage() {
         password,
       });
 
-      const { user, token } = response.data.data;
-      login(user, token, rememberMe);
-      router.replace("/dashboard");
+      const { user: loggedInUser, token } = response.data.data;
+      login(loggedInUser, token, rememberMe);
+      router.replace(getRedirectTarget(loggedInUser.role));
     } catch (err: any) {
       setError(err?.message || "Invalid email/mobile and password combination.");
     } finally {

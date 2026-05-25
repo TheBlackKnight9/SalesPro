@@ -21,4 +21,5 @@ export interface UpdateUserDto {
   avatarUrl?: string;
   isActive?: boolean;
   officeId?: string;
+  password?: string;
 }

@@ -146,12 +146,12 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile Management</h1>
-        <p className="mt-1 text-sm text-gray-500">Update your personal details, password, notifications, and WhatsApp settings.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Management</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Update your personal details, password, notifications, and WhatsApp settings.</p>
       </div>
 
       {(message || error) && (
-        <div className={`rounded-xl border px-4 py-3 text-sm ${error ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+        <div className={`rounded-xl border px-4 py-3 text-sm ${error ? "border-rose-200 dark:border-rose-950/30 bg-rose-50 dark:bg-rose-950/25 text-rose-700 dark:text-rose-400" : "border-emerald-200 dark:border-emerald-950/30 bg-emerald-50 dark:bg-emerald-950/25 text-emerald-700 dark:text-emerald-400"}`}>
           {error || message}
         </div>
       )}
@@ -161,37 +161,37 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           onSubmit={handleSaveProfile}
-          className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm"
         >
           <div className="mb-5 flex items-center gap-2">
             <User className="h-5 w-5 text-accent" />
-            <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Personal Information</h2>
           </div>
 
           {isLoadingProfile ? (
-            <div className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 px-4 py-10 text-sm text-gray-500">
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 dark:border-slate-800 px-4 py-10 text-sm text-gray-500 dark:text-slate-400">
               <Loader2 className="h-5 w-5 animate-spin text-accent" />
               Loading your profile...
             </div>
           ) : (
             <div className="space-y-5">
               <div className="flex items-center gap-4">
-                <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+                <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-100 dark:bg-slate-950">
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400">
+                    <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-slate-600">
                       <ImageIcon className="h-8 w-8" />
                     </div>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Profile photo</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Profile photo</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(event) => handleAvatarUpload(event.target.files?.[0] || null)}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-accent-hover"
+                    className="block w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-accent-hover cursor-pointer"
                   />
                 </div>
               </div>
@@ -226,11 +226,11 @@ export default function SettingsPage() {
                 </div>
                 <div className="field">
                   <label className="field-label">Role</label>
-                  <div className="field-input bg-gray-50 text-gray-500">{profile?.role || currentUser?.role || "-"}</div>
+                  <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center">{profile?.role || currentUser?.role || "-"}</div>
                 </div>
               </div>
 
-              <button type="submit" disabled={isSavingProfile} className="btn btn-primary">
+              <button type="submit" disabled={isSavingProfile} className="btn btn-primary shadow-lg shadow-brand-blue/15 hover:shadow-xl hover:shadow-brand-blue/20">
                 {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Profile
               </button>
@@ -244,11 +244,11 @@ export default function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
             onSubmit={handlePasswordChange}
-            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm"
           >
             <div className="mb-5 flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-accent" />
-              <h2 className="text-lg font-semibold text-gray-900">Password</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Password</h2>
             </div>
             <div className="space-y-4">
               <div className="field">
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                   onChange={(e) => setPasswordForm((current) => ({ ...current, newPassword: e.target.value }))}
                 />
               </div>
-              <button type="submit" disabled={isSavingPassword} className="btn btn-secondary w-full">
+              <button type="submit" disabled={isSavingPassword} className="btn btn-secondary w-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700">
                 {isSavingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
                 Change Password
               </button>
@@ -280,37 +280,37 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm"
           >
             <div className="mb-5 flex items-center gap-2">
               <Bell className="h-5 w-5 text-accent" />
-              <h2 className="text-lg font-semibold text-gray-900">Preferences</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Preferences</h2>
             </div>
 
             <div className="space-y-4">
-              <label className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 px-4 py-3">
+              <label className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors">
                 <div>
-                  <p className="font-medium text-gray-900">Email notifications</p>
-                  <p className="text-xs text-gray-500">Receive CRM alerts in your inbox.</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Email notifications</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Receive CRM alerts in your inbox.</p>
                 </div>
                 <input
                   type="checkbox"
                   checked={preferences.emailNotifications}
                   onChange={(e) => setPreferences((current) => ({ ...current, emailNotifications: e.target.checked }))}
-                  className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent"
+                  className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 px-4 py-3">
+              <label className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors">
                 <div>
-                  <p className="font-medium text-gray-900">WhatsApp notifications</p>
-                  <p className="text-xs text-gray-500">Enable alerts for WhatsApp workflows.</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">WhatsApp notifications</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Enable alerts for WhatsApp workflows.</p>
                 </div>
                 <input
                   type="checkbox"
                   checked={preferences.whatsappNotifications}
                   onChange={(e) => setPreferences((current) => ({ ...current, whatsappNotifications: e.target.checked }))}
-                  className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent"
+                  className="h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent cursor-pointer"
                 />
               </label>
 

@@ -44,29 +44,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-              className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border min-w-[300px] max-w-md ${
-                toast.type === "success" 
-                  ? "bg-white dark:bg-slate-900 border-emerald-100 dark:border-emerald-900/30 text-emerald-900 dark:text-emerald-400" 
-                  : toast.type === "error"
-                  ? "bg-white dark:bg-slate-900 border-rose-100 dark:border-rose-900/30 text-rose-900 dark:text-rose-400"
-                  : "bg-white dark:bg-slate-900 border-blue-100 dark:border-blue-900/30 text-blue-900 dark:text-blue-400"
-              }`}
+              className={`pointer-events-auto flex items-center gap-2.5 px-3 py-2 rounded-xl shadow-2xl border min-w-[200px] max-w-[280px] bg-slate-900/95 backdrop-blur border-white/10 text-white`}
             >
-              <div className={`p-1.5 rounded-lg ${
-                toast.type === "success" ? "bg-emerald-50 dark:bg-emerald-900/20" : 
-                toast.type === "error" ? "bg-rose-50 dark:bg-rose-900/20" : 
-                "bg-blue-50 dark:bg-blue-900/20"
+              <div className={`p-1 rounded-lg ${
+                toast.type === "success" ? "bg-emerald-500/10 text-emerald-400" : 
+                toast.type === "error" ? "bg-rose-500/10 text-rose-400" : 
+                "bg-blue-500/10 text-blue-400"
               }`}>
-                {toast.type === "success" && <CheckCircle className="h-4 w-4" />}
-                {toast.type === "error" && <AlertCircle className="h-4 w-4" />}
-                {toast.type === "info" && <Info className="h-4 w-4" />}
+                {toast.type === "success" && <CheckCircle className="h-3.5 w-3.5" />}
+                {toast.type === "error" && <AlertCircle className="h-3.5 w-3.5" />}
+                {toast.type === "info" && <Info className="h-3.5 w-3.5" />}
               </div>
-              <p className="flex-1 text-sm font-bold tracking-tight">{toast.message}</p>
+              <p className={`flex-1 text-[12.5px] font-bold tracking-tight ${
+                toast.type === "success" ? "text-emerald-100" :
+                toast.type === "error" ? "text-rose-100" :
+                "text-blue-100"
+              }`}>{toast.message}</p>
               <button 
                 onClick={() => removeToast(toast.id)}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1 hover:bg-white/5 rounded-md transition-colors"
               >
-                <X className="h-4 w-4 opacity-40" />
+                <X className="h-3.5 w-3.5 text-white/40 hover:text-white transition-colors" />
               </button>
             </motion.div>
           ))}

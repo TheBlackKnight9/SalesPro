@@ -10,29 +10,34 @@ export class AuthController {
   // POST /api/auth/signup
   async signup(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { name, email, password, phone, role, officeId } = req.body;
+      const { companyName, ownerName, name, email, password, phone, role } = req.body;
 
-      if (!name || !email || !password || !phone || !role) {
+      // Staff Guardrails: block public signup of MANAGER and AGENT
+      if (role === "AGENT" || role === "MANAGER") {
         throw new AppError(
-          "Name, email, password, phone, and role are required.",
-          400
+          "Public registration is restricted to new organizations only. AGENT and MANAGER accounts must be onboarded by their administrator.",
+          403
         );
       }
 
-      const allowedRoles = [UserRole.SUPER_ADMIN, UserRole.MANAGER, UserRole.AGENT];
-      if (!allowedRoles.includes(role)) {
-        throw new AppError("Invalid role. Allowed roles: SUPER_ADMIN, MANAGER, AGENT.", 400);
+      const finalOwnerName = ownerName || name;
+      const finalCompanyName = companyName || (finalOwnerName ? `${finalOwnerName}'s Company` : undefined);
+
+      if (!finalOwnerName || !email || !password || !finalCompanyName) {
+        throw new AppError("companyName, ownerName, email, and password are required.", 400);
       }
 
-      if ((role === UserRole.MANAGER || role === UserRole.AGENT) && !officeId) {
-        throw new AppError("officeId is required for MANAGER and AGENT roles.", 400);
-      }
-
-      const result = await authService.signup(req.body);
+      const result = await authService.registerOrganization({
+        companyName: finalCompanyName,
+        ownerName: finalOwnerName,
+        email,
+        password,
+        phone,
+      });
 
       res.status(201).json({
         success: true,
-        message: "Account created successfully.",
+        message: "Organization and administrator account created successfully.",
         data: result,
       });
     } catch (err) {

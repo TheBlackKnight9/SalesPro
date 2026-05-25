@@ -95,6 +95,7 @@ export default function LeadsPage() {
         status: statusFilter || undefined,
         source: sourceFilter || undefined,
         dateRange: dateFilter || undefined,
+        limit: 1000,
       };
       const data = await apiClient.get<Lead[]>("/leads", params);
       setLeads(data || []); 
@@ -361,7 +362,7 @@ export default function LeadsPage() {
                         <div className="space-y-3">
                           <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Lead Status</label>
                           <div className="flex flex-wrap gap-2">
-                            {["NEW", "CONTACTED", "QUALIFIED", "WON", "LOST"].map(val => (
+                            {["NEW", "CONTACTED", "QUALIFIED", "NEGOTIATION", "WON", "LOST"].map(val => (
                               <button
                                 key={val}
                                 onClick={() => updateFilters({ status: statusFilter === val ? null : val })}

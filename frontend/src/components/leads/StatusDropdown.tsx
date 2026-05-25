@@ -9,6 +9,7 @@ export const STATUS_OPTIONS = [
   { value: "NEW", label: "New", color: "bg-blue-100 text-blue-800" },
   { value: "CONTACTED", label: "Contacted", color: "bg-yellow-100 text-yellow-800" },
   { value: "QUALIFIED", label: "Qualified", color: "bg-purple-100 text-purple-800" },
+  { value: "NEGOTIATION", label: "Negotiation", color: "bg-orange-100 text-orange-800" },
   { value: "LOST", label: "Lost", color: "bg-red-100 text-red-800" },
 ];
 

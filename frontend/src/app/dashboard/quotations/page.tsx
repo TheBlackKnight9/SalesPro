@@ -18,6 +18,18 @@ interface Quotation {
   customer?: { firstName: string; lastName?: string; company?: string };
 }
 
+function shortenQuoteNumber(num: string): string {
+  if (!num) return "";
+  const parts = num.split("-");
+  if (parts.length >= 4) {
+    return `${parts.slice(0, 4).join("-")}...`;
+  }
+  if (num.length > 15) {
+    return `${num.substring(0, 15)}...`;
+  }
+  return num;
+}
+
 export default function QuotationsPage() {
   const { showToast } = useToast();
   const [quotations, setQuotations] = useState<Quotation[]>([]);
@@ -223,7 +235,9 @@ export default function QuotationsPage() {
                 finalDisplayData.map((q) => (
                   <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors group">
                     <td className="px-4 py-[7px]">
-                      <span className="text-[14.5px] font-medium text-gray-900 dark:text-white">{q.quotationNumber}</span>
+                      <span className="text-[14.5px] font-medium text-gray-900 dark:text-white" title={q.quotationNumber}>
+                        {shortenQuoteNumber(q.quotationNumber)}
+                      </span>
                     </td>
                     <td className="px-4 py-[7px]">
                       <div className="flex flex-col">
@@ -261,16 +275,18 @@ export default function QuotationsPage() {
                                 <div
                                   className={`${
                                     t.visible ? 'animate-enter' : 'animate-leave'
-                                  } max-w-[350px] w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-2xl pointer-events-auto flex items-center p-3 border border-green-100`}
+                                  } max-w-[265px] w-full bg-slate-900/95 border border-white/10 shadow-2xl rounded-xl pointer-events-auto flex items-center p-2 backdrop-blur`}
                                 >
-                                  {/* Left Side: Light Green Icon Box */}
-                                  <div className="flex-shrink-0 h-10 w-10 bg-[#f0fdf4] rounded-xl flex items-center justify-center">
-                                    <CheckCircle2 className="h-6 w-6 text-[#15803d]" strokeWidth={2.5} />
+                                  {/* Left Side: Icon Box */}
+                                  <div className="flex-shrink-0 h-7 w-7 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
                                   </div>
 
-                                  {/* Middle: Bold Dark Green Text */}
-                                  <div className="ml-3 flex-1">
-                                    <p className="text-[15px] font-bold text-[#14532d]">
+                                  {/* Middle: Premium Text */}
+                                  <div className="ml-2 flex-1">
+                                    <p className={`text-[12px] font-bold leading-snug tracking-tight ${
+                                      newStatus === "ACCEPTED" ? "text-emerald-100" : "text-slate-200"
+                                    }`}>
                                       {newStatus === "ACCEPTED" 
                                         ? q.customer
                                           ? "Quotation Accepted! Deal closed successfully."
@@ -280,12 +296,12 @@ export default function QuotationsPage() {
                                   </div>
 
                                   {/* Right Side: Close Button */}
-                                  <div className="ml-4 flex-shrink-0 flex items-center">
+                                  <div className="ml-2 flex-shrink-0 flex items-center">
                                     <button
                                       onClick={() => toast.dismiss(t.id)}
-                                      className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all focus:outline-none"
+                                      className="p-1 rounded-md text-white/40 hover:text-white hover:bg-white/5 transition-all focus:outline-none"
                                     >
-                                      <X className="h-5 w-5" />
+                                      <X className="h-3.5 w-3.5" />
                                     </button>
                                   </div>
                                 </div>

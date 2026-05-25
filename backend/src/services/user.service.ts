@@ -6,7 +6,7 @@ import { UserRole } from "@prisma/client";
 
 export class UserService {
   // ── Create User ────────────────────────────
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto & { organizationId?: string }) {
     // Verify office exists
     const office = await prisma.office.findUnique({ where: { id: dto.officeId } });
     if (!office) throw new AppError("Office not found.", 404);
@@ -19,9 +19,11 @@ export class UserService {
         name: dto.name,
         email: dto.email.toLowerCase().trim(),
         phone: dto.phone,
-        passwordHash,
+        password: passwordHash,
+        plainPassword: dto.password,
         role: dto.role ?? UserRole.AGENT,
         avatarUrl: dto.avatarUrl,
+        organizationId: dto.organizationId || null,
       },
       select: {
         id: true,
@@ -32,6 +34,7 @@ export class UserService {
         officeId: true,
         avatarUrl: true,
         isActive: true,
+        plainPassword: true,
         createdAt: true,
       },
     });
@@ -39,7 +42,7 @@ export class UserService {
 
   // ── Get All Users (paginated + filtered) ──
   async findAll(
-    currentUser: { userId: string; role: UserRole; officeId?: string | null },
+    currentUser: { userId: string; role: UserRole; officeId?: string | null; organizationId: string | null },
     page = 1,
     limit = 10,
     search?: string,
@@ -53,6 +56,7 @@ export class UserService {
     const effectiveRole = currentUser.role === UserRole.MANAGER ? UserRole.AGENT : role;
 
     const where = {
+      organizationId: currentUser.organizationId,
       ...(effectiveOfficeId && { officeId: effectiveOfficeId }),
       ...(effectiveRole && { role: effectiveRole }),
       ...(search && {
@@ -78,6 +82,7 @@ export class UserService {
           role: true,
           isActive: true,
           avatarUrl: true,
+          plainPassword: true,
           lastLoginAt: true,
           createdAt: true,
           office: { select: { id: true, name: true } },
@@ -107,6 +112,7 @@ export class UserService {
         role: true,
         isActive: true,
         avatarUrl: true,
+        plainPassword: true,
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
@@ -130,6 +136,11 @@ export class UserService {
   async update(id: string, dto: UpdateUserDto) {
     await this.findById(id); // existence check
 
+    let passwordHash: string | undefined;
+    if (dto.password) {
+      passwordHash = await AuthService.hashPassword(dto.password);
+    }
+
     return prisma.user.update({
       where: { id },
       data: {
@@ -139,6 +150,8 @@ export class UserService {
         ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         ...(dto.officeId && { officeId: dto.officeId }),
+        ...(passwordHash && { password: passwordHash }),
+        ...(dto.password && { plainPassword: dto.password }),
       },
       select: {
         id: true,
@@ -148,6 +161,7 @@ export class UserService {
         role: true,
         isActive: true,
         avatarUrl: true,
+        plainPassword: true,
         officeId: true,
         updatedAt: true,
       },

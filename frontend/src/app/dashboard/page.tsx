@@ -77,6 +77,20 @@ function getStatusBadgeStyles(status?: string) {
   }
 }
 
+function getStageColor(val?: string) {
+  if (!val) return "bg-slate-400";
+  const s = val.toLowerCase();
+  if (s === "bg-blue-500" || s.includes("new")) return "bg-blue-500";
+  if (s === "bg-indigo-500" || s.includes("contact")) return "bg-indigo-500";
+  if (s === "bg-purple-500" || s.includes("interest") || s.includes("qualified")) return "bg-purple-500";
+  if (s === "bg-amber-500" || s.includes("quote") || s.includes("proposal") || s.includes("sent")) return "bg-amber-500";
+  if (s === "bg-orange-500" || s.includes("negotiat")) return "bg-orange-500";
+  if (s === "bg-emerald-500" || s.includes("convert") || s.includes("won")) return "bg-emerald-500";
+  if (s === "bg-rose-500" || s.includes("lost")) return "bg-rose-500";
+  if (s === "bg-slate-500") return "bg-slate-500";
+  return "bg-slate-400";
+}
+
 const STAGE_BAR_COLORS = ["#3B82F6", "#6366F1", "#8B5CF6", "#F59E0B", "#F97316", "#10B981"];
 
 export default function DashboardPage() {
@@ -298,7 +312,7 @@ export default function DashboardPage() {
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => formatIndianCurrency(v, true)} />
-                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} formatter={(v: any) => [formatIndianCurrency(Number(v)), "Revenue"]} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} itemStyle={{ color: '#e2e8f0' }} labelStyle={{ color: '#ffffff' }} formatter={(v: any) => [formatIndianCurrency(Number(v)), "Revenue"]} />
                   <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                   {regionalPerformance.map((office: any, idx: number) => {
                     const key = office.name.replace(" Office", "");
@@ -329,7 +343,7 @@ export default function DashboardPage() {
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
                   <YAxis type="category" dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => v.replace(" Office", "")} />
-                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} formatter={(v: any) => [`${v}%`, "Conversion Rate"]} />
+                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} itemStyle={{ color: '#e2e8f0' }} labelStyle={{ color: '#ffffff' }} formatter={(v: any) => [`${v}%`, "Conversion Rate"]} />
                   <Bar dataKey="conversionRate" radius={[0, 4, 4, 0]} barSize={16}>
                     {regionalPerformance.map((entry: any, index: number) => {
                       const colors = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#25D366"];
@@ -437,7 +451,7 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
+                  <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} itemStyle={{ color: '#e2e8f0' }} labelStyle={{ color: '#ffffff' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -623,29 +637,30 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* ── 2. Management Action Alerts ─────────────────────── */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Action Alerts</h3>
-                  </div>
-                  <div className="space-y-2">
-                    {managementAlerts.length > 0 ? managementAlerts.map((alert: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className={`p-2.5 rounded-lg border text-[11px] font-medium leading-snug ${
-                          alert.severity === "danger"
-                            ? "bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-400"
-                            : "bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/50 text-amber-700 dark:text-amber-400"
-                        }`}
-                      >
-                        {alert.text}
-                      </div>
-                    )) : (
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">
-                        <span className="text-emerald-500 font-semibold">✓</span> No urgent alerts
-                      </div>
-                    )}
+                {/* ── 2. Stage Breakdown ────────────────────────────── */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
+                    <div className="space-y-2.5">
+                      {stageBreakdown.length > 0 ? stageBreakdown.map((item: any, idx: number) => {
+                        const label = item.stage || item.name || "Unknown";
+                        const count = item.count ?? 0;
+                        const percentage = item.percentage ?? 0;
+                        return (
+                          <div key={idx} className="flex items-center gap-3">
+                            <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 w-20 shrink-0 truncate">
+                              {formatEnum(label)}
+                            </span>
+                            <div className="flex-grow h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <div className={`h-full rounded-full ${getStageColor(item.color || label)}`} style={{ width: `${percentage}%` }} />
+                            </div>
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 shrink-0 w-6 text-right">{count}</span>
+                          </div>
+                        );
+                      }) : (
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500">No stage data available</div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -662,6 +677,8 @@ export default function DashboardPage() {
                       <YAxis fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v >= 100000 ? `${(v/100000).toFixed(0)}L` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                       <Tooltip
                         contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }}
+                        itemStyle={{ color: '#e2e8f0' }}
+                        labelStyle={{ color: '#ffffff' }}
                         formatter={(value: any) => [formatINR(Number(value)), "Pipeline"]}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={36}>
@@ -764,7 +781,7 @@ export default function DashboardPage() {
                             {formatEnum(label)}
                           </span>
                           <div className="flex-grow h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                            <div className={`h-full rounded-full ${item.color || 'bg-slate-400'}`} style={{ width: `${percentage}%` }} />
+                            <div className={`h-full rounded-full ${getStageColor(item.color || label)}`} style={{ width: `${percentage}%` }} />
                           </div>
                           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 shrink-0 w-6 text-right">{count}</span>
                         </div>
@@ -794,7 +811,7 @@ export default function DashboardPage() {
                         <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                         <YAxis fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
+                        <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} itemStyle={{ color: '#e2e8f0' }} labelStyle={{ color: '#ffffff' }} />
                         <Line type="monotone" dataKey="New" stroke="#3B82F6" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                         <Line type="monotone" dataKey="Contacted" stroke="#6366F1" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                         <Line type="monotone" dataKey="Quotes" stroke="#F97316" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
@@ -894,7 +911,7 @@ export default function DashboardPage() {
                                 <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
                               ))}
                             </Pie>
-                            <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} />
+                            <Tooltip contentStyle={{ fontSize: '10px', padding: '4px 8px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff' }} itemStyle={{ color: '#e2e8f0' }} labelStyle={{ color: '#ffffff' }} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
