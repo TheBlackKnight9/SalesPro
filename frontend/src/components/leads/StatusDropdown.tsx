@@ -49,17 +49,19 @@ export default function StatusDropdown({ leadId, currentStatus, onStatusChange, 
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute z-10 mt-2 w-48 origin-top-left rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none p-1.5 border border-gray-100">
+        <Menu.Items className="absolute z-10 mt-2 w-48 origin-top-left rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none p-1.5 transition-colors">
           {STATUS_OPTIONS.map((option) => (
             <Menu.Item key={option.value}>
               {({ active }) => (
                 <button
                   onClick={() => handleStatusUpdate(option.value)}
-                  className={`${
-                    active ? "bg-gray-50 text-gray-900" : "text-gray-700"
-                  } group flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium`}
+                  className={`no-hover ${
+                    active 
+                      ? "bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" 
+                      : "text-gray-700 dark:text-slate-350"
+                  } group flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors`}
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
                     <div className={`h-2 w-2 rounded-full ${option.color.split(' ')[0]}`} />
                     {option.label}
                   </span>

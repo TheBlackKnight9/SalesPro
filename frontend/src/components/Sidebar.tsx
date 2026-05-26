@@ -25,7 +25,6 @@ export default function Sidebar() {
     { name: "Customers", href: "/dashboard/customers", icon: Briefcase, roles: ["SUPER_ADMIN", "MANAGER", "AGENT"] },
     { name: "Tasks", href: "/dashboard/tasks", icon: CheckSquare, roles: ["SUPER_ADMIN", "MANAGER", "AGENT"] },
     { name: "Quotations", href: "/dashboard/quotations", icon: FileText, roles: ["SUPER_ADMIN", "MANAGER", "AGENT"] },
-    { name: "Messages", href: "/dashboard/whatsapp", icon: MessageCircle, roles: ["SUPER_ADMIN", "MANAGER", "AGENT"] },
     { name: "Offices", href: "/dashboard/offices", icon: Building2, roles: ["SUPER_ADMIN"] },
     { name: "Team", href: "/dashboard/users", icon: Users, roles: ["SUPER_ADMIN", "MANAGER"] },
     { name: "Reports", href: "/dashboard/reports", icon: BarChart, roles: ["SUPER_ADMIN", "MANAGER"] },
