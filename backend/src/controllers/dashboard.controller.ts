@@ -525,7 +525,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
     // Weekly or Yearly Trend dynamically computed from database records
     const weeksParam = parseInt(String(req.query.weeks)) || 4;
     const viewType = String(req.query.viewType || "weeks");
-    const weeklyTrend = [];
+    const weeklyTrend: any[] = [];
 
     if (viewType === "years") {
       const currentYear = now.getFullYear();

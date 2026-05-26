@@ -19,7 +19,7 @@ async function main() {
     { id: "mumbai", name: "Mumbai Office", address: "101 Nariman Point", city: "Mumbai", state: "Maharashtra", monthlyTarget: 15000000 },
   ];
 
-  const offices = [];
+  const offices: any[] = [];
   for (const data of officesData) {
     const office = await prisma.office.upsert({
       where: { id: data.id },

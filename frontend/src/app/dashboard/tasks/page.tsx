@@ -324,8 +324,7 @@ export default function TasksPage() {
           onClick={() => setIsModalOpen(true)}
           className="btn btn-primary shadow-lg shadow-brand-blue/20 px-6"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Assign Task
+          + Assign Task
         </button>
       </div>
 

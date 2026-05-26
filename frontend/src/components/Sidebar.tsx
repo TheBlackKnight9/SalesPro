@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import React, { useState } from "react";
+import { Sidebar as AceternitySidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, 
   Users, 
@@ -9,15 +9,19 @@ import {
   Briefcase, 
   CheckSquare,
   FileText, 
-  MessageCircle, 
   BarChart,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
-  const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["SUPER_ADMIN", "MANAGER", "AGENT"] },
@@ -37,64 +41,122 @@ export default function Sidebar() {
     !user || item.roles.includes(user.role)
   );
 
+  const links = filteredNav.map(item => ({
+    label: item.name,
+    href: item.href,
+    icon: <item.icon className="h-[19px] w-[19px] shrink-0 text-neutral-500 dark:text-neutral-400 group-hover/sidebar:text-neutral-800 dark:group-hover/sidebar:text-neutral-200 transition-colors duration-150" />
+  }));
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return "SP";
+    const parts = name.split(" ");
+    return parts.map(p => p[0]).join("").toUpperCase().slice(0, 2);
+  };
+
   return (
-    <aside className="flex h-screen w-[187px] flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 transition-colors duration-300 sticky top-0 shrink-0">
-      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-slate-800 px-6">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">SalesPro</p>
-          <p className="text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">CRM</p>
+    <AceternitySidebar open={open} setOpen={setOpen} animate={true}>
+      <SidebarBody className="justify-between gap-10 bg-white border-r border-slate-200 dark:bg-slate-900 dark:border-slate-800 transition-colors duration-300">
+        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          {open ? <Logo /> : <LogoIcon />}
+          <div className="mt-8 flex flex-col gap-2">
+            {links.map((link, idx) => (
+              <SidebarLink key={idx} link={link} />
+            ))}
+            
+            {canViewAdminModules && (
+              <SidebarLink 
+                link={{
+                  label: "Settings",
+                  href: "/dashboard/settings",
+                  icon: <Settings className="h-[19px] w-[19px] shrink-0 text-neutral-500 dark:text-neutral-400 group-hover/sidebar:text-neutral-800 dark:group-hover/sidebar:text-neutral-200 transition-colors duration-150" />
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
-
-      <div className="flex flex-1 flex-col overflow-y-auto px-3 py-3">
-        <nav className="space-y-1">
-          {filteredNav.map((item) => {
-            const isActive = 
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`group flex items-center rounded-base px-3 py-2 text-sm font-medium leading-tight transition-colors ${
-                  isActive
-                    ? "bg-brand-blue/10 text-brand-blue"
-                    : "text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
-                }`}
+        
+        {/* Footer Area with user profile details */}
+        <div className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+          <div className={cn("flex items-center gap-2 overflow-hidden", open ? "px-1 justify-start" : "justify-center w-full")}>
+            <div className="h-[30.4px] w-[30.4px] shrink-0 flex items-center justify-center rounded-full bg-brand-blue/15 text-brand-blue dark:bg-brand-blue/30 dark:text-blue-400 text-[11.4px] font-semibold select-none">
+              {getInitials(user?.name)}
+            </div>
+            
+            {open && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col overflow-hidden text-left"
               >
-                <item.icon
-                  className={`mr-2.5 h-4 w-4 flex-shrink-0 ${
-                    isActive ? "text-brand-blue" : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-slate-300"
-                  }`}
-                  aria-hidden="true"
-                />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+                <span className="text-[11.4px] font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px]">
+                  {user?.name || "CRM User"}
+                </span>
+                <span className="text-[9.5px] text-neutral-500 dark:text-neutral-400 font-medium">
+                  {user?.role === "SUPER_ADMIN" ? "Admin" : user?.role === "MANAGER" ? "Manager" : "Agent"}
+                </span>
+              </motion.div>
+            )}
+          </div>
 
-      {canViewAdminModules && (
-        <div className="border-t border-gray-200 dark:border-slate-800 p-4">
-          <Link
-            href="/dashboard/settings"
-            className={`group flex w-full items-center rounded-base px-3 py-2 text-sm font-medium leading-tight transition-colors ${
-              pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
-                ? "bg-brand-blue/10 text-brand-blue"
-                : "text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
-            }`}
+          <button 
+            onClick={handleLogout}
+            className={cn(
+              "flex items-center gap-2.5 py-2 text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all duration-200 w-full text-left",
+              open ? "px-3 justify-start" : "px-0 justify-center"
+            )}
           >
-            <Settings className={`mr-2.5 h-4 w-4 ${
-              pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/")
-                ? "text-brand-blue"
-                : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-slate-300"
-            }`} />
-            Settings
-          </Link>
+            <LogOut className="h-[19px] w-[19px] shrink-0 text-red-500 dark:text-red-400" />
+            {open && (
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[13.3px] font-medium"
+              >
+                Logout
+              </motion.span>
+            )}
+          </button>
         </div>
-      )}
-    </aside>
+      </SidebarBody>
+    </AceternitySidebar>
   );
 }
+
+const Logo = () => {
+  return (
+    <a
+      href="/dashboard"
+      className="relative z-20 flex items-center space-x-3 py-1 text-sm font-normal"
+    >
+      <div className="flex h-[34.2px] w-[34.2px] shrink-0 items-center justify-center rounded-lg bg-brand-blue text-[13.3px] font-bold text-white shadow-sm">
+        SP
+      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col text-left"
+      >
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-gray-400">SalesPro</span>
+        <span className="text-[15.2px] font-semibold leading-tight text-gray-900 dark:text-gray-100">CRM</span>
+      </motion.div>
+    </a>
+  );
+};
+
+const LogoIcon = () => {
+  return (
+    <a
+      href="/dashboard"
+      className="relative z-20 flex items-center justify-center py-1 w-full"
+    >
+      <div className="flex h-[34.2px] w-[34.2px] shrink-0 items-center justify-center rounded-lg bg-brand-blue text-[13.3px] font-bold text-white shadow-sm">
+        SP
+      </div>
+    </a>
+  );
+};

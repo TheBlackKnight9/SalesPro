@@ -194,7 +194,9 @@ export default function OfficesPage() {
                     </div>
                     <div>
                       <h3 className="text-[15px] font-bold text-slate-800 dark:text-white line-clamp-1">{office.name}</h3>
-                      <p className="text-[13px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">{office.city || "Branch Location"}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[13px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">{office.city || "Branch Location"}</p>
+                      </div>
                     </div>
                   </div>
                   <span className={`text-[13px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${

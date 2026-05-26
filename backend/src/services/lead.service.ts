@@ -468,7 +468,7 @@ export class LeadService {
       throw new AppError("Provide either a quotation or a conversion note to proceed.", 400);
     }
 
-    let targetQuotation = null;
+    let targetQuotation: any = null;
     if (quotationId) {
       targetQuotation = await prisma.quotation.findUnique({
         where: { id: quotationId }

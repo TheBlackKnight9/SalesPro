@@ -44,6 +44,7 @@
     --color-accent:        #1A56DB;
     --color-accent-hover:  #1443b3;
     --color-accent-subtle: #eef3fd;
+    --color-card-glow:     rgba(217, 217, 217, 0.35);
 
     --color-brand-blue:    #1A56DB;
     --color-app-bg:        #F9FAFB;
@@ -121,6 +122,7 @@
     --color-success-subtle:#02311f;
     --color-danger-subtle: #450a0a;
     --color-warning-subtle:#451a03;
+    --color-card-glow:     rgba(30, 41, 59, 0.8);
 
     /* ── Heavier shadows on dark bg ───────────── */
     --shadow-card:
@@ -448,4 +450,8 @@ button:active,
 .recharts-line:hover {
   filter: brightness(1.15) drop-shadow(0 0 8px rgba(26, 86, 219, 0.4));
   transition: all 0.2s ease;
+}
+::view-transition-old(root), ::view-transition-new(root) {
+    animation:       none;
+    mix-blend-mode:       normal;
 }

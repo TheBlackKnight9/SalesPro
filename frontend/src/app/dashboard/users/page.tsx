@@ -268,8 +268,21 @@ export default function UsersPage() {
 
         if (!row.name || !row.email || !row.password) continue;
         
-        // If manager, force their office. If admin, check CSV officeid
-        const targetOfficeId = role === "MANAGER" ? currentUser?.officeId : row.officeid;
+        // If manager, force their office. If admin, check CSV officeid or name
+        let targetOfficeId = role === "MANAGER" ? currentUser?.officeId : "";
+        if (role !== "MANAGER" && row.officeid) {
+          const cleanedOfficeInput = row.officeid.trim().toLowerCase();
+          const matchedOffice = offices.find(
+            (o) =>
+              o.id.toLowerCase() === cleanedOfficeInput ||
+              o.name.toLowerCase().includes(cleanedOfficeInput)
+          );
+          if (matchedOffice) {
+            targetOfficeId = matchedOffice.id;
+          } else {
+            targetOfficeId = row.officeid; // Fallback to raw input (e.g. CUID)
+          }
+        }
         if (!targetOfficeId) continue;
 
         await apiClient.post("/users", {

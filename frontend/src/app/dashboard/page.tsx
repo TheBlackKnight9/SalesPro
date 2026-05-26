@@ -22,6 +22,7 @@ import {
   Legend
 } from "recharts";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { useUser, useIsHydrated } from "@/store/useAuthStore";
 import { tokenStorage } from "@/lib/api";
 
@@ -213,17 +214,17 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" onClick={() => setIsAddLeadOpen(true)}>
-              Add Lead
+              + Add Lead
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => setIsTaskModalOpen(true)}>
-              New Task
+            <Button size="sm" onClick={() => setIsTaskModalOpen(true)}>
+              + New Task
             </Button>
           </div>
         </div>
 
         {/* 1. Global KPI Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <Card padded={false} className="p-4 flex flex-col justify-between">
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Revenue</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {formatIndianCurrency(adminKpis.totalRevenue)}
@@ -231,28 +232,28 @@ export default function DashboardPage() {
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Cumulative Accepted volume ({formatIndianCurrency(adminKpis.totalRevenue, true)})
             </p>
-          </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          </Card>
+          <Card padded={false} className="p-4 flex flex-col justify-between">
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Leads Global</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.totalLeadsGlobal}
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active operational leads globally</p>
-          </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          </Card>
+          <Card padded={false} className="p-4 flex flex-col justify-between">
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Active Offices</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.activeOffices}
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Unique active location segments</p>
-          </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          </Card>
+          <Card padded={false} className="p-4 flex flex-col justify-between">
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Accounts Active</p>
             <p className="text-xl font-extrabold text-slate-800 dark:text-white mt-1">
               {adminKpis.totalAccountsActive}
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Registered active workspace users</p>
-          </div>
+          </Card>
         </div>
 
         {/* 2. Regional Office Performance Row */}
@@ -260,7 +261,7 @@ export default function DashboardPage() {
           <h2 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Regional Performance Grid</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {regionalPerformance.map((office: any) => (
-              <div key={office.id} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <Card key={office.id} padded={false} className="p-4 flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     <span className="text-sm font-bold text-slate-800 dark:text-white">{office.name}</span>
@@ -298,7 +299,7 @@ export default function DashboardPage() {
                     }`} style={{ width: `${office.progressPercent}%` }} />
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -306,7 +307,7 @@ export default function DashboardPage() {
         {/* 3. Charts Row: Cross-Office Revenue Trend & Conversion Efficiency */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Trend LineChart (2/3 width) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
+          <Card padded={false} className="p-4 lg:col-span-2">
             <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Cross-Office Revenue Trend</h3>
             <div className="w-full overflow-hidden">
               <ResponsiveContainer width="100%" height={250}>
@@ -334,10 +335,10 @@ export default function DashboardPage() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </Card>
 
           {/* Branch Conversion Efficiency BarChart (1/3 width) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+          <Card padded={false} className="p-4">
             <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Branch Conversion Efficiency</h3>
             <div className="w-full overflow-hidden">
               <ResponsiveContainer width="100%" height={250}>
@@ -355,13 +356,13 @@ export default function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* 4. Bottom Grid: Top Agents Leaderboard & Goal Progress Organization Block */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Top Agents Cross-Office Leaderboard Matrix */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+          <Card padded={false} className="p-4">
             <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Top Agents Leaderboard</h3>
             {topAgents.length > 0 ? (
               <div className="space-y-3">
@@ -393,10 +394,10 @@ export default function DashboardPage() {
             ) : (
               <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No active agents found</div>
             )}
-          </div>
+          </Card>
 
           {/* Goal Progress & Organization Totals Block */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <Card padded={false} className="p-4 flex flex-col justify-between">
             <div>
               <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Goal Progress & Global Totals</h3>
               <div className="space-y-3">
@@ -431,11 +432,11 @@ export default function DashboardPage() {
                 9 working days left • {deficitText}
               </p>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* 5. Consolidated Global Lead Source Distribution Matrix */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <Card padded={false} className="p-4">
           <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Global Lead Source Distribution</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div className="h-[120px] w-full flex items-center justify-center">
@@ -472,7 +473,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-        </div>
+        </Card>
 
         <AddLeadModal
           isOpen={isAddLeadOpen}
@@ -507,11 +508,11 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setIsAddLeadOpen(true)}>
-            Add Lead
+          <Button size="sm" onClick={() => setIsAddLeadOpen(true)}>
+            + Add Lead
           </Button>
-          <Button size="sm" variant="secondary" leftIcon={<CheckSquare className="h-4 w-4" />} onClick={() => setIsTaskModalOpen(true)}>
-            New Task
+          <Button size="sm" onClick={() => setIsTaskModalOpen(true)}>
+            + New Task
           </Button>
         </div>
       </div>
@@ -544,36 +545,42 @@ export default function DashboardPage() {
         <>
           {/* KPI Cards — shared by all roles */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Link href="/dashboard/leads" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-              <div>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">New Leads</p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.newLeads ?? 0}</span>
+            <Card padded={false} className="hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              <Link href="/dashboard/leads" className="block p-4 flex flex-col justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">New Leads</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.newLeads ?? 0}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-            <Link href="/dashboard/leads?status=CONTACTED,QUALIFIED" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-              <div>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Hot Leads</p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.hotLeads ?? 0}</span>
+              </Link>
+            </Card>
+            <Card padded={false} className="hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              <Link href="/dashboard/leads?status=CONTACTED,QUALIFIED" className="block p-4 flex flex-col justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Hot Leads</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.hotLeads ?? 0}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-            <Link href="/dashboard/customers" className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-              <div>
-                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Converted</p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.converted ?? 0}</span>
+              </Link>
+            </Card>
+            <Card padded={false} className="hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              <Link href="/dashboard/customers" className="block p-4 flex flex-col justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Converted</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{kpis.converted ?? 0}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              </Link>
+            </Card>
+            <Card padded={false} className="p-4 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Pipeline Value</p>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-2xl font-extrabold text-slate-800 dark:text-white">{formatINR(totalPipelineValue)}</span>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════ */}
@@ -582,7 +589,7 @@ export default function DashboardPage() {
           {isManager ? (
             <div className="space-y-4">
               {/* ── 1. Agent Leaderboard (Full Span) ──────────────────── */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+              <Card padded={false} className="p-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                   <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Agent Leaderboard</h3>
@@ -636,11 +643,11 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No agents found</div>
                 )}
-              </div>
+              </Card>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* ── 2. Stage Breakdown ────────────────────────────── */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+                <Card padded={false} className="p-4 flex flex-col justify-between">
                   <div>
                     <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
                     <div className="space-y-2.5">
@@ -664,10 +671,10 @@ export default function DashboardPage() {
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 {/* ── 3. Pipeline Value vs Stage (BarChart) ──────────── */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
+                <Card padded={false} className="p-4 lg:col-span-2">
                   <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                     <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Pipeline Value by Stage</h3>
@@ -690,10 +697,10 @@ export default function DashboardPage() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
+                </Card>
 
                 {/* ── 4. Strategic Lead Source Pipeline ────────────────── */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                <Card padded={false} className="p-4">
                   <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Lead Source Pipeline</h3>
                   {sourcePipeline.length > 0 ? (
                     <div className="overflow-x-auto">
@@ -719,10 +726,10 @@ export default function DashboardPage() {
                   ) : (
                     <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No source data available</div>
                   )}
-                </div>
+                </Card>
 
                 {/* ── 5. Agent Task Completion Matrix ──────────────────── */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2">
+                <Card padded={false} className="p-4 lg:col-span-2">
                   <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Agent Task Completion</h3>
                   {agentTaskMatrix.length > 0 ? (
                     <div className="space-y-3">
@@ -747,7 +754,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-6">No task data available</div>
                   )}
-                </div>
+                </Card>
               </div>
 
             </div>
@@ -757,7 +764,7 @@ export default function DashboardPage() {
             /* ═══════════════════════════════════════════════════════════ */
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* 1. Stage Breakdown */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <Card padded={false} className="p-4 flex flex-col justify-between">
                 <div>
                   <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Stage Breakdown</h3>
                   <div className="space-y-2.5">
@@ -781,10 +788,10 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* 2. Weekly/Yearly Funnel Trend */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm lg:col-span-2 flex flex-col justify-between">
+              <Card padded={false} className="p-4 lg:col-span-2 flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
@@ -835,10 +842,10 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-center h-[160px] text-[11px] text-slate-400 dark:text-slate-500">No trend data available</div>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* 3. Hot Leads to Action */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+              <Card padded={false} className="p-4">
                 <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Hot Leads to Action</h3>
                 <div className="space-y-2.5">
                   {hotLeadsList.length > 0 ? hotLeadsList.map((lead: any, idx: number) => (
@@ -863,10 +870,10 @@ export default function DashboardPage() {
                     <div className="text-[11px] text-slate-400 dark:text-slate-500">No hot leads available</div>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* 4. Today's Tasks */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+              <Card padded={false} className="p-4">
                 <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Today's Tasks</h3>
                 <div className="space-y-2">
                   {todaysTasks.length > 0 ? todaysTasks.map((task: any, idx: number) => (
@@ -901,10 +908,10 @@ export default function DashboardPage() {
                     <div className="text-[11px] text-slate-400 dark:text-slate-500">No tasks for today</div>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* 5. Lead Sources */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+              <Card padded={false} className="p-4">
                 <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Lead Sources</h3>
                 <div className="flex flex-col justify-between h-[calc(100%-1.5rem)]">
                   {leadSources.length > 0 ? (
@@ -944,10 +951,10 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-center h-full text-[11px] text-slate-400 dark:text-slate-500">No source data available</div>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* 6. Activity Feed */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+              <Card padded={false} className="p-4">
                 <h3 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-4 uppercase">Recent Activities</h3>
                 <div className="border-l border-slate-200 dark:border-slate-800 ml-1 pl-3.5 space-y-4 py-1 relative">
                   {recentActivities.length > 0 ? recentActivities.map((activity: any, idx: number) => (
@@ -962,7 +969,7 @@ export default function DashboardPage() {
                     <div className="text-[11px] text-slate-400 dark:text-slate-500">No recent activity</div>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
           )}
         </>

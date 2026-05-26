@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { LogOut, Bell, User, ChevronDown, ChevronUp } from "lucide-react";
+import { LogOut, User, ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -33,9 +33,6 @@ export default function TopNav() {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <button className="rounded-full border border-white/15 bg-white/10 p-1.5 text-white/85 transition hover:bg-white/15 hover:text-white" title="Notifications">
-          <Bell className="h-4 w-4" />
-        </button>
 
         <Button
           variant="ghost"

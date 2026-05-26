@@ -167,8 +167,7 @@ export default function LeadsPage() {
             onClick={() => setIsModalOpen(true)}
             className="btn btn-primary"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Lead
+            + Add Lead
           </button>
         </div>
       </div>
