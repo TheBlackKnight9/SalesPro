@@ -13,21 +13,10 @@ const PORT = parseInt(process.env.PORT || "5000", 10);
 // ── Security Middleware ───────────────────────
 app.use(helmet());
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "https://sales-pro-crm-delta.vercel.app"
-];
-
 // ── CORS ─────────────────────────────────────
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
