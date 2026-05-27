@@ -73,7 +73,7 @@ export class AuthService {
         isActive: true, // Default to active
       },
       include: {
-        organization: { select: { name: true } }
+        organization: { select: { name: true, logoUrl: true } }
       }
     });
 
@@ -100,6 +100,7 @@ export class AuthService {
         officeId: user.officeId,
         organizationId: user.organizationId,
         organizationName: (user as any).organization?.name || "Unified Workspace",
+        organizationLogo: (user as any).organization?.logoUrl || null,
         avatarUrl: user.avatarUrl,
       },
     };
@@ -167,6 +168,7 @@ export class AuthService {
         officeId: result.newUser.officeId,
         organizationId: result.newUser.organizationId,
         organizationName: result.newOrg.name,
+        organizationLogo: result.newOrg.logoUrl || null,
         avatarUrl: result.newUser.avatarUrl,
       },
     };
@@ -192,7 +194,7 @@ export class AuthService {
         avatarUrl: true,
         password: true,
         isActive: true,
-        organization: { select: { name: true } },
+        organization: { select: { name: true, logoUrl: true } },
       },
     });
 
@@ -237,6 +239,7 @@ export class AuthService {
         officeId: user.officeId,
         organizationId: user.organizationId,
         organizationName: user.organization?.name || "Unified Workspace",
+        organizationLogo: user.organization?.logoUrl || null,
         avatarUrl: user.avatarUrl,
       },
     };
@@ -261,11 +264,16 @@ export class AuthService {
       }
     }
 
-    if (dto.organizationName && currentUser.role === "SUPER_ADMIN" && currentUser.organizationId) {
-      await prisma.organization.update({
-        where: { id: currentUser.organizationId },
-        data: { name: dto.organizationName.trim() },
-      });
+    if (currentUser.role === "SUPER_ADMIN" && currentUser.organizationId) {
+      if (dto.organizationName !== undefined || dto.organizationLogo !== undefined) {
+        await prisma.organization.update({
+          where: { id: currentUser.organizationId },
+          data: {
+            ...(dto.organizationName !== undefined && { name: dto.organizationName.trim() }),
+            ...(dto.organizationLogo !== undefined && { logoUrl: dto.organizationLogo || null }),
+          },
+        });
+      }
     }
 
     const updatedUser = await prisma.user.update({
@@ -285,7 +293,7 @@ export class AuthService {
         officeId: true,
         avatarUrl: true,
         organizationId: true,
-        organization: { select: { name: true } },
+        organization: { select: { name: true, logoUrl: true } },
       },
     });
 
@@ -299,6 +307,7 @@ export class AuthService {
       avatarUrl: updatedUser.avatarUrl,
       organizationId: updatedUser.organizationId,
       organizationName: updatedUser.organization?.name || "Unified Workspace",
+      organizationLogo: updatedUser.organization?.logoUrl || null,
     };
   }
 
@@ -320,7 +329,7 @@ export class AuthService {
           select: { id: true, name: true, city: true },
         },
         organization: {
-          select: { id: true, name: true }
+          select: { id: true, name: true, logoUrl: true }
         }
       },
     });
@@ -340,6 +349,7 @@ export class AuthService {
       office: user.office,
       organizationId: user.organization?.id || null,
       organizationName: user.organization?.name || "Unified Workspace",
+      organizationLogo: user.organization?.logoUrl || null,
     };
   }
 

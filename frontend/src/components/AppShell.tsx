@@ -1,15 +1,40 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useAuthStore } from "@/store/useAuthStore";
+import api from "@/lib/api";
 
 const authRoutes = ["/login", "/signup", "/forgot-password"];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { isAuthenticated, updateUser } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const syncProfile = async () => {
+        try {
+          const response = await api.get("/auth/profile");
+          const data = response.data.data;
+          updateUser({
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            avatarUrl: data.avatarUrl,
+            organizationName: data.organizationName,
+            organizationLogo: data.organizationLogo,
+          });
+        } catch (error) {
+          console.error("Failed to sync authenticated user profile:", error);
+        }
+      };
+      syncProfile();
+    }
+  }, [isAuthenticated, updateUser]);
   
   const isLandingPage = pathname === "/";
   const isAuthRoute = authRoutes.some(

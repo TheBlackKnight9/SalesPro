@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import { motion } from "framer-motion";
-import { User, Shield, Bell, Phone, Image as ImageIcon, Loader2, Save, KeyRound } from "lucide-react";
+import { Dialog, Transition } from "@headlessui/react";
+import { User, Shield, Bell, Phone, Image as ImageIcon, Loader2, Save, KeyRound, Building, Upload, X } from "lucide-react";
 import api from "@/lib/api";
 import { useAuthStore, useUser } from "@/store/useAuthStore";
 
@@ -15,6 +16,7 @@ interface ProfileData {
   officeId: string | null;
   avatarUrl: string | null;
   organizationName?: string | null;
+  organizationLogo?: string | null;
 }
 
 interface PreferenceState {
@@ -37,6 +39,10 @@ export default function SettingsPage() {
     avatarUrl: "",
     organizationName: "",
   });
+  const [workspaceForm, setWorkspaceForm] = useState({
+    name: "",
+    logo: "",
+  });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
   const [preferences, setPreferences] = useState<PreferenceState>({
     emailNotifications: true,
@@ -46,6 +52,8 @@ export default function SettingsPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isSavingWorkspace, setIsSavingWorkspace] = useState(false);
+  const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -69,6 +77,10 @@ export default function SettingsPage() {
           phone: data.phone ?? "",
           avatarUrl: data.avatarUrl ?? "",
           organizationName: data.organizationName ?? "",
+        });
+        setWorkspaceForm({
+          name: data.organizationName ?? "",
+          logo: data.organizationLogo ?? "",
         });
       } catch (err: any) {
         setError(err?.message || "Failed to load your profile.");
@@ -111,9 +123,6 @@ export default function SettingsPage() {
         email: profileForm.email.trim(),
         phone: profileForm.phone.trim(),
         avatarUrl: profileForm.avatarUrl || null,
-        ...(currentUser?.role === "SUPER_ADMIN" && {
-          organizationName: profileForm.organizationName.trim(),
-        }),
       });
 
       const updatedProfile = response.data.data as ProfileData;
@@ -124,6 +133,7 @@ export default function SettingsPage() {
         phone: updatedProfile.phone,
         avatarUrl: updatedProfile.avatarUrl,
         organizationName: updatedProfile.organizationName,
+        organizationLogo: updatedProfile.organizationLogo,
       });
       setMessage("Profile updated successfully.");
     } catch (err: any) {
@@ -131,6 +141,47 @@ export default function SettingsPage() {
     } finally {
       setIsSavingProfile(false);
     }
+  };
+
+  const handleSaveWorkspace = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    setIsSavingWorkspace(true);
+
+    try {
+      const response = await api.put("/auth/profile", {
+        organizationName: workspaceForm.name.trim(),
+        organizationLogo: workspaceForm.logo || null,
+      });
+
+      const updatedProfile = response.data.data as ProfileData;
+      setProfile(updatedProfile);
+      updateUser({
+        organizationName: updatedProfile.organizationName,
+        organizationLogo: updatedProfile.organizationLogo,
+      });
+      setProfileForm((current) => ({
+        ...current,
+        organizationName: updatedProfile.organizationName ?? "",
+      }));
+      setMessage("Workspace branding updated successfully.");
+      setIsWorkspaceModalOpen(false);
+    } catch (err: any) {
+      setError(err?.message || "Failed to update workspace branding.");
+    } finally {
+      setIsSavingWorkspace(false);
+    }
+  };
+
+  const handleLogoUpload = async (file: File | null) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setWorkspaceForm((current) => ({ ...current, logo: String(reader.result || "") }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handlePasswordChange = async (event: React.FormEvent) => {
@@ -236,23 +287,44 @@ export default function SettingsPage() {
                   <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center">{profile?.role || currentUser?.role || "-"}</div>
                 </div>
                 <div className="field md:col-span-2">
-                  <label className="field-label">Organization Name</label>
-                  {currentUser?.role === "SUPER_ADMIN" ? (
-                    <input
-                      type="text"
-                      className="field-input"
-                      value={profileForm.organizationName}
-                      onChange={(e) => setProfileForm((current) => ({ ...current, organizationName: e.target.value }))}
-                      placeholder="e.g. SalesPro CRM"
-                    />
-                  ) : (
-                    <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center justify-between">
-                      <span>{profileForm.organizationName || "Unified Workspace"}</span>
+                  <label className="field-label">Organization Branding</label>
+                  <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {currentUser?.organizationLogo ? (
+                        <div className="h-7 w-7 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800 bg-white">
+                          <img src={currentUser.organizationLogo} alt="Workspace logo" className="h-full w-full object-contain p-0.5" />
+                        </div>
+                      ) : (
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 border border-gray-200 dark:border-slate-800 uppercase">
+                          {(profileForm.organizationName || "SalesPro").slice(0, 2)}
+                        </div>
+                      )}
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {profileForm.organizationName || "Unified Workspace"}
+                      </span>
+                    </div>
+
+                    {currentUser?.role === "SUPER_ADMIN" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWorkspaceForm({
+                            name: profileForm.organizationName,
+                            logo: currentUser.organizationLogo || "",
+                          });
+                          setIsWorkspaceModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1 text-xs font-bold text-white hover:bg-accent-hover shadow transition active:scale-95 cursor-pointer border border-transparent"
+                      >
+                        <Building className="h-3.5 w-3.5" />
+                        <span>Edit Workspace</span>
+                      </button>
+                    ) : (
                       <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-850 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                         Read-only
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -356,6 +428,142 @@ export default function SettingsPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          WORKSPACE BRANDING EDIT DIALOG MODAL (SUPER_ADMIN ONLY)
+          ──────────────────────────────────────────────────────────────────────── */}
+      <Transition.Root show={isWorkspaceModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={setIsWorkspaceModalOpen}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                  <div className="absolute right-4 top-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsWorkspaceModalOpen(false)}
+                      className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-4 mb-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+                      <Building className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <Dialog.Title className="text-lg font-bold text-slate-900 dark:text-white">
+                        Workspace Branding
+                      </Dialog.Title>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        Update the organization name and custom logo badge.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSaveWorkspace} className="space-y-5">
+                    <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-4">
+                      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+                        {workspaceForm.logo ? (
+                          <img src={workspaceForm.logo} alt="Workspace logo preview" className="h-full w-full object-contain p-1" />
+                        ) : (
+                          <span className="text-lg font-extrabold tracking-wider text-slate-400 dark:text-slate-650">
+                            {(workspaceForm.name || "SalesPro").slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-1.5 text-left">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-350">Workspace Logo</label>
+                        <div className="flex items-center gap-2">
+                          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-lg cursor-pointer transition shadow-sm active:scale-95 border border-transparent">
+                            <Upload className="h-3.5 w-3.5" />
+                            <span>Upload Photo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleLogoUpload(e.target.files?.[0] || null)}
+                              className="hidden"
+                            />
+                          </label>
+                          {workspaceForm.logo && (
+                            <button
+                              type="button"
+                              onClick={() => setWorkspaceForm((curr) => ({ ...curr, logo: "" }))}
+                              className="px-2.5 py-1.5 text-xs font-bold text-rose-500 hover:text-rose-600 transition"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="field-label">Organization Name</label>
+                      <input
+                        type="text"
+                        required
+                        className="field-input"
+                        value={workspaceForm.name}
+                        onChange={(e) => setWorkspaceForm((curr) => ({ ...curr, name: e.target.value }))}
+                        placeholder="e.g. SalesPro CRM"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/60 mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsWorkspaceModalOpen(false)}
+                        className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSavingWorkspace}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-xs font-bold text-white px-5 py-2 shadow-lg shadow-indigo-500/15 hover:shadow-indigo-500/25 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        {isSavingWorkspace ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-3.5 w-3.5" />
+                            <span>Save Workspace</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
     </div>
   );
 }

@@ -37,6 +37,7 @@ export interface LoginResponse {
     officeId: string | null;
     organizationId: string | null;
     organizationName?: string | null;
+    organizationLogo?: string | null;
     avatarUrl: string | null;
   };
 }
@@ -52,4 +53,5 @@ export interface UpdateProfileDto {
   phone?: string;
   avatarUrl?: string | null;
   organizationName?: string;
+  organizationLogo?: string | null;
 }

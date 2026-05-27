@@ -41,6 +41,7 @@ export interface User {
   /** The office this user belongs to (null for SUPER_ADMIN without a fixed office) */
   officeId: string | null;
   organizationName?: string | null;
+  organizationLogo?: string | null;
   /** Optional avatar URL returned by the API */
   avatarUrl?: string | null;
 }

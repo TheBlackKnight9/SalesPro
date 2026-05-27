@@ -19,15 +19,21 @@ export default function TopNav() {
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-brand-blue/20 bg-brand-blue dark:bg-slate-900 dark:border-slate-800 px-5 text-white transition-colors duration-300">
-      <div className="flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-sm font-semibold text-white">
-          SP
+      <div className="flex items-center gap-2.5">
+        <div className={`relative flex h-[34.2px] w-[34.2px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 shadow-sm ${user?.organizationLogo ? "bg-white" : "bg-white/10"}`}>
+          {user?.organizationLogo ? (
+            <img src={user.organizationLogo} alt="Organization Logo" className="h-full w-full object-contain p-0.5" />
+          ) : (
+            <span className="text-sm font-extrabold tracking-wide text-white">
+              {(user?.organizationName || "SalesPro").slice(0, 2).toUpperCase()}
+            </span>
+          )}
         </div>
         <div className="hidden sm:block">
-          <p className="text-xs font-bold leading-tight text-white uppercase tracking-wider">
+          <p className="text-[12px] font-extrabold leading-tight text-white uppercase tracking-wider">
             {user?.organizationName || "SalesPro CRM"}
           </p>
-          <p className="text-[10px] text-white/70 tracking-widest uppercase">
+          <p className="text-[9px] text-white/70 tracking-widest uppercase mt-0.5">
             Unified Workspace
           </p>
         </div>
