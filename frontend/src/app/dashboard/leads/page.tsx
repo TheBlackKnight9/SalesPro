@@ -435,11 +435,11 @@ export default function LeadsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-800 animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4.5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/30 dark:bg-slate-800/20">
+            <div className="px-6 pt-7 pb-2.5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/30 dark:bg-slate-800/20">
               <h3 className="text-base font-bold text-slate-800 dark:text-white">Add New Prospect</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm">✕</button>
             </div>
-            <form onSubmit={handleCreateLead} className="p-6 space-y-4 bg-white dark:bg-slate-900">
+            <form onSubmit={handleCreateLead} className="px-6 pt-3 pb-6 space-y-4 bg-white dark:bg-slate-900">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <User className="h-3 w-3" />

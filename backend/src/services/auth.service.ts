@@ -72,6 +72,9 @@ export class AuthService {
         organizationId: dto.organizationId || null,
         isActive: true, // Default to active
       },
+      include: {
+        organization: { select: { name: true } }
+      }
     });
 
     // 5. Generate token
@@ -96,6 +99,7 @@ export class AuthService {
         role: user.role,
         officeId: user.officeId,
         organizationId: user.organizationId,
+        organizationName: (user as any).organization?.name || "Unified Workspace",
         avatarUrl: user.avatarUrl,
       },
     };
@@ -162,6 +166,7 @@ export class AuthService {
         role: result.newUser.role as any,
         officeId: result.newUser.officeId,
         organizationId: result.newUser.organizationId,
+        organizationName: result.newOrg.name,
         avatarUrl: result.newUser.avatarUrl,
       },
     };
@@ -187,6 +192,7 @@ export class AuthService {
         avatarUrl: true,
         password: true,
         isActive: true,
+        organization: { select: { name: true } },
       },
     });
 
@@ -230,6 +236,7 @@ export class AuthService {
         role: user.role,
         officeId: user.officeId,
         organizationId: user.organizationId,
+        organizationName: user.organization?.name || "Unified Workspace",
         avatarUrl: user.avatarUrl,
       },
     };
@@ -239,7 +246,7 @@ export class AuthService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, role: true, organizationId: true },
     });
 
     if (!currentUser) throw new AppError("User not found.", 404);
@@ -252,6 +259,13 @@ export class AuthService {
       if (emailExists && emailExists.id !== userId) {
         throw new AppError("Email is already registered.", 400);
       }
+    }
+
+    if (dto.organizationName && currentUser.role === "SUPER_ADMIN" && currentUser.organizationId) {
+      await prisma.organization.update({
+        where: { id: currentUser.organizationId },
+        data: { name: dto.organizationName.trim() },
+      });
     }
 
     const updatedUser = await prisma.user.update({
@@ -270,10 +284,22 @@ export class AuthService {
         role: true,
         officeId: true,
         avatarUrl: true,
+        organizationId: true,
+        organization: { select: { name: true } },
       },
     });
 
-    return updatedUser;
+    return {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role,
+      officeId: updatedUser.officeId,
+      avatarUrl: updatedUser.avatarUrl,
+      organizationId: updatedUser.organizationId,
+      organizationName: updatedUser.organization?.name || "Unified Workspace",
+    };
   }
 
   // ── Get Profile ────────────────────────────
@@ -293,11 +319,28 @@ export class AuthService {
         office: {
           select: { id: true, name: true, city: true },
         },
+        organization: {
+          select: { id: true, name: true }
+        }
       },
     });
 
     if (!user) throw new AppError("User not found.", 404);
-    return user;
+    
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+      isActive: user.isActive,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+      office: user.office,
+      organizationId: user.organization?.id || null,
+      organizationName: user.organization?.name || "Unified Workspace",
+    };
   }
 
   // ── Change Password ────────────────────────

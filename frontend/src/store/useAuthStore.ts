@@ -40,6 +40,7 @@ export interface User {
   role:     UserRole;
   /** The office this user belongs to (null for SUPER_ADMIN without a fixed office) */
   officeId: string | null;
+  organizationName?: string | null;
   /** Optional avatar URL returned by the API */
   avatarUrl?: string | null;
 }

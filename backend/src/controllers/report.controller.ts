@@ -67,7 +67,10 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
 
     const quoteWhere: any = { organizationId: orgId, ...dateFilter };
     if (finalAgentId) {
-      quoteWhere.createdById = finalAgentId;
+      quoteWhere.OR = [
+        { createdById: finalAgentId },
+        { lead: { agentId: finalAgentId } }
+      ];
     } else if (finalOfficeId) {
       quoteWhere.createdBy = { officeId: finalOfficeId };
     }
@@ -139,9 +142,12 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
       const closedQuotes = await prisma.quotation.aggregate({
         where: {
           status: "ACCEPTED",
-          createdById: agent.id,
           organizationId: orgId,
-          ...dateFilter
+          ...dateFilter,
+          OR: [
+            { createdById: agent.id },
+            { lead: { agentId: agent.id } }
+          ]
         },
         _sum: { totalAmount: true }
       });
@@ -166,14 +172,28 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
       const count = await prisma.lead.count({
         where: { ...leadWhere, status: stage }
       });
-      const budgetSum = await prisma.lead.aggregate({
+
+      const leadsInStage = await prisma.lead.findMany({
         where: { ...leadWhere, status: stage },
-        _sum: { budget: true }
+        select: {
+          budget: true,
+          quotations: {
+            select: { totalAmount: true }
+          }
+        }
       });
+
+      let stageValue = 0;
+      leadsInStage.forEach((lead) => {
+        const leadBudget = Number(lead.budget || 0);
+        const quoteTotal = lead.quotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+        stageValue += leadBudget > 0 ? leadBudget : quoteTotal;
+      });
+
       return {
         stage,
         count,
-        value: Number(budgetSum._sum.budget || 0)
+        value: stageValue
       };
     }));
 

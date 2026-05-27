@@ -36,6 +36,7 @@ export interface LoginResponse {
     role: string;
     officeId: string | null;
     organizationId: string | null;
+    organizationName?: string | null;
     avatarUrl: string | null;
   };
 }
@@ -50,4 +51,5 @@ export interface UpdateProfileDto {
   email?: string;
   phone?: string;
   avatarUrl?: string | null;
+  organizationName?: string;
 }

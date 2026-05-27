@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { X, User, Phone, Mail, Building, Loader2, Globe } from "lucide-react";
+import { User, Phone, Mail, Building, Loader2, Globe } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useUser } from "@/store/useAuthStore";
 
@@ -85,32 +85,21 @@ export default function AddLeadModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white p-6 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md dark:bg-slate-900 dark:border dark:border-slate-800">
-                <div className="absolute right-4 top-4">
-                  <button
+              <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md dark:bg-slate-900 dark:border dark:border-slate-800">
+                <div className="px-6 pt-7 pb-2.5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/30 dark:bg-slate-800/20">
+                  <Dialog.Title as="h3" className="text-base font-bold text-slate-800 dark:text-white">
+                    Add New Prospect
+                  </Dialog.Title>
+                  <button 
                     type="button"
-                    className="rounded-md bg-transparent text-gray-400 hover:text-gray-500 focus:outline-none dark:text-slate-500 dark:hover:text-slate-400"
-                    onClick={onClose}
+                    onClick={onClose} 
+                    className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors text-sm"
                   >
-                    <span className="sr-only">Close</span>
-                    <X className="h-6 w-6" aria-hidden="true" />
+                    ✕
                   </button>
                 </div>
 
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-left sm:mt-0 sm:w-full">
-                    <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 dark:text-white">
-                      Add New Prospect
-                    </Dialog.Title>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500 dark:text-slate-400">
-                        Capture details of a new prospect to add to the sales funnel.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+                <form onSubmit={handleSubmit} className="px-6 pt-3 pb-6 space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 dark:text-slate-500">
                       <User className="h-3 w-3" />

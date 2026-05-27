@@ -14,6 +14,7 @@ interface ProfileData {
   role: string;
   officeId: string | null;
   avatarUrl: string | null;
+  organizationName?: string | null;
 }
 
 interface PreferenceState {
@@ -34,6 +35,7 @@ export default function SettingsPage() {
     email: "",
     phone: "",
     avatarUrl: "",
+    organizationName: "",
   });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
   const [preferences, setPreferences] = useState<PreferenceState>({
@@ -66,6 +68,7 @@ export default function SettingsPage() {
           email: data.email ?? "",
           phone: data.phone ?? "",
           avatarUrl: data.avatarUrl ?? "",
+          organizationName: data.organizationName ?? "",
         });
       } catch (err: any) {
         setError(err?.message || "Failed to load your profile.");
@@ -108,6 +111,9 @@ export default function SettingsPage() {
         email: profileForm.email.trim(),
         phone: profileForm.phone.trim(),
         avatarUrl: profileForm.avatarUrl || null,
+        ...(currentUser?.role === "SUPER_ADMIN" && {
+          organizationName: profileForm.organizationName.trim(),
+        }),
       });
 
       const updatedProfile = response.data.data as ProfileData;
@@ -117,6 +123,7 @@ export default function SettingsPage() {
         email: updatedProfile.email,
         phone: updatedProfile.phone,
         avatarUrl: updatedProfile.avatarUrl,
+        organizationName: updatedProfile.organizationName,
       });
       setMessage("Profile updated successfully.");
     } catch (err: any) {
@@ -227,6 +234,25 @@ export default function SettingsPage() {
                 <div className="field">
                   <label className="field-label">Role</label>
                   <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center">{profile?.role || currentUser?.role || "-"}</div>
+                </div>
+                <div className="field md:col-span-2">
+                  <label className="field-label">Organization Name</label>
+                  {currentUser?.role === "SUPER_ADMIN" ? (
+                    <input
+                      type="text"
+                      className="field-input"
+                      value={profileForm.organizationName}
+                      onChange={(e) => setProfileForm((current) => ({ ...current, organizationName: e.target.value }))}
+                      placeholder="e.g. SalesPro CRM"
+                    />
+                  ) : (
+                    <div className="field-input bg-gray-50 dark:bg-slate-950 text-gray-500 dark:text-slate-400 border border-gray-150 dark:border-slate-850 opacity-80 flex items-center justify-between">
+                      <span>{profileForm.organizationName || "Unified Workspace"}</span>
+                      <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-850 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+                        Read-only
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 

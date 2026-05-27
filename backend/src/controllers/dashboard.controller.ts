@@ -67,7 +67,10 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
       const userId = req.user.userId;
       leadWhereClause.agentId = userId;
       customerWhereClause.lead = { agentId: userId };
-      quotationWhereClause.createdById = userId;
+      quotationWhereClause.OR = [
+        { createdById: userId },
+        { lead: { agentId: userId } }
+      ];
     } else if (req.user?.role === UserRole.MANAGER && req.user.officeId) {
       const officeId = req.user.officeId;
       leadWhereClause.officeId = officeId;
@@ -328,7 +331,10 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
         { customer: { lead: { agentId: userId } } }
       ];
       
-      quotationWhereClause.createdById = userId;
+      quotationWhereClause.OR = [
+        { createdById: userId },
+        { lead: { agentId: userId } }
+      ];
     } else if (role === UserRole.MANAGER && req.user?.officeId) {
       const officeId = req.user.officeId;
       leadWhereClause.officeId = officeId;
@@ -771,7 +777,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
             stageValues["Quote Sent"] += amount;
             break;
           case "NEGOTIATION":
-            // Skipped: Negotiation pipeline value is calculated directly from lead budgets below
+            stageValues["Negotiation"] += amount;
             break;
           case "WON":
             stageValues["Won"] += amount;
@@ -787,18 +793,6 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
             break;
         }
       });
-
-      // Calculate negotiation pipeline value directly from the sum of Lead budgets in NEGOTIATION status
-      const negotiationLeads = await prisma.lead.findMany({
-        where: {
-          ...leadWhereClause,
-          status: "NEGOTIATION"
-        },
-        select: {
-          budget: true
-        }
-      });
-      stageValues["Negotiation"] = negotiationLeads.reduce((sum, l) => sum + Number(l.budget || 0), 0);
 
       const pipelineByStage = [
         { name: "New", value: stageValues["New"] },
