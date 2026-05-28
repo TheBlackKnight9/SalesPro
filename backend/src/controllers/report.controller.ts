@@ -178,16 +178,26 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
         select: {
           budget: true,
           quotations: {
-            select: { totalAmount: true }
+            select: { 
+              totalAmount: true,
+              status: true
+            }
           }
         }
       });
 
       let stageValue = 0;
       leadsInStage.forEach((lead) => {
-        const leadBudget = Number(lead.budget || 0);
-        const quoteTotal = lead.quotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
-        stageValue += leadBudget > 0 ? leadBudget : quoteTotal;
+        if (stage === "PROPOSAL_SENT") {
+          const sentQuotesTotal = lead.quotations
+            .filter((q) => q.status === "SENT")
+            .reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+          stageValue += sentQuotesTotal;
+        } else {
+          const leadBudget = Number(lead.budget || 0);
+          const quoteTotal = lead.quotations.reduce((sum, q) => sum + Number(q.totalAmount || 0), 0);
+          stageValue += leadBudget > 0 ? leadBudget : quoteTotal;
+        }
       });
 
       return {
