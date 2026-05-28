@@ -80,8 +80,10 @@ function AttachmentCard({ att }: { att: Attachment }) {
           }
         }
 
-        const res = await fetch(`/api/upload/s3?key=${encodeURIComponent(key)}`);
-        if (!res.ok) throw new Error();
+       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const res = await fetch(`${apiUrl}/upload/s3?key=${encodeURIComponent(key)}`);
+
+        if (!res.ok) throw new Error("Failed to generate upload URL");
         const data = await res.json();
         if (active) {
           setViewUrl(data.viewUrl);
