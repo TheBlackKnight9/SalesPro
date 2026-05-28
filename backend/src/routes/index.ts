@@ -1,4 +1,8 @@
 import { Router } from "express";
+
+import uploadRoutes from "./upload.routes"; // Import karein
+
+ // Mount at /api/upload
 import authRoutes from "./auth.routes";
 import officeRoutes from "./office.routes";
 import dashboardRoutes from "./dashboard.routes";
@@ -13,6 +17,8 @@ import teamRoutes from "./team.routes";
 import reportRoutes from "./report.routes";
 
 const router = Router();
+
+router.use("/upload", uploadRoutes);
 
 // Health check
 router.get("/health", (_req, res) => {

@@ -82,7 +82,8 @@ function AttachmentCard({ att }: { att: Attachment }) {
           }
         }
 
-        const res = await fetch(`/api/upload/s3?key=${encodeURIComponent(key)}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const res = await fetch(`${apiUrl}/upload/s3?key=${encodeURIComponent(key)}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (active) {
@@ -377,10 +378,12 @@ export default function CustomerDetailsPage() {
     setIsSavingNotes(true);
     const uploadedAttachments: Array<{ url: string; name: string; type: string }> = [];
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
     try {
       // Step 1 & 2: Loop through pending attachments and upload directly to S3 via pre-signed URLs
       for (const file of pendingAttachments) {
-        const res = await fetch("/api/upload/s3", {
+        const res = await fetch(`${apiUrl}/upload/s3`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
