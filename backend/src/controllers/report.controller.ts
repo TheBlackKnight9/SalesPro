@@ -168,22 +168,36 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
 
     // ── 4. Funnel Stage Analysis ──
     const stages = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL_SENT", "NEGOTIATION"];
-    const funnelAnalysis = await Promise.all(stages.map(async (stage) => {
-      const count = await prisma.lead.count({
-        where: { ...leadWhere, status: stage }
-      });
-
-      const leadsInStage = await prisma.lead.findMany({
-        where: { ...leadWhere, status: stage },
-        select: {
-          budget: true,
-          quotations: {
-            select: { 
-              totalAmount: true,
-              status: true
-            }
+    
+    // Fetch all active leads for the given filters
+    const allLeadsForFunnel = await prisma.lead.findMany({
+      where: {
+        ...leadWhere,
+        status: { in: stages as any }
+      },
+      select: {
+        status: true,
+        budget: true,
+        quotations: {
+          select: {
+            totalAmount: true,
+            status: true
           }
         }
+      }
+    });
+
+    const funnelAnalysis = stages.map((stage) => {
+      // Filter leads belonging to this stage dynamically
+      const leadsInStage = allLeadsForFunnel.filter((lead) => {
+        let leadStage = lead.status;
+        const hasSentQuote = lead.quotations.some((q) => q.status === "SENT");
+        
+        if (hasSentQuote && leadStage !== "NEGOTIATION") {
+          leadStage = "PROPOSAL_SENT";
+        }
+        
+        return leadStage === stage;
       });
 
       let stageValue = 0;
@@ -202,10 +216,10 @@ export const getAnalyticsReport = async (req: AuthRequest, res: Response) => {
 
       return {
         stage,
-        count,
+        count: leadsInStage.length,
         value: stageValue
       };
-    }));
+    });
 
     // ── 5. Lead Source Acquisition ROI Audit ──
     const sources = ["WEBSITE", "WHATSAPP", "REFERRAL", "MANUAL", "SOCIAL_MEDIA"];
