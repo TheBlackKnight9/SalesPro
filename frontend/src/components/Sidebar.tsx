@@ -17,6 +17,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { AppLogoIcon } from "./AppLogo";
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
@@ -60,7 +61,7 @@ export default function Sidebar() {
 
   return (
     <AceternitySidebar open={open} setOpen={setOpen} animate={true}>
-      <SidebarBody className="justify-between gap-10 bg-white border-r border-slate-200 dark:bg-slate-900 dark:border-slate-800 transition-colors duration-300">
+      <SidebarBody className="justify-between gap-10 bg-[var(--color-sidebar-bg)] border-r border-[var(--color-sidebar-border)] transition-colors duration-300">
         <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
           {open ? <Logo /> : <LogoIcon />}
           <div className="mt-8 flex flex-col gap-2">
@@ -83,7 +84,7 @@ export default function Sidebar() {
         {/* Footer Area with user profile details */}
         <div className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
           <div className={cn("flex items-center gap-2 overflow-hidden", open ? "px-1 justify-start" : "justify-center w-full")}>
-            <div className="h-[30.4px] w-[30.4px] shrink-0 flex items-center justify-center rounded-full bg-brand-blue/15 text-brand-blue dark:bg-brand-blue/30 dark:text-blue-400 text-[11.4px] font-semibold select-none">
+            <div className="h-[30.4px] w-[30.4px] shrink-0 flex items-center justify-center rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] text-[11.4px] font-semibold select-none">
               {getInitials(user?.name)}
             </div>
             
@@ -133,16 +134,14 @@ const Logo = () => {
       href="/dashboard"
       className="relative z-20 flex items-center space-x-3 py-1 text-sm font-normal"
     >
-      <div className="flex h-[34.2px] w-[34.2px] shrink-0 items-center justify-center rounded-lg bg-brand-blue text-[13.3px] font-bold text-white shadow-sm">
-        SP
-      </div>
+      <AppLogoIcon className="h-[34.2px] w-[34.2px]" />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex flex-col text-left"
       >
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-gray-400">SalesPro</span>
-        <span className="text-[15.2px] font-semibold leading-tight text-gray-900 dark:text-gray-100">CRM</span>
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">SalesPro</span>
+        <span className="text-[15.2px] font-semibold leading-tight text-[var(--color-text-primary)]">CRM</span>
       </motion.div>
     </a>
   );
@@ -154,9 +153,7 @@ const LogoIcon = () => {
       href="/dashboard"
       className="relative z-20 flex items-center justify-center py-1 w-full"
     >
-      <div className="flex h-[34.2px] w-[34.2px] shrink-0 items-center justify-center rounded-lg bg-brand-blue text-[13.3px] font-bold text-white shadow-sm">
-        SP
-      </div>
+      <AppLogoIcon className="h-[34.2px] w-[34.2px]" />
     </a>
   );
 };

@@ -244,12 +244,12 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Profile photo</label>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)]">Profile photo</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(event) => handleAvatarUpload(event.target.files?.[0] || null)}
-                    className="block w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-accent-hover cursor-pointer"
+                    className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-accent)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--color-text-inverse)] hover:file:bg-[var(--color-accent-hover)] file:transition-colors file:cursor-pointer cursor-pointer"
                   />
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
                           });
                           setIsWorkspaceModalOpen(true);
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1 text-xs font-bold text-white hover:bg-accent-hover shadow transition active:scale-95 cursor-pointer border border-transparent"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-3 py-1 text-xs font-bold text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)] shadow transition active:scale-95 cursor-pointer border border-transparent"
                       >
                         <Building className="h-3.5 w-3.5" />
                         <span>Edit Workspace</span>

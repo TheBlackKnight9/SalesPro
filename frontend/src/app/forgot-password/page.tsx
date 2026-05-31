@@ -39,25 +39,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07111f] px-4 py-12 text-white">
+    <div className="min-h-screen bg-[var(--color-bg-base)] px-4 py-12 text-[var(--color-text-primary)]">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-xl items-center">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-8 backdrop-blur-2xl"
+          className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-8 shadow-sm"
         >
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)]">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">Password Recovery</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">Password Recovery</p>
               <h1 className="text-3xl font-semibold">OTP Reset</h1>
             </div>
           </div>
 
           {message && (
-            <div className="mb-6 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+            <div className="mb-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
               {message}
             </div>
           )}
@@ -65,14 +65,14 @@ export default function ForgotPasswordPage() {
           {step === "request" ? (
             <form onSubmit={handleRequestOtp} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">Email or Mobile number</label>
+                <label className="text-sm font-medium text-[var(--color-text-secondary)]">Email or Mobile number</label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-text-muted)]" />
                   <input
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="w-full rounded-2xl border border-white/10 bg-white/8 px-12 py-3.5 text-white placeholder:text-slate-500"
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-12 py-3.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 transition-all font-semibold"
                     placeholder="Enter email or phone"
                   />
                 </div>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3.5 font-semibold text-white disabled:opacity-70"
+                className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] px-5 py-3.5 text-sm font-bold text-[var(--color-text-inverse)] shadow transition active:scale-[0.98] disabled:opacity-70 cursor-pointer"
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Phone className="h-5 w-5" />}
                 Send OTP
@@ -89,19 +89,19 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">OTP</label>
+                <label className="text-sm font-medium text-[var(--color-text-secondary)]">OTP</label>
                 <input
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/8 px-4 py-3.5 text-white placeholder:text-slate-500"
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-4 py-3.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 transition-all font-semibold"
                   placeholder="Enter 6-digit OTP"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3.5 font-semibold text-white disabled:opacity-70"
+                className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] px-5 py-3.5 text-sm font-bold text-[var(--color-text-inverse)] shadow transition active:scale-[0.98] disabled:opacity-70 cursor-pointer"
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
                 Verify OTP
@@ -109,8 +109,8 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <div className="mt-8 text-center text-sm text-slate-400">
-            <a href="/login" className="font-semibold text-cyan-300 hover:text-cyan-200">
+          <div className="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
+            <a href="/login" className="font-semibold text-[var(--color-text-primary)] hover:underline">
               Back to sign in
             </a>
           </div>

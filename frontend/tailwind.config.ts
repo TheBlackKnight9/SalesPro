@@ -18,9 +18,9 @@ const config: Config = {
       // ─── Custom Color Palette ──────────────────────────────────────────
       colors: {
         brand: {
-          blue: "#1A56DB",
+          blue: "var(--color-brand-blue)",
         },
-        "brand-blue": "#1A56DB",
+        "brand-blue": "var(--color-brand-blue)",
         "app-bg": "#F9FAFB",
         "sidebar-border": "#E5E7EB",
 
@@ -53,7 +53,7 @@ const config: Config = {
          *           progress indicators, interactive highlights.
          */
         accent: {
-          DEFAULT: "#1A56DB",
+          DEFAULT: "var(--color-accent)",
           50:  "#eef3fd",
           100: "#dde8fb",
           200: "#bad0f7",
@@ -178,8 +178,14 @@ const config: Config = {
 
       // ─── Border Radius ─────────────────────────────────────────────────
       borderRadius: {
-        base: "12px",
-        "4xl": "2rem",
+        base: "8px",
+        "3xl": "12px",
+        "2xl": "10px",
+        xl: "8px",
+        lg: "6px",
+        md: "4px",
+        sm: "3px",
+        "4xl": "1.5rem",
       },
 
       // ─── Keyframe Animations ───────────────────────────────────────────

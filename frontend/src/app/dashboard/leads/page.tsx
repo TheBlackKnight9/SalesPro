@@ -321,13 +321,13 @@ export default function LeadsPage() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-          <LayoutGrid className="h-10 w-10 text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-600">Kanban Board Mode</h3>
-          <p className="text-gray-400 text-sm">Drag and drop leads to update status (Feature in Development)</p>
+        <div className="flex flex-col items-center justify-center py-20 bg-[var(--color-bg-raised)] rounded-xl border border-dashed border-[var(--color-border)] shadow-sm">
+          <LayoutGrid className="h-10 w-10 text-[var(--color-text-muted)] mb-4" />
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Kanban Board Mode</h3>
+          <p className="text-[var(--color-text-secondary)] text-sm">Drag and drop leads to update status (Feature in Development)</p>
           <button 
             onClick={() => updateFilters({ view: "list" })}
-            className="mt-4 text-brand-blue font-semibold hover:underline"
+            className="mt-4 text-[var(--color-brand-blue)] font-semibold hover:underline"
           >
             Back to List View
           </button>

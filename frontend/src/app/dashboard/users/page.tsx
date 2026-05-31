@@ -552,18 +552,18 @@ export default function UsersPage() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-2xl rounded-xl border border-white/10 bg-[#07111f] p-6 text-white shadow-2xl"
+            className="w-full max-w-2xl rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-6 text-[var(--color-text-primary)] shadow-2xl"
           >
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">{editingUser ? "Edit Profile" : "Onboard user"}</p>
-                <h2 className="mt-1 text-xl font-semibold">{editingUser ? editingUser.name : "New Team Member"}</h2>
+                <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--color-text-secondary)]">{editingUser ? "Edit Profile" : "Onboard user"}</p>
+                <h2 className="mt-1 text-xl font-semibold text-[var(--color-text-primary)]">{editingUser ? editingUser.name : "New Team Member"}</h2>
               </div>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="text-sm text-slate-400 hover:text-white transition-colors">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
                 Close
               </button>
             </div>
@@ -577,18 +577,18 @@ export default function UsersPage() {
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Name</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Name</label>
                   <input 
-                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-3.5 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all" 
                     value={form.name} 
                     placeholder="Enter full name"
                     onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} 
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Email</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Email</label>
                   <input
-                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all disabled:opacity-50 disabled:bg-slate-950/50"
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-3.5 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all disabled:opacity-50 disabled:bg-[var(--color-bg-subtle)]"
                     value={form.email}
                     placeholder="name@company.com"
                     disabled={Boolean(editingUser)}
@@ -596,58 +596,58 @@ export default function UsersPage() {
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Phone</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Phone</label>
                   <input 
-                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-3.5 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all" 
                     value={form.phone} 
                     placeholder="Enter phone number"
                     onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} 
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Role</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Role</label>
                   {role === "SUPER_ADMIN" ? (
                     <select 
-                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all cursor-pointer" 
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-3.5 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all cursor-pointer" 
                       value={form.role} 
                       onChange={(event) => setForm((current) => ({ ...current, role: event.target.value as UserFormState["role"] }))}
                     >
-                      <option value="SUPER_ADMIN" className="bg-slate-900 text-white">SUPER_ADMIN</option>
-                      <option value="MANAGER" className="bg-slate-900 text-white">MANAGER</option>
-                      <option value="AGENT" className="bg-slate-900 text-white">AGENT</option>
+                      <option value="SUPER_ADMIN" className="bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">SUPER_ADMIN</option>
+                      <option value="MANAGER" className="bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">MANAGER</option>
+                      <option value="AGENT" className="bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">AGENT</option>
                     </select>
                   ) : (
-                    <div className="w-full rounded-lg border border-white/10 bg-slate-950/50 px-3.5 py-2 text-sm text-slate-300">
+                    <div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-2 text-sm text-[var(--color-text-secondary)]">
                       AGENT (Default)
                     </div>
                   )}
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Office</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Office</label>
                   {role === "SUPER_ADMIN" ? (
                     <select 
-                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all cursor-pointer" 
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] px-3.5 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all cursor-pointer" 
                       value={form.officeId} 
                       onChange={(event) => setForm((current) => ({ ...current, officeId: event.target.value }))}
                     >
-                      <option value="" className="bg-slate-900 text-slate-400">Select office</option>
+                      <option value="" className="bg-[var(--color-bg-base)] text-[var(--color-text-muted)]">Select office</option>
                       {offices.map((office) => (
-                        <option key={office.id} value={office.id} className="bg-slate-900 text-white">{office.name}</option>
+                        <option key={office.id} value={office.id} className="bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">{office.name}</option>
                       ))}
                     </select>
                   ) : (
-                    <div className="w-full rounded-lg border border-white/10 bg-slate-950/50 px-3.5 py-2 text-sm text-slate-300">
+                    <div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-2 text-sm text-[var(--color-text-secondary)]">
                       {offices.find(o => o.id === currentUser?.officeId)?.name || "Assigned Office"}
                     </div>
                   )}
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-xs font-semibold text-slate-300">Profile Photo</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Profile Photo</label>
                   <input 
                     type="file" 
                     accept="image/*" 
                     onChange={(event) => handleAvatarUpload(event.target.files?.[0] || null)} 
-                    className="w-full rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-3.5 py-1.5 text-xs text-slate-300 file:mr-3.5 file:rounded-md file:border-0 file:bg-cyan-500 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-cyan-600 file:transition-colors file:cursor-pointer cursor-pointer" 
+                    className="w-full rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3.5 py-1.5 text-xs text-[var(--color-text-secondary)] file:mr-3.5 file:rounded-md file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[var(--color-text-inverse)] hover:file:bg-[var(--color-accent-hover)] file:transition-colors file:cursor-pointer cursor-pointer" 
                   />
                 </div>
 
@@ -655,10 +655,10 @@ export default function UsersPage() {
                 {editingUser ? (
                   <>
                     <div className="space-y-1.5 flex flex-col">
-                      <label className="text-xs font-semibold text-slate-300">Old Password</label>
+                      <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Old Password</label>
                       <div className="relative w-full">
                         <input 
-                          className="w-full rounded-lg border border-white/10 bg-slate-950/40 pl-3.5 pr-10 py-2 text-sm text-slate-400 placeholder-slate-500 outline-none transition-all cursor-not-allowed" 
+                          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] pl-3.5 pr-10 py-2 text-sm text-[var(--color-text-muted)] placeholder-[var(--color-text-muted)] outline-none transition-all cursor-not-allowed" 
                           type={showOldPassword ? "text" : "password"} 
                           placeholder="••••••••" 
                           value={form.oldPassword || ""} 
@@ -667,17 +667,17 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowOldPassword(!showOldPassword)}
-                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showOldPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
                       </div>
                     </div>
                     <div className="space-y-1.5 flex flex-col">
-                      <label className="text-xs font-semibold text-slate-300">New Password (Optional)</label>
+                      <label className="text-xs font-semibold text-[var(--color-text-secondary)]">New Password (Optional)</label>
                       <div className="relative w-full">
                         <input 
-                          className="w-full rounded-lg border border-white/10 bg-slate-900 pl-3.5 pr-10 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] pl-3.5 pr-10 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all" 
                           type={showNewPassword ? "text" : "password"} 
                           placeholder="Leave blank to keep unchanged" 
                           value={form.password} 
@@ -686,7 +686,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
@@ -696,10 +696,10 @@ export default function UsersPage() {
                 ) : (
                   <>
                     <div className="space-y-1.5 flex flex-col">
-                      <label className="text-xs font-semibold text-slate-300">Password</label>
+                      <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Password</label>
                       <div className="relative w-full">
                         <input 
-                          className="w-full rounded-lg border border-white/10 bg-slate-900 pl-3.5 pr-10 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 outline-none transition-all" 
+                          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-base)] pl-3.5 pr-10 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/20 outline-none transition-all" 
                           type={showNewPassword ? "text" : "password"} 
                           placeholder="••••••••" 
                           value={form.password} 
@@ -708,7 +708,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center justify-center"
+                          className="no-hover absolute right-3 top-0 bottom-0 my-auto h-fit text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus:outline-none flex items-center justify-center"
                         >
                           {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
@@ -720,22 +720,22 @@ export default function UsersPage() {
               </div>
 
               <div className="flex items-center justify-between gap-4 pt-1">
-                <label className="flex items-center gap-2.5 text-xs font-medium text-slate-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 text-xs font-medium text-[var(--color-text-secondary)] cursor-pointer select-none">
                   <input 
                     type="checkbox" 
                     checked={form.isActive} 
                     onChange={(event) => setForm((current) => ({ ...current, isActive: event.target.checked }))} 
-                    className="h-3.5 w-3.5 rounded border-white/20 bg-transparent text-cyan-500 focus:ring-0 cursor-pointer" 
+                    className="h-3.5 w-3.5 rounded border-[var(--color-border)] bg-transparent text-[var(--color-accent)] focus:ring-0 cursor-pointer" 
                   />
                   Active account
                 </label>
 
                 {requiresOffice && (
-                  <p className="text-[11px] text-cyan-200/60 font-medium">Office is required for Manager and Agent roles.</p>
+                  <p className="text-[11px] text-[var(--color-text-secondary)] font-medium">Office is required for Manager and Agent roles.</p>
                 )}
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-3 border-t border-white/5">
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--color-border)]">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary h-8.5 text-xs px-3.5">
                   Cancel
                 </button>

@@ -90,7 +90,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "h-full py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[240px] shrink-0",
+          "h-full py-4 hidden md:flex md:flex-col bg-[var(--color-sidebar-bg)] border-r border-[var(--color-sidebar-border)] w-[240px] shrink-0 transition-colors duration-300",
           open ? "px-4" : "px-2.5",
           className
         )}
@@ -117,7 +117,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-[var(--color-sidebar-bg)] border-b border-[var(--color-sidebar-border)] w-full transition-colors duration-300"
         )}
         {...props}
       >
@@ -138,7 +138,7 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0 bg-[var(--color-sidebar-bg)] p-10 z-[100] flex flex-col justify-between transition-colors duration-300",
                 className
               )}
             >
@@ -179,15 +179,15 @@ export const SidebarLink = ({
         "flex items-center gap-2.5 group/sidebar py-2 rounded-lg transition-all duration-200",
         open ? "px-3 justify-start" : "px-0 justify-center w-full",
         isActive
-          ? "bg-brand-blue/10 text-brand-blue dark:bg-brand-blue/20 dark:text-blue-400 font-semibold"
-          : "text-gray-500 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 hover:text-gray-900 dark:hover:text-white",
+          ? "bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-bold shadow-md"
+          : "text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover)] hover:text-slate-900 dark:hover:text-white",
         className
       )}
       {...props}
     >
       <span className={cn(
-        "transition-colors duration-200 shrink-0",
-        isActive ? "text-brand-blue dark:text-blue-400" : "text-gray-400 group-hover/sidebar:text-gray-600 dark:group-hover/sidebar:text-slate-300"
+        "transition-colors duration-200 shrink-0 [&>*]:!text-current [&>*]:!stroke-current",
+        isActive ? "text-[var(--color-sidebar-active-text)]" : "text-[var(--color-sidebar-text)]/70 group-hover/sidebar:text-slate-900 dark:group-hover/sidebar:text-white"
       )}>
         {link.icon}
       </span>

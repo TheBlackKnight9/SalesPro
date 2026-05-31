@@ -12,15 +12,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-brand-blue text-white hover:bg-brand-blue/90 shadow-[0_10px_30px_rgba(26,86,219,0.2)]",
-  secondary: "border border-sidebar-border bg-white text-gray-700 hover:bg-gray-50",
-  ghost: "bg-transparent text-gray-700 hover:bg-gray-100",
+  primary: "btn-primary shadow-sm hover:brightness-105 active:scale-[0.98] transition-all duration-150",
+  secondary: "btn-secondary border border-slate-200 dark:border-slate-800 shadow-sm active:scale-[0.98] transition-all duration-150",
+  ghost: "btn-ghost active:scale-[0.98] transition-all duration-150",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-9 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
-  lg: "h-11 px-5 text-base",
+  sm: "h-8 px-3 text-xs rounded-md",
+  md: "h-9 px-4 text-sm rounded-md",
+  lg: "h-10 px-5 text-base rounded-md",
 };
 
 export function Button({
@@ -36,7 +36,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-base font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

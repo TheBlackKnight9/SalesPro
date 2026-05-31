@@ -280,7 +280,7 @@ export default function CustomersPage() {
                     <td className="px-4 py-[7px] text-right">
                       <button 
                         onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
-                        className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold text-brand-blue hover:text-white hover:bg-brand-blue border border-transparent hover:border-brand-blue/20 transition-all"
+                        className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold text-brand-blue hover:text-[var(--color-text-inverse)] hover:bg-brand-blue border border-transparent hover:border-brand-blue/20 transition-all"
                       >
                         Details
                       </button>
