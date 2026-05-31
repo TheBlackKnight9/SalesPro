@@ -165,8 +165,8 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
 
       // 4. Trend Data over the past 6 calendar months
       const sixMonthsAgo = new Date();
+      sixMonthsAgo.setDate(1); // Fix Date rollover trap for end-of-month dates like the 31st
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-      sixMonthsAgo.setDate(1);
       sixMonthsAgo.setHours(0, 0, 0, 0);
 
       const trendQuotations = await prisma.quotation.findMany({
@@ -190,6 +190,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
+        d.setDate(1); // Fix Date rollover trap for end-of-month dates like the 31st
         d.setMonth(d.getMonth() - i);
         monthsList.push({
           key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
@@ -213,6 +214,59 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
         if (monthItem && q.createdBy?.office) {
           const key = q.createdBy.office.name.replace(" Office", "");
           monthItem[key] = Number(monthItem[key] || 0) + Number(q.totalAmount || 0);
+        }
+      });
+
+      // ── Yearly Trend over the past 3 calendar years ──
+      const threeYearsAgo = new Date();
+      threeYearsAgo.setDate(1);
+      threeYearsAgo.setMonth(0); // January 1st
+      threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2);
+      threeYearsAgo.setHours(0, 0, 0, 0);
+
+      const yearlyTrendQuotations = await prisma.quotation.findMany({
+        where: {
+          status: "ACCEPTED",
+          createdAt: { gte: threeYearsAgo },
+          organizationId
+        },
+        select: {
+          totalAmount: true,
+          createdAt: true,
+          createdBy: {
+            select: {
+              office: { select: { name: true } }
+            }
+          }
+        }
+      });
+
+      const yearsList: { key: string; name: string }[] = [];
+      for (let i = 2; i >= 0; i--) {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - i);
+        yearsList.push({
+          key: `${d.getFullYear()}`,
+          name: `${d.getFullYear()}`
+        });
+      }
+
+      const yearlyTrendData = yearsList.map(y => {
+        const item: any = { name: y.name };
+        offices.forEach(o => {
+          const key = o.name.replace(" Office", "");
+          item[key] = 0;
+        });
+        return item;
+      });
+
+      yearlyTrendQuotations.forEach(q => {
+        const qDate = new Date(q.createdAt);
+        const qKey = `${qDate.getFullYear()}`;
+        const yearItem = yearlyTrendData.find((t, idx) => yearsList[idx].key === qKey);
+        if (yearItem && q.createdBy?.office) {
+          const key = q.createdBy.office.name.replace(" Office", "");
+          yearItem[key] = Number(yearItem[key] || 0) + Number(q.totalAmount || 0);
         }
       });
 
@@ -301,6 +355,7 @@ export const getDashboardMetrics = async (req: AuthRequest, res: Response) => {
           },
           regionalPerformance,
           trendData,
+          yearlyTrendData,
           topAgents,
           leadSources,
           companyQuota,

@@ -106,6 +106,7 @@ export default function DashboardPage() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [timeframeWeeks, setTimeframeWeeks] = useState(4);
   const [timeframeType, setTimeframeType] = useState<"weeks" | "years">("weeks");
+  const [trendType, setTrendType] = useState<"monthly" | "yearly">("monthly");
 
   const isManager = user?.role === "MANAGER" || user?.role === "SUPER_ADMIN";
 
@@ -308,10 +309,34 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Trend LineChart (2/3 width) */}
           <Card padded={false} className="p-4 lg:col-span-2">
-            <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Cross-Office Revenue Trend</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cross-Office Revenue Trend</h3>
+              <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
+                <button
+                  onClick={() => setTrendType("monthly")}
+                  className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${
+                    trendType === "monthly"
+                      ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setTrendType("yearly")}
+                  className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${
+                    trendType === "yearly"
+                      ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Yearly
+                </button>
+              </div>
+            </div>
             <div className="w-full overflow-hidden">
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={trendData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                <LineChart data={trendType === "monthly" ? trendData : (dashboardData?.yearlyTrendData || [])} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => formatIndianCurrency(v, true)} />
